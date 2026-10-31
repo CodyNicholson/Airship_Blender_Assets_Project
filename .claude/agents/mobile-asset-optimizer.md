@@ -16,8 +16,11 @@ Every asset belongs to one of three tiers. If the caller does not specify a tier
 | **`hero`** (Playable characters, bosses) | `4,500` | `2` | `1024x1024` | `1` (`UVMap`) | `60` | `4` | `(0,0,0)` bottom-center, `Scale (1,1,1)` |
 | **`environment`** (Buildings, large terrain) | `1,500` | `1` | `1024x1024` | `1` (`UVMap`) | `0` | `0` | `(0,0,0)` bottom-center, `Scale (1,1,1)` |
 | **`prop`** (Pickups, crates, weapons, clutter) | `800` | `1` | `512x512` | `1` (`UVMap`) | `0` | `0` | `(0,0,0)` bottom-center, `Scale (1,1,1)` |
+| **`hero_low`** (`_LQ` ships, characters) | `1,500` | `1` | `256x256` | `1` (`UVMap`) | `24` | `4` | `(0,0,0)` bottom-center, `Scale (1,1,1)` |
+| **`environment_low`** (`_LQ` environment) | `600` | `1` | `256x256` | `1` (`UVMap`) | `0` | `0` | `(0,0,0)` bottom-center, `Scale (1,1,1)` |
+| **`prop_low`** (`_LQ` props) | `250` | `1` | `128x128` | `1` (`UVMap`) | `0` | `0` | `(0,0,0)` bottom-center, `Scale (1,1,1)` |
 
-Asset names follow `SM_<Category>_<Name>` for static meshes and `SK_<Name>` for skeletal meshes.
+Asset names follow `SM_<Category>_<Name>` for static meshes and `SK_<Name>` for skeletal meshes, with a `_HQ` or `_LQ` suffix for the game's quality setting. `_LQ` assets use the `*_low` tiers. Airships are `hero` tier.
 
 ## 2. Mandatory Execution Workflow
 

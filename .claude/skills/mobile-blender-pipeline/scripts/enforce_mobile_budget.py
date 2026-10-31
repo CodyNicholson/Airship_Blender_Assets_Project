@@ -15,6 +15,10 @@ BUDGET_TIERS = {
     "hero": {"max_tris": 4500, "max_materials": 2, "tex_size": 1024, "max_bones": 60},
     "prop": {"max_tris": 800,  "max_materials": 1, "tex_size": 512,  "max_bones": 0},
     "environment": {"max_tris": 1500, "max_materials": 1, "tex_size": 1024, "max_bones": 0},
+    # Low-quality variants (*_LQ assets) for older devices.
+    "hero_low": {"max_tris": 1500, "max_materials": 1, "tex_size": 256, "max_bones": 24},
+    "prop_low": {"max_tris": 250, "max_materials": 1, "tex_size": 128, "max_bones": 0},
+    "environment_low": {"max_tris": 600, "max_materials": 1, "tex_size": 256, "max_bones": 0},
 }
 
 PIVOT_TOLERANCE = 0.001
