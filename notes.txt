@@ -1,0 +1,25 @@
+The assets are ready to test in the game, but they've only been checked here, not in an engine. There's one catch: all of the work is still uncommitted. If your game pulls these assets from GitHub, it won't see any of the 495 changed or new files until they're committed and pushed. This repo holds only assets and tools, and I didn't see a game project in your workspace, so I can't run that test from here.
+
+Checks I just re-ran:
+- validate_production.py passes on all 234 model files and 232 effect, sky and icon images.
+- All 234 .glb files have valid structure with no external image links, and all 38 skinned characters include animations.
+- Together, the models and textures take up about 34 MB on disk, including both HQ and LQ.
+
+What your game code needs to support:
+- Flipbooks: a sprite-sheet particle player that reads the grid layouts and effect_presets from assets/asset_manifest.json.
+- Explosions through the hull: honour depth_test: false on ShipExplosion, ShipShockwave and LiftCoreSabotage, or the ship will hide the blast.
+- Skies: these are flat panoramas with no dome mesh, so you need a panoramic skybox or sky dome shader.
+- Socket matching: preset sockets are glob patterns where the first match wins, and hit_point and camera are anchors your code supplies at runtime.
+
+What to test first:
+1. One full ship fight: load the Sovereign Gale wreck in the Maelstrom sky, with HullFire, DamageSmoke and ShipExplosion running. That covers models, sockets, effects and sky together, and the effects haven't been seen in motion yet.
+2. Weakest target phone, LQ asn smoke fills the screen, asthat's the most likely performance problem. If it struggles, lower the particle caps
+   or switch to the opaque SM_
+3. Sky and icon appearance: check the Dusk sky's busy cloud deck with your hub camera,
+   HQ sky softness on a large  at real HUD size.
+4. Character animation: play the new clips (Run, Grapple, Talk, Work, Surrender, Taunt)
+   on a few characters. The fi, but I haven't seen them playin an engine.
+
+Issues you may see:
+- Particle sizes, rates and liso some effects will probablylook wrong until tuned. That's a settings change in the manifest, not a problem the art.
+- Fires on the original Sloop, Brigantine and Galleon all start from deck_centre, because those ships have no

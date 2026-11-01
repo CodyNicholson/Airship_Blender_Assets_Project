@@ -62,7 +62,32 @@ SWATCHES = [
     ("eye_white", (240, 238, 232), "flat"),
     ("eye_dark", (22, 20, 24), "flat"),
     ("lamp", (255, 190, 90), "flat"),
+    # Campaign additions. Appended only: existing swatches must keep their atlas cells.
+    ("rust", (150, 78, 42), "metal"),
+    ("rust_dark", (92, 52, 36), "metal"),
+    ("steel", (70, 84, 104), "metal"),
+    ("gold_dark", (172, 128, 44), "metal"),
+    ("enamel", (226, 222, 208), "soft"),
+    ("navy", (34, 44, 74), "wood"),
+    ("liftstone", (72, 224, 232), "flat"),
+    ("liftstone_dark", (28, 108, 130), "rock"),
+    ("ember", (255, 112, 32), "flat"),
+    ("lightning", (214, 232, 255), "flat"),
+    ("toxic", (126, 150, 62), "flat"),
+    ("toxic_dark", (74, 88, 48), "flat"),
+    ("storm", (74, 82, 108), "flat"),
+    ("storm_dark", (38, 42, 62), "flat"),
+    ("abyss", (20, 18, 36), "flat"),
+    ("plasma", (180, 92, 255), "flat"),
+    ("velvet", (110, 22, 48), "cloth"),
+    ("parchment", (222, 200, 150), "cloth"),
+    ("hair_blond", (214, 176, 96), "soft"),
+    ("hair_white", (228, 228, 232), "soft"),
+    ("wind", (190, 232, 240), "flat"),
 ]
+
+# These swatches glow: they are lit in the emissive atlas and black everywhere else.
+EMISSIVE = {"lamp", "liftstone", "ember", "lightning", "plasma", "wind"}
 
 # Accent colours that change per faction. Only these three swatches differ between atlases.
 FACTIONS = {
@@ -70,6 +95,11 @@ FACTIONS = {
     "Azure": {"faction_a": (36, 92, 168), "faction_b": (226, 232, 240), "faction_c": (24, 40, 76)},
     "Emerald": {"faction_a": (34, 130, 92), "faction_b": (232, 224, 180), "faction_c": (20, 60, 50)},
     "Obsidian": {"faction_a": (46, 44, 56), "faction_b": (180, 40, 40), "faction_c": (20, 20, 24)},
+    # Campaign factions: the Gilded Armada, Scrap-Winds salvagers, Jetstream Syndicate, Tartarus wardens.
+    "Gilded": {"faction_a": (30, 46, 96), "faction_b": (238, 226, 192), "faction_c": (196, 150, 52)},
+    "Scrap": {"faction_a": (138, 70, 36), "faction_b": (152, 142, 112), "faction_c": (54, 44, 36)},
+    "Syndicate": {"faction_a": (86, 38, 128), "faction_b": (60, 196, 190), "faction_c": (30, 22, 50)},
+    "Warden": {"faction_a": (70, 74, 82), "faction_b": (190, 160, 60), "faction_c": (30, 30, 36)},
 }
 
 SWATCH_INDEX = {name: i for i, (name, _, _) in enumerate(SWATCHES)}
@@ -132,6 +162,24 @@ def build_atlas(faction, size, detailed):
     return bytes(pixels)
 
 
+def build_emissive_atlas(size):
+    """Same grid as the colour atlas, so the mesh UVs address both."""
+    cell = size // GRID
+    pixels = bytearray(size * size * 3)
+    for index, (name, rgb, _) in enumerate(SWATCHES):
+        if name not in EMISSIVE:
+            continue
+        col, row = index % GRID, index // GRID
+        for y in range(cell):
+            start = ((row * cell + y) * size + col * cell) * 3
+            pixels[start:start + cell * 3] = bytes(rgb) * cell
+    return bytes(pixels)
+
+
+def emissive_path(hq):
+    return TEXTURE_DIR / f"T_Emissive_{'HQ' if hq else 'LQ'}.png"
+
+
 def atlas_path(faction, hq):
     return TEXTURE_DIR / f"T_Palette_{faction}_{'HQ' if hq else 'LQ'}.png"
 
@@ -144,6 +192,10 @@ def generate_all():
             path = atlas_path(faction, hq)
             _write_png(path, size, build_atlas(faction, size, hq))
             written.append(path)
+    for hq, size in ((True, HQ_SIZE), (False, LQ_SIZE)):
+        path = emissive_path(hq)
+        _write_png(path, size, build_emissive_atlas(size))
+        written.append(path)
     return written
 
 
