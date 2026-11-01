@@ -1,12 +1,12 @@
-"""Pirate crew: one 20-bone skeleton and one animation set shared by every character.
+"""Pirate crew: one 22-bone skeleton and one animation set shared by every character.
 
 Characters face Blender -Y (glTF +Z). Their left side is +X. Parts are rigid-bound to a
 single bone each and overlap at the joints, which suits the chunky style and costs the
 least skinning on old GPUs.
 
-weapon.R and gun.R carry no skin. Parent a held item's .glb root to one with no rotation
+weapon.R/L and gun.R/L carry no skin. Parent a held item's .glb root to one with no rotation
 offset: in glTF a joint's +Y runs from bone head to tail, and an item's length is its +Y.
-weapon.R aims the item forward from the fist (blades); gun.R aims it along the forearm (pistols).
+weapon.* aims the item forward from the fist (blades); gun.* aims it along the forearm (pistols).
 
 Clip poses are written as rotations about the armature's rest axes, in degrees:
   +X leans an upright bone forward; a hanging arm or leg swings forward with -X.
@@ -31,6 +31,8 @@ BONE_PARENTS = {
     "upper_arm.L": "chest",
     "lower_arm.L": "upper_arm.L",
     "hand.L": "lower_arm.L",
+    "weapon.L": "hand.L",
+    "gun.L": "hand.L",
     "upper_arm.R": "chest",
     "lower_arm.R": "upper_arm.R",
     "hand.R": "lower_arm.R",
@@ -70,11 +72,12 @@ def _joints(scale, width):
         joints[f"thigh.{side}"] = (h, k)
         joints[f"shin.{side}"] = (k, a)
         joints[f"foot.{side}"] = (a, f)
-    palm = tuple((a + b) / 2 for a, b in zip(joints["hand.R"][0], joints["hand.R"][1]))
-    hand_dir = [b - a for a, b in zip(joints["hand.R"][0], joints["hand.R"][1])]
-    length = sum(d * d for d in hand_dir) ** 0.5
-    joints["weapon.R"] = (palm, (palm[0], palm[1] - 0.12, palm[2]))
-    joints["gun.R"] = (palm, tuple(p + d / length * 0.12 for p, d in zip(palm, hand_dir)))
+    for side in ("L", "R"):
+        palm = tuple((a + b) / 2 for a, b in zip(joints[f"hand.{side}"][0], joints[f"hand.{side}"][1]))
+        hand_dir = [b - a for a, b in zip(joints[f"hand.{side}"][0], joints[f"hand.{side}"][1])]
+        length = sum(d * d for d in hand_dir) ** 0.5
+        joints[f"weapon.{side}"] = (palm, (palm[0], palm[1] - 0.12, palm[2]))
+        joints[f"gun.{side}"] = (palm, tuple(p + d / length * 0.12 for p, d in zip(palm, hand_dir)))
     return {
         bone: (tuple(c * scale for c in head), tuple(c * scale for c in tail))
         for bone, (head, tail) in joints.items()
@@ -152,7 +155,8 @@ def _torso(mb, joints, look, q):
         mb.box((0, -0.16 * g * s, 0.905 * s), (0.08 * s, 0.03, 0.06 * s), "brass")
 
 
-def _head(mb, joints, look, q, hq):
+def _head(mb, joints, look, q, hq, draw_face=True):
+    """draw_face=False leaves eyes and nose to the caller, for characters with custom close-ups."""
     s = look.scale
     centre = Vector((0, 0, 1.56 * s))
     with mb.bound_to("neck"):
@@ -161,7 +165,7 @@ def _head(mb, joints, look, q, hq):
         mb.sphere(centre, (0.2 * s, 0.2 * s, 0.22 * s), q["head_s"], q["head_r"], look.skin, smooth=hq)
         eye_z = centre.z + 0.03 * s
         eye_y = centre.y - 0.178 * s
-        for sign in (1, -1):
+        for sign in (1, -1) if draw_face else ():
             x = sign * 0.075 * s
             if hq:
                 mb.sphere((x, eye_y, eye_z), 0.035 * s, 6, 4, "eye_white")
@@ -169,7 +173,7 @@ def _head(mb, joints, look, q, hq):
             else:
                 mb.box((x, eye_y - 0.01 * s, eye_z), (0.05 * s, 0.03 * s, 0.06 * s), "eye_dark")
         nose_y = centre.y - 0.2 * s
-        if hq:
+        if hq and draw_face:
             mb.sphere((0, nose_y, centre.z - 0.03 * s), (0.035 * s, 0.05 * s, 0.045 * s), 6, 3, look.skin)
         extras = look.extras
         if "bald" not in extras and "tricorn" not in extras and "bandana" not in extras and "skullcap" not in extras:
@@ -354,8 +358,8 @@ def create_armature(name, joints, offset):
             created[bone].parent = created[parent]
             created[bone].use_connect = False
     # Roll puts each bone's +X, which is an attached item's top, up when the arm is raised to aim.
-    created["weapon.R"].align_roll((1, 0, 0))
-    created["gun.R"].align_roll((1, 0, 0))
+    for bone in ("weapon.R", "gun.R", "weapon.L", "gun.L"):
+        created[bone].align_roll((1, 0, 0))
     bpy.ops.object.mode_set(mode="OBJECT")
     return arm
 
@@ -431,6 +435,43 @@ CLIPS = {
         24: _pose(upper_arm__R=(-172, 8, 0), lower_arm__R=(-8, 0, 0), chest=(-8, 0, 0), head=(-14, 0, 0), hips_loc=(0, 0, -0.06), thigh__L=(-16, -3, 0), shin__L=(26, 0, 0), thigh__R=(-6, 3, 0), shin__R=(26, 0, 0)),
         32: _pose(upper_arm__R=(-178, 12, 0), lower_arm__R=(0, 0, 0), upper_arm__L=(-8, -30, 0), chest=(-12, 0, 0), head=(-18, 0, 0), hips_loc=(0, 0, 0.11), thigh__L=(-8, -3, 0), shin__L=(8, 0, 0), thigh__R=(-4, 3, 0), shin__R=(8, 0, 0)),
         40: _pose(upper_arm__R=(-172, 8, 0), lower_arm__R=(-8, 0, 0), chest=(-8, 0, 0), head=(-14, 0, 0), hips_loc=(0, 0, -0.06), thigh__L=(-16, -3, 0), shin__L=(26, 0, 0), thigh__R=(-6, 3, 0), shin__R=(26, 0, 0)),
+    }),
+    # Campaign clips. Grapple: the swing onto a ship. Work: hub tasks (cleaning, sharpening, chart reading).
+    # Surrender: the Davy Jones' Choice pose. Talk: hub conversations. Taunt: Nemesis rivals.
+    "Run": (True, {
+        0: _pose(thigh__L=(-52, 0, 0), shin__L=(18, 0, 0), foot__L=(18, 0, 0), thigh__R=(38, 0, 0), shin__R=(62, 0, 0), upper_arm__L=(34, -10, 0), lower_arm__L=(-70, 0, 0), upper_arm__R=(-46, 10, 0), lower_arm__R=(-74, 0, 0), chest=(16, 0, 10), spine=(6, 0, 0), hips_loc=(0, -0.03, -0.05)),
+        4: _pose(thigh__L=(-10, 0, 0), shin__L=(10, 0, 0), thigh__R=(-34, 0, 0), shin__R=(92, 0, 0), upper_arm__L=(6, -10, 0), lower_arm__L=(-70, 0, 0), upper_arm__R=(-14, 10, 0), lower_arm__R=(-74, 0, 0), chest=(16, 0, 0), spine=(6, 0, 0), hips_loc=(0, -0.03, 0.05)),
+        8: _pose(thigh__L=(38, 0, 0), shin__L=(62, 0, 0), thigh__R=(-52, 0, 0), shin__R=(18, 0, 0), foot__R=(18, 0, 0), upper_arm__L=(-46, -10, 0), lower_arm__L=(-74, 0, 0), upper_arm__R=(34, 10, 0), lower_arm__R=(-70, 0, 0), chest=(16, 0, -10), spine=(6, 0, 0), hips_loc=(0, -0.03, -0.05)),
+        12: _pose(thigh__L=(-34, 0, 0), shin__L=(92, 0, 0), thigh__R=(-10, 0, 0), shin__R=(10, 0, 0), upper_arm__L=(-14, -10, 0), lower_arm__L=(-74, 0, 0), upper_arm__R=(6, 10, 0), lower_arm__R=(-70, 0, 0), chest=(16, 0, 0), spine=(6, 0, 0), hips_loc=(0, -0.03, 0.05)),
+        16: _pose(thigh__L=(-52, 0, 0), shin__L=(18, 0, 0), foot__L=(18, 0, 0), thigh__R=(38, 0, 0), shin__R=(62, 0, 0), upper_arm__L=(34, -10, 0), lower_arm__L=(-70, 0, 0), upper_arm__R=(-46, 10, 0), lower_arm__R=(-74, 0, 0), chest=(16, 0, 10), spine=(6, 0, 0), hips_loc=(0, -0.03, -0.05)),
+    }),
+    "Grapple": (True, {
+        0: _pose(root=(14, 0, 0), upper_arm__L=(-176, -6, 0), lower_arm__L=(-12, 0, 0), upper_arm__R=(-30, 26, 0), lower_arm__R=(-40, 0, 0), thigh__L=(-62, -6, 0), shin__L=(84, 0, 0), thigh__R=(-20, 6, 0), shin__R=(46, 0, 0), chest=(-4, 0, 0), head=(6, 0, 0)),
+        12: _pose(root=(-14, 0, 0), upper_arm__L=(-176, -6, 0), lower_arm__L=(-12, 0, 0), upper_arm__R=(-14, 34, 0), lower_arm__R=(-26, 0, 0), thigh__L=(-20, -6, 0), shin__L=(28, 0, 0), thigh__R=(14, 6, 0), shin__R=(40, 0, 0), chest=(6, 0, 0), head=(-4, 0, 0)),
+        24: _pose(root=(14, 0, 0), upper_arm__L=(-176, -6, 0), lower_arm__L=(-12, 0, 0), upper_arm__R=(-30, 26, 0), lower_arm__R=(-40, 0, 0), thigh__L=(-62, -6, 0), shin__L=(84, 0, 0), thigh__R=(-20, 6, 0), shin__R=(46, 0, 0), chest=(-4, 0, 0), head=(6, 0, 0)),
+    }),
+    "Talk": (True, {
+        0: _pose(upper_arm__R=(-38, 10, 0), lower_arm__R=(-82, 0, 0), chest=(2, 0, 0)),
+        14: _pose(upper_arm__R=(-58, 22, 0), lower_arm__R=(-58, 0, 0), chest=(4, 0, -7), head=(5, 0, 6)),
+        30: _pose(upper_arm__R=(-34, 10, 0), lower_arm__R=(-92, 0, 0), upper_arm__L=(-30, -16, 0), lower_arm__L=(-58, 0, 0), chest=(0, 0, 5), head=(-4, 0, -5)),
+        48: _pose(upper_arm__R=(-38, 10, 0), lower_arm__R=(-82, 0, 0), chest=(2, 0, 0)),
+    }),
+    "Work": (True, {
+        0: _pose(thigh__L=(-46, -5, 0), shin__L=(58, 0, 0), foot__L=(-12, 0, 0), thigh__R=(-8, 7, 0), shin__R=(38, 0, 0), foot__R=(-30, 0, 0), spine=(14, 0, 0), chest=(22, 0, 0), head=(-10, 0, 0), upper_arm__L=(-44, 6, 0), lower_arm__L=(-44, 0, 0), upper_arm__R=(-44, -6, 0), lower_arm__R=(-44, 0, 0), hips_loc=(0, 0, -0.2)),
+        12: _pose(thigh__L=(-46, -5, 0), shin__L=(58, 0, 0), foot__L=(-12, 0, 0), thigh__R=(-8, 7, 0), shin__R=(38, 0, 0), foot__R=(-30, 0, 0), spine=(14, 0, 0), chest=(25, 0, 4), head=(-12, 0, -6), upper_arm__L=(-44, 6, 0), lower_arm__L=(-54, 0, 0), upper_arm__R=(-58, -6, 0), lower_arm__R=(-26, 0, 0), hips_loc=(0, 0, -0.2)),
+        24: _pose(thigh__L=(-46, -5, 0), shin__L=(58, 0, 0), foot__L=(-12, 0, 0), thigh__R=(-8, 7, 0), shin__R=(38, 0, 0), foot__R=(-30, 0, 0), spine=(14, 0, 0), chest=(22, 0, 0), head=(-10, 0, 0), upper_arm__L=(-44, 6, 0), lower_arm__L=(-44, 0, 0), upper_arm__R=(-44, -6, 0), lower_arm__R=(-44, 0, 0), hips_loc=(0, 0, -0.2)),
+    }),
+    "Surrender": (False, {
+        0: _pose(),
+        14: _pose(thigh__L=(-82, -5, 0), shin__L=(84, 0, 0), foot__L=(-6, 0, 0), thigh__R=(6, 6, 0), shin__R=(96, 0, 0), foot__R=(-24, 0, 0), upper_arm__L=(-120, -28, 0), lower_arm__L=(-70, 0, 0), upper_arm__R=(-120, 28, 0), lower_arm__R=(-70, 0, 0), chest=(8, 0, 0), head=(16, 0, 0), hips_loc=(0, 0.04, -0.34)),
+        30: _pose(thigh__L=(-82, -5, 0), shin__L=(84, 0, 0), foot__L=(-6, 0, 0), thigh__R=(6, 6, 0), shin__R=(96, 0, 0), foot__R=(-24, 0, 0), upper_arm__L=(-120, -28, 0), lower_arm__L=(-70, 0, 0), upper_arm__R=(-120, 28, 0), lower_arm__R=(-70, 0, 0), chest=(10, 0, 0), head=(20, 0, 0), hips_loc=(0, 0.04, -0.34)),
+    }),
+    "Taunt": (False, {
+        0: _pose(),
+        8: _pose(upper_arm__R=(-92, -4, 0), lower_arm__R=(-4, 0, 0), chest=(-8, 0, 16), head=(-12, 0, -14), upper_arm__L=(-30, -30, 0), lower_arm__L=(-110, 0, 0)),
+        16: _pose(upper_arm__R=(-104, -4, 0), lower_arm__R=(-4, 0, 0), chest=(-10, 0, 18), head=(-14, 0, -16), upper_arm__L=(-30, -30, 0), lower_arm__L=(-110, 0, 0), hips_loc=(0, 0.03, -0.01)),
+        28: _pose(upper_arm__R=(-92, -4, 0), lower_arm__R=(-4, 0, 0), chest=(-8, 0, 16), head=(-12, 0, -14), upper_arm__L=(-30, -30, 0), lower_arm__L=(-110, 0, 0)),
+        40: _pose(),
     }),
 }
 

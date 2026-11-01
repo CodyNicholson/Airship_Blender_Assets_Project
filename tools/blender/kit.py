@@ -224,12 +224,15 @@ class MeshBuilder:
 
 
 def palette_material(hq=True, faction=palette.DEFAULT_FACTION):
-    name = f"M_Palette_{'HQ' if hq else 'LQ'}"
+    # Each faction embeds its own atlas; the base kit's Crimson keeps its original material name.
+    tag = "" if faction == palette.DEFAULT_FACTION else f"{faction}_"
+    name = f"M_Palette_{tag}{'HQ' if hq else 'LQ'}"
     existing = bpy.data.materials.get(name)
     if existing:
         return existing
     path = palette.atlas_path(faction, hq)
-    if not path.exists():
+    glow_path = palette.emissive_path(hq)
+    if not path.exists() or not glow_path.exists():
         palette.generate_all()
     material = bpy.data.materials.new(name)
     material.use_nodes = True
@@ -240,6 +243,11 @@ def palette_material(hq=True, faction=palette.DEFAULT_FACTION):
     tex = nodes.new("ShaderNodeTexImage")
     tex.image = bpy.data.images.load(str(path), check_existing=True)
     material.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    # Lets lanterns, lift-stone and lightning read as light sources with no real-time lights.
+    glow = nodes.new("ShaderNodeTexImage")
+    glow.image = bpy.data.images.load(str(glow_path), check_existing=True)
+    material.node_tree.links.new(glow.outputs["Color"], bsdf.inputs["Emission Color"])
+    bsdf.inputs["Emission Strength"].default_value = 1.0
     bsdf.inputs["Roughness"].default_value = 0.85
     bsdf.inputs["Metallic"].default_value = 0.0
     return material

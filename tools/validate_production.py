@@ -8,6 +8,7 @@ what the game code will assume. Exits non-zero on any failure.
     python3 tools/validate_production.py [directory]
 """
 import ast
+import fnmatch
 import json
 import math
 import struct
@@ -76,7 +77,8 @@ def _check_socket_bones(doc, errors):
         return _q_mul(global_rotation(parents[i]), local) if i in parents else local
 
     # An item's length is its local +Y, its top is local +X. Values are in glTF space.
-    expected = {"weapon.R": ((0, 0, 1), (0, 1, 0)), "gun.R": ((0, -1, 0), (0, 0, 1))}
+    weapon, gun = ((0, 0, 1), (0, 1, 0)), ((0, -1, 0), (0, 0, 1))
+    expected = {"weapon.R": weapon, "gun.R": gun, "weapon.L": weapon, "gun.L": gun}
     for bone, (length_axis, top_axis) in expected.items():
         if bone not in index:
             errors.append(f"missing socket bone {bone}")
@@ -179,6 +181,64 @@ def check_file(path, entry, budget, clips):
     return tris, bones, path.stat().st_size, errors
 
 
+def png_header(path):
+    """(width, height, colour type) from a PNG's IHDR. Type 2 is RGB, type 6 is RGBA."""
+    with path.open("rb") as handle:
+        header = handle.read(33)
+    if header[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("not a PNG")
+    width, height = struct.unpack(">II", header[16:24])
+    return width, height, header[25]
+
+
+def check_images(manifest, directory):
+    """Effects, skies and icons: every listed file exists, is the declared size and has the channels
+    it needs. Also flags image files nothing in the manifest refers to."""
+    failures = []
+    expected = set()
+
+    def check(file, width, height, colour_type):
+        expected.add(file)
+        path = directory / file
+        if not path.exists():
+            failures.append(f"{file}: missing")
+            return
+        got = png_header(path)
+        if got[:2] != (width, height):
+            failures.append(f"{file}: {got[0]}x{got[1]}, expected {width}x{height}")
+        if got[2] != colour_type:
+            failures.append(f"{file}: PNG colour type {got[2]}, expected {colour_type}")
+
+    for effect in manifest.get("effects", {}).values():
+        for v in effect["variants"].values():
+            check(v["file"], v["size"], v["size"], 6)
+    for sky in manifest.get("skies", {}).values():
+        for v in sky["variants"].values():
+            check(v["file"], v["width"], v["height"], 2)
+    for icon in manifest.get("icons", {}).values():
+        for v in icon["variants"].values():
+            check(v["file"], v["size"], v["size"], 6)
+    all_sockets = {s for asset in manifest["assets"].values() for sockets in asset["sockets"].values() for s in sockets}
+    runtime_anchors = {"hit_point", "camera"}
+    for name, preset in manifest.get("effect_presets", {}).items():
+        for pattern in preset["sockets"]:
+            if pattern not in runtime_anchors and not fnmatch.filter(all_sockets, pattern):
+                failures.append(f"preset {name}: socket pattern {pattern} matches nothing")
+        if preset["flipbook"] not in manifest["effects"]:
+            failures.append(f"preset {name}: unknown flipbook {preset['flipbook']}")
+        mesh = preset.get("fallback_mesh")
+        if mesh and mesh not in manifest["assets"]:
+            failures.append(f"preset {name}: unknown fallback mesh {mesh}")
+        follow = preset.get("follow_up")
+        if follow and follow not in manifest["effect_presets"]:
+            failures.append(f"preset {name}: unknown follow_up {follow}")
+    for pattern in ("T_VFX_*", "T_Sky_*", "T_Icon_*"):
+        for path in directory.glob(pattern):
+            if path.name not in expected:
+                failures.append(f"{path.name}: not in the manifest")
+    return failures, len(expected)
+
+
 def main():
     directory = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "assets/models/production"
     budgets = load_budgets()
@@ -210,6 +270,9 @@ def main():
         failures += [f"{name}: {error}" for error in errors]
 
     print(f"\nTotal: HQ {totals['HQ'] / 1048576:.2f} MB, LQ {totals['LQ'] / 1048576:.2f} MB, {len(on_disk)} files")
+    image_failures, image_count = check_images(manifest, ROOT / "assets/textures/production")
+    failures += image_failures
+    print(f"Images: {image_count} effects, skies and icons checked")
     if failures:
         print(f"\nFAILED ({len(failures)}):")
         for failure in failures:
