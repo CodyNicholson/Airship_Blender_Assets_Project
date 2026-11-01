@@ -41,9 +41,19 @@ embed the atlas that suits them (`default_faction` in the manifest), so they loo
 | `SK_ArmadaSoldier` | `Gilded` or `Warden` | Armada crews, or Tartarus prison guards |
 | `SK_PirateBrute`, `SK_PirateDeckhand`, `SK_PirateGunner` | `Scrap` or `Syndicate` | Krag's bruisers, Syndicate crews and bodyguards |
 
-**Portraits.** `textures/production/T_Portrait_<Name>_<HQ|LQ>.png` are the Aether-Comms busts, 512 px and
-256 px, rendered from the real models by `tools/blender/portraits.py`. Crew face right and rivals face
-left, so a comms exchange plays as a stand-off.
+**Portraits.** `textures/production/T_Portrait_<Name>_<HQ|LQ>.png` are the dialogue and Aether-Comms
+portraits, 512 px and 256 px. They are illustrated busts, not renders of the game models: each character has
+their own sculpted face, painted features, pose and background motif, drawn by `tools/blender/portraits.py`
+from the designs in `portrait_cast.py`. The busts are never exported, so they have no triangle budget. Crew
+face right and rivals face left, so a comms exchange plays as a stand-off. Cassian faces left as a pirate
+too, because he looks towards the crew he commands from the other side of the frame.
+
+| Group | Portraits |
+| :--- | :--- |
+| Crew | `Vane`, `Rook`, `Lyra`, `Sable`, `Thorne`, `Morrow`, `Brill`, `Hask`, `Wren`, `Ivo` |
+| Old crew and allies | `CassianPirate`, `Tobin`, `Mirren`, `Odessa`, `CaptainRia`, `Runner` |
+| Rivals | `Krag`, `Gorse`, `Scrapper`, `Ashgrave`, `Thrace`, `Vex`, `Vesper`, `Malakor`, `CassianAdmiral` |
+| Armada | `ArmadaOfficer`, `ArmadaSoldier`, `RoyalGuard` |
 
 **Hub stations.** `SM_Env_QuarterdeckHub` has a `station_<name>` socket for each tappable crew member.
 Stand them there on the `Work` clip, with `SM_Prop_SkyChartTable` at `station_lyra_table`. Recolour the
@@ -210,8 +220,8 @@ Budgets live in `BUDGET_TIERS` in the gate script.
     python3 tools/blender/palette.py          # rebuild palette and emissive atlases
     python3 tools/validate_production.py      # check every .glb and image against budgets and the manifest
 
-Inside Blender, `catalog.write_manifest()` rebuilds `asset_manifest.json`, `portraits.render_all(scratch_dir)`
-re-renders the portraits, and `fx_flipbooks.generate_all()`, `fx_skies.generate_all()` and
+Inside Blender, `catalog.write_manifest()` rebuilds `asset_manifest.json`, `portraits.render_all()` re-renders the
+portraits in a temporary scene (pass a list of names for just those), and `fx_flipbooks.generate_all()`, `fx_skies.generate_all()` and
 `fx_icons.generate_all(scratch_dir)` rebuild the effects, skies and icons. Their contents are listed in
 `fx_catalog.py`. Art direction for each campaign asset is in
 the docstrings of `story_ships.py`, `story_characters.py`, `story_props.py` and `story_env.py`.

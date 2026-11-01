@@ -1,66 +1,29 @@
-"""Aether-Comms portraits: comic-style character busts rendered from the real models.
+"""Dialogue portraits: one illustrated bust per speaking character, written as T_Portrait_<Name>_<HQ|LQ>.png.
 
-The design delivers most of its drama through portraits at the top of the screen, so these are
-rendered from the same meshes the player fights, in a single consistent style: faction-coloured
-halftone burst, heavy outline, thick panel border.
+The designs live in portrait_cast.py and the drawing tools in portrait_kit.py. These are 2D images, so
+nothing here goes through the mesh budget gate, and the busts are thrown away after each render.
 
-    portraits.render_all()   # inside Blender; writes T_Portrait_<Name>_<HQ|LQ>.png
+    portraits.render_all()              # inside Blender
+    portraits.render_all(["Lyra"])      # just one
 
-Not a mesh: nothing here goes through the budget gate. Run it on an otherwise disposable scene.
+Everything is built in a temporary scene, so whatever is open in Blender is left alone.
+_setup_render and restore_scene also serve the icon renderer in fx_icons.py.
 """
+import tempfile
 from pathlib import Path
 
 import bpy
 import numpy as np
-from mathutils import Vector
 
-import catalog
-import kit
 import palette
-import story_characters
+import portrait_cast
+import portrait_kit as kit
 
 HQ_SIZE = 512
 LQ_SIZE = 256
-RENDER_SIZE = 1024  # Supersampled, then reduced, for clean outlines on any phone.
-
-# Burst colours (sRGB) follow allegiance, so a bark's source reads before the name does.
-ALLEGIANCE = {
-    "Vane": ((196, 52, 44), (240, 170, 70)),
-    "CassianPirate": ((150, 34, 38), (236, 196, 110)),
-    "CassianAdmiral": ((30, 46, 96), (226, 186, 90)),
-    "Morrow": ((48, 86, 66), (214, 200, 150)),
-    "Rook": ((44, 62, 104), (214, 150, 66)),
-    "Lyra": ((46, 128, 158), (206, 236, 240)),
-    "Sable": ((58, 28, 64), (170, 60, 90)),
-    "Thorne": ((36, 110, 120), (130, 226, 226)),
-    "Krag": ((110, 56, 30), (190, 150, 60)),
-    "Vex": ((70, 30, 110), (196, 120, 250)),
-    "Vesper": ((22, 92, 96), (70, 206, 196)),
-    "Malakor": ((40, 40, 50), (240, 110, 40)),
-    "ArmadaSoldier": ((30, 46, 96), (160, 176, 210)),
-    "ArmadaOfficer": ((30, 46, 96), (226, 186, 90)),
-    "RoyalGuard": ((120, 26, 40), (226, 186, 90)),
-}
-# Tall hats and helmets need the frame to back off, or they crop against the panel.
-HEADROOM = {"CassianAdmiral": 0.32, "ArmadaSoldier": 0.34, "Malakor": 0.24, "RoyalGuard": 0.26, "Vane": 0.1, "Krag": 0.12}
-# Portrait side: rivals look left at the player's crew, who look right. Comms dialogue reads as a duel.
-RIVALS = {"CassianAdmiral", "Morrow", "Krag", "Vex", "Vesper", "Malakor", "ArmadaSoldier", "ArmadaOfficer", "RoyalGuard"}
-
-
-def _camera_side(name):
-    """Camera X sign. The model faces -Y, so a camera at -X shows it looking towards screen right."""
-    return 1 if name in RIVALS else -1
-
-
-def _build_scene(name):
-    kit.clear_scene()
-    asset = f"SK_{name}_HQ"
-    base = f"SK_{name}"
-    mb, _, _ = catalog.build(asset)
-    faction = catalog.DEFAULT_FACTIONS.get(base, palette.DEFAULT_FACTION)
-    obj = mb.to_object(asset, kit.palette_material(True, faction))
-    look_at = mb.sockets["portrait_look_at"]
-    return obj, look_at
+RENDER_SIZE = 1536  # Three times HQ, for clean ink and halftone at phone size.
+FRAME_INK = 0.02
+ZOOM = 0.88  # Tight on the face: at 108 px on the comms bar, the face is all a player has.
 
 
 def _setup_render(path, size):
@@ -87,89 +50,6 @@ def _setup_render(path, size):
     scene.view_settings.view_transform = "Standard"
 
 
-def _camera(name, look_at):
-    side = _camera_side(name)
-    data = bpy.data.cameras.new("PortraitCam")
-    data.lens = 85
-    cam = bpy.data.objects.new("PortraitCam", data)
-    bpy.context.scene.collection.objects.link(cam)
-    scale = story_characters.CAST[name].scale
-    target = look_at + Vector((0, 0, HEADROOM.get(name, 0.0) * 0.5 - 0.1 * scale))
-    distance = (2.55 + HEADROOM.get(name, 0.0) * 1.1) * scale * (1.0 + 0.1 * (story_characters.CAST[name].width - 1.0))
-    direction = Vector((side * 0.42, -1.0, 0.04)).normalized()
-    cam.location = target + direction * distance
-    cam.rotation_euler = (target - cam.location).to_track_quat("-Z", "Y").to_euler()
-    bpy.context.scene.camera = cam
-    return cam
-
-
-def _burst(size, dark, light, side):
-    """Radial speed-lines plus a halftone falloff, in plain arrays so it stays dependency free."""
-    grid = np.linspace(0, 1, size)
-    xs, ys = np.meshgrid(grid, grid)
-    cx, cy = 0.5 - side * 0.08, 0.42
-    dx, dy = xs - cx, ys - cy
-    angle = np.arctan2(dy, dx)
-    radius = np.hypot(dx, dy)
-    rays = (np.sin(angle * 18 + np.sin(angle * 5) * 1.2) > 0.25).astype(float)
-    # Rays fade before the panel edge and stay well under the light colour, so the face leads.
-    mix = np.clip(rays * (0.72 - radius * 1.05), 0, 0.6)
-    # Halftone dots grow towards the panel edge.
-    cycles = 54.0
-    dots = (np.sin(xs * cycles * 2 * np.pi) * np.sin(ys * cycles * 2 * np.pi)) > (1.05 - radius * 1.5)
-    out = np.zeros((size, size, 3))
-    for i in range(3):
-        channel = dark[i] + (light[i] - dark[i]) * mix
-        out[:, :, i] = np.where(dots, channel * 0.8, channel)
-    return out / 255.0
-
-
-def _downsample(image, factor):
-    h, w = image.shape[:2]
-    return image.reshape(h // factor, factor, w // factor, factor, image.shape[2]).mean(axis=(1, 3))
-
-
-def _compose(path, name, sizes):
-    img = bpy.data.images.load(str(path))
-    size = img.size[0]
-    rgba = np.array(img.pixels[:], dtype=np.float32).reshape(size, size, 4)[::-1]
-    bpy.data.images.remove(img)
-    dark, light = ALLEGIANCE[name]
-    side = _camera_side(name)
-    back = _burst(size, dark, light, side)
-    alpha = rgba[:, :, 3:4]
-    # Workbench outlines only appear against other geometry, so draw the outer ink from the alpha mask.
-    solid = (rgba[:, :, 3] > 0.5)
-    ink = solid.copy()
-    radius = max(2, size // 120)
-    for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)):
-        ink |= np.roll(np.roll(solid, dy * radius, 0), dx * radius, 1)
-    out = back.copy()
-    out[ink] = (0.03, 0.02, 0.04)
-    out = rgba[:, :, :3] * alpha + out * (1 - alpha)
-    # Thick comic panel frame.
-    frame = max(6, size // 64)
-    out[:frame, :] = out[-frame:, :] = 0.02
-    out[:, :frame] = out[:, -frame:] = 0.02
-    written = []
-    for quality, target in sizes.items():
-        final = _downsample(out, size // target)
-        data = (np.clip(final, 0, 1) * 255 + 0.5).astype(np.uint8)
-        dest = palette.TEXTURE_DIR / f"T_Portrait_{name}_{quality}.png"
-        palette._write_png(dest, target, data.tobytes())
-        written.append(dest)
-    return written
-
-
-def render_one(name, scratch):
-    obj, look_at = _build_scene(name)
-    _camera(name, look_at)
-    path = Path(scratch) / f"{name}.png"
-    _setup_render(path, RENDER_SIZE)
-    bpy.ops.render.render(write_still=True)
-    return _compose(path, name, {"HQ": HQ_SIZE, "LQ": LQ_SIZE})
-
-
 def restore_scene(engine, transparent):
     """Puts back what _setup_render changed, so viewport material previews keep working afterwards."""
     bpy.context.scene.render.engine = engine
@@ -177,12 +57,48 @@ def restore_scene(engine, transparent):
     bpy.context.scene.camera = None
 
 
-def render_all(scratch):
-    scene = bpy.context.scene
-    engine, transparent = scene.render.engine, scene.render.film_transparent
+def paint(name, scratch, size=RENDER_SIZE):
+    """Renders a character over their backdrop, framed, as a float RGB array."""
+    spec = portrait_cast.CAST[name]
+    studio = kit.Studio(size)
+    try:
+        side = spec["key_side"]
+        studio.light((side * 0.42, -0.82, 0.62))
+        span = spec["span"]
+        target = spec["target"]
+        # Zooming in keeps the head's position by moving up a little, since the crop mostly takes the chest.
+        studio.camera(target=(0, 0, target[2] + span * (1 - ZOOM) * 0.3), span=span * ZOOM)
+        inks = kit.Inks(spec["shadow"], spec["rim"], (-side * 0.85, 0.25, 0.25))
+        portrait = kit.Portrait(studio.scene.collection, inks, spec.get("shape", {}), (0.8, 0.6, 0.45),
+                                turn=spec["turn"], tilt=spec["tilt"], pitch=spec["pitch"], body_turn=spec["body_turn"])
+        spec["build"](portrait)
+        figure = studio.render(Path(scratch) / f"{name}.png")
+    finally:
+        studio.close()
+    back = kit.backdrop(size, spec["dark"], spec["light"], spec.get("motif"), sum(map(ord, name)))
+    alpha = figure[..., 3:4]
+    out = figure[..., :3] * alpha + back * (1 - alpha)
+    frame = max(6, size // 64)
+    out[:frame, :] = out[-frame:, :] = FRAME_INK
+    out[:, :frame] = out[:, -frame:] = FRAME_INK
+    return out
+
+
+def _downsample(image, factor):
+    h, w = image.shape[:2]
+    return image.reshape(h // factor, factor, w // factor, factor, image.shape[2]).mean(axis=(1, 3))
+
+
+def render_all(names=None, scratch=None):
+    """Writes HQ and LQ for each name, defaulting to the whole cast. Returns the paths written."""
     written = []
-    for name in story_characters.CAST:
-        written += render_one(name, scratch)
-    kit.clear_scene()
-    restore_scene(engine, transparent)
-    return [str(p) for p in written]
+    with tempfile.TemporaryDirectory() as temp:
+        for name in names or portrait_cast.CAST:
+            image = paint(name, scratch or temp)
+            for quality, target in (("HQ", HQ_SIZE), ("LQ", LQ_SIZE)):
+                final = _downsample(image, RENDER_SIZE // target)
+                data = (np.clip(final, 0, 1) * 255 + 0.5).astype(np.uint8)
+                dest = palette.TEXTURE_DIR / f"T_Portrait_{name}_{quality}.png"
+                palette._write_png(dest, target, data.tobytes())
+                written.append(str(dest))
+    return written
