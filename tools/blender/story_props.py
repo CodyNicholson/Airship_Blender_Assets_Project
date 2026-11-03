@@ -623,6 +623,37 @@ def big_wrench(mb, hq):
     mb.socket("trail_tip", (0.1, 0, 0.76))
 
 
+def shadow_staff(mb, hq):
+    """Dr. Thorne's staff: black wood, a purple wrap at the grip, and a green stone held in a claw."""
+    h = 1.72
+    sides = _q(hq, 6, 4)
+    mb.tube((0, 0, 0), (0, 0, h), 0.02, 0.028, sides=sides, color="cloth_black")
+    mb.tube((0, 0, 1.08), (0, 0, 1.32), 0.03, sides=sides, color="faction_a")
+    for a in range(_q(hq, 3, 2)):
+        angle = a * 6.283 / _q(hq, 3, 2)
+        x, y = 0.075 * math.cos(angle), 0.075 * math.sin(angle)
+        mb.tube((0, 0, h - 0.04), (x, y, h + 0.1), 0.016, 0.008, sides=4, color="cloth_black")
+    mb.sphere((0, 0, h + 0.08), 0.062, _q(hq, 8, 4), _q(hq, 4, 3), "faction_b", smooth=hq)
+    # Held high on the shaft, so the stone stays clear of his face in the arm's rest pose.
+    mb.socket("grip", (0, 0, 1.2))
+    mb.socket("trail_tip", (0, 0, h + 0.08))
+
+
+def driftwood_lyre(mb, hq):
+    """Lyra's lyre: two bleached driftwood arms, a bone crossbar and horn tips, and gold strings."""
+    sides = _q(hq, 6, 4)
+    mb.tube((0, 0, -0.1), (0, 0, 0.06), 0.02, sides=sides, color="wood_mid")  # A short handle, to hold it by.
+    mb.box((0, 0, 0.12), (0.26, 0.08, 0.16), "wood_light")
+    for sign in (1, -1):
+        mb.path([(sign * 0.1, 0, 0.16), (sign * 0.18, 0, 0.32), (sign * 0.11, 0, 0.5)], [0.03, 0.026, 0.02], sides, "wood_light")
+        mb.tube((sign * 0.11, 0, 0.5), (sign * 0.16, 0, 0.6), 0.018, 0.003, sides=sides, color="enamel")
+    mb.tube((-0.14, 0, 0.47), (0.14, 0, 0.47), 0.014, sides=sides, color="enamel")
+    for x in (-0.06, -0.02, 0.02, 0.06) if hq else (-0.04, 0.04):
+        mb.tube((x, -0.01, 0.2), (x, -0.01, 0.47), 0.003, sides=3, color="gold")
+    mb.socket("grip", (0, 0, -0.03))
+    mb.socket("trail_tip", (0, 0, 0.6))
+
+
 def armada_halberd(mb, hq):
     """Royal Guard polearm. Long enough to read on-screen behind the group in the upper-deck brawl."""
     h = 1.95

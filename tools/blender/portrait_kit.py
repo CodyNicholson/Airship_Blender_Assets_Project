@@ -810,9 +810,43 @@ def motif(kind, x, y, rng):
             y0 = rng.uniform(0.02, 0.98)
             wave = y0 + 0.035 * np.sin(x * 7 + k) + (x - 0.5) * -0.16
             m |= (np.abs(y - wave) < 0.006 + 0.005 * np.sin(x * 3 + k)) & (np.sin(x * 2.2 + k * 1.9) > -0.35)
+    elif kind == "cliffwind":
+        # A cliff falling away to one side above a far bay, under curling gusts.
+        cliff = 0.72 - 0.34 * np.clip(x - 0.32, 0, 1) ** 0.6 + 0.012 * np.sin(x * 34) + 0.02 * np.sin(x * 9)
+        m |= (y > cliff) & (x < 0.72)
+        m |= (np.abs(y - 0.78) < 0.004) & (x >= 0.6)
+        for cx, cy, r in ((0.2, 0.2, 0.09), (0.82, 0.16, 0.07), (0.86, 0.48, 0.08)):
+            a = np.arctan2(y - cy, x - cx)
+            d = np.hypot(x - cx, y - cy)
+            m |= np.abs(d - r * (0.45 + (a + np.pi) / (2 * np.pi) * 0.75)) < 0.006
+        for k in range(5):
+            y0 = rng.uniform(0.05, 0.6)
+            m |= (np.abs(y - (y0 + 0.03 * np.sin(x * 6 + k))) < 0.004) & (np.sin(x * 2.4 + k * 2.1) > 0.1)
+    elif kind == "moonharbor":
+        # A full moon behind the rigging, with mist over the harbor and its few lights below.
+        m |= np.hypot(x - 0.2, y - 0.2) < 0.13
+        m |= np.abs(x - 0.84 - (y - 0.5) * 0.05) < 0.012  # The mast.
+        for k in range(6):
+            x0 = 0.84 - 0.14 * k
+            m |= np.abs((y - 0.02) - (x - x0) * 1.5) < 0.0035  # Shrouds.
+        for k in range(7):
+            yy = 0.14 + k * 0.075
+            m |= (np.abs(y - yy) < 0.003) & (x > 0.56 + 0.3 * (0.5 - yy) * 0.5) & (x < 0.84)  # Ratlines.
+        for k in range(3):
+            m |= (np.abs(y - (0.66 + k * 0.045 + 0.012 * np.sin(x * 9 + k))) < 0.012) & (np.sin(x * 4 + k * 2) > -0.5)
+        for k in range(12):
+            m |= np.hypot(x - rng.uniform(0.02, 0.98), y - rng.uniform(0.83, 0.93)) < 0.006
     elif kind == "isobars":
         field = np.sin(x * 5 + 1.2 * np.sin(y * 4)) + np.cos(y * 6 + 1.4 * np.sin(x * 3))
         m = np.abs((field * 3.4) % 1 - 0.5) < 0.05
+    elif kind == "sigils":
+        # Faint rings of runes, like something drawn on a cell floor.
+        for cx, cy, r in ((0.16, 0.2, 0.17), (0.86, 0.26, 0.2), (0.08, 0.78, 0.15), (0.92, 0.82, 0.16)):
+            _stamp_ring(m, x, y, cx, cy, r, 0.008)
+            _stamp_ring(m, x, y, cx, cy, r * 0.74, 0.005)
+            a = np.arctan2(y - cy, x - cx)
+            d = np.hypot(x - cx, y - cy)
+            m |= (np.abs(d - r * 0.87) < r * 0.08) & (np.sin(a * 12) > 0.75)
     elif kind == "gears":
         for cx, cy, r, teeth in ((0.1, 0.16, 0.2, 12), (0.92, 0.3, 0.17, 10), (0.08, 0.86, 0.18, 11), (0.95, 0.9, 0.24, 14), (0.3, -0.02, 0.1, 8)):
             d = np.hypot(x - cx, y - cy)

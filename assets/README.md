@@ -38,6 +38,9 @@ embed the atlas that suits them (`default_faction` in the manifest), so they loo
 | `SM_Ship_RustWing` | `Scrap` | *The Rust-Wing* after the theft |
 | `SM_Ship_SovereignGale` | `Crimson`, then `Gilded`, then `Crimson` | Your flagship, Cassian's Sky-Killer, and the ship you reclaim |
 | `SM_Ship_Mirage` | `Syndicate` and `Obsidian` | Vex's and Vesper's clippers |
+| `SK_Thorne`, `SM_Prop_ShadowStaff` | `Sorcerer` | Dr. Thorne: purple clothes and green eyes need this atlas |
+| `SM_Prop_DriftwoodLyre` | Any | Lyra's lyre, for `weapon.L` or `weapon.R`, held by its `grip` |
+| `SK_Cinder` | Any | Rook's robot hound, on its own four-legged skeleton with `Idle`, `Walk` and `Fire` clips. A `muzzle` bone follows the barrel's tip |
 | `SK_ArmadaSoldier` | `Gilded` or `Warden` | Armada crews, or Tartarus prison guards |
 | `SK_PirateBrute`, `SK_PirateDeckhand`, `SK_PirateGunner` | `Scrap` or `Syndicate` | Krag's bruisers, Syndicate crews and bodyguards |
 
@@ -196,7 +199,7 @@ plus hips translation, so it plays in place and can be shared between every char
 `Idle`, `Walk`, `AttackMelee`, `AttackRanged`, `Hit`, `Block`, `Death`, `Victory`, `Run`, `Grapple`
 (the swing between ships), `Talk`, `Work` (hub tasks), `Surrender` (the Davy Jones' Choice), `Taunt`
 
-**Factions.** `textures/production/T_Palette_<Crimson|Azure|Emerald|Obsidian|Gilded|Scrap|Syndicate|Warden>_<HQ|LQ>.png` differ only
+**Factions.** `textures/production/T_Palette_<Crimson|Azure|Emerald|Obsidian|Gilded|Scrap|Syndicate|Warden|Sorcerer>_<HQ|LQ>.png` differ only
 in their accent colours. Swap the material's base colour texture to recolour any model, for example
 to tell player crews apart. The same swap can share a single texture across all models: import the
 atlas once, point every material at it, and discard the copy embedded in each `.glb`. Compress it as
