@@ -69,7 +69,7 @@ def paint(name, scratch, size=RENDER_SIZE):
         # Zooming in keeps the head's position by moving up a little, since the crop mostly takes the chest.
         studio.camera(target=(0, 0, target[2] + span * (1 - ZOOM) * 0.3), span=span * ZOOM)
         inks = kit.Inks(spec["shadow"], spec["rim"], (-side * 0.85, 0.25, 0.25))
-        portrait = kit.Portrait(studio.scene.collection, inks, spec.get("shape", {}), (0.8, 0.6, 0.45),
+        portrait = kit.Portrait(studio.scene.collection, inks, spec.get("shape", {}), spec.get("skin", (0.8, 0.6, 0.45)),
                                 turn=spec["turn"], tilt=spec["tilt"], pitch=spec["pitch"], body_turn=spec["body_turn"])
         spec["build"](portrait)
         figure = studio.render(Path(scratch) / f"{name}.png")

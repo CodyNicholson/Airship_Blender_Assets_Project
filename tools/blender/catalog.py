@@ -9,6 +9,7 @@ import json
 import bpy
 
 import characters
+import cinder
 import fx_catalog
 import kit
 import palette
@@ -110,6 +111,8 @@ STATIC = {
     "SM_Prop_SableDagger": (_PROP, story_props.sable_dagger),
     "SM_Prop_Spyglass": (_PROP, story_props.spyglass),
     "SM_Prop_BigWrench": (_PROP, story_props.big_wrench),
+    "SM_Prop_ShadowStaff": (_PROP, story_props.shadow_staff),
+    "SM_Prop_DriftwoodLyre": (_PROP, story_props.driftwood_lyre),
     "SM_Prop_ArmadaHalberd": (_PROP, story_props.armada_halberd),
     "SM_Prop_ArmadaMusket": (_PROP, story_props.armada_musket),
     "SM_Env_SkyVault": (_ENV, story_env.sky_vault),
@@ -145,6 +148,9 @@ SKELETAL.update(STORY_CAST)
 
 # The atlas each campaign asset embeds, so it looks right on import. The game can still swap at runtime.
 DEFAULT_FACTIONS = {
+    "SK_Morrow": "Emerald",
+    "SK_Thorne": "Sorcerer",
+    "SM_Prop_ShadowStaff": "Sorcerer",
     "SM_Ship_RustWing": "Scrap",
     "SM_Ship_IronMaw": "Scrap",
     "SM_Ship_ScrapRaider": "Scrap",
@@ -179,7 +185,7 @@ DEFAULT_FACTIONS = {
 }
 
 
-HELD_MELEE = ["SM_Prop_Cutlass", "SM_Prop_BoardingAxe", "SM_Prop_HookSabre", "SM_Prop_RoyalSabre", "SM_Prop_AnchorHammer", "SM_Prop_TwinScimitar", "SM_Prop_WardenFlail", "SM_Prop_SableDagger", "SM_Prop_Spyglass", "SM_Prop_BigWrench", "SM_Prop_ArmadaHalberd"]
+HELD_MELEE = ["SM_Prop_Cutlass", "SM_Prop_BoardingAxe", "SM_Prop_HookSabre", "SM_Prop_RoyalSabre", "SM_Prop_AnchorHammer", "SM_Prop_TwinScimitar", "SM_Prop_WardenFlail", "SM_Prop_SableDagger", "SM_Prop_Spyglass", "SM_Prop_BigWrench", "SM_Prop_ArmadaHalberd", "SM_Prop_ShadowStaff", "SM_Prop_DriftwoodLyre"]
 HELD_GUNS = ["SM_Prop_Flintlock", "SM_Prop_DuelPistol", "SM_Prop_HandMortar", "SM_Prop_ArmadaMusket"]
 
 
@@ -190,6 +196,7 @@ def all_variants():
         variants += [(f"{base}_HQ", tier), (f"{base}_LQ", f"{tier}_low")]
     for base in SKELETAL:
         variants += [(f"{base}_HQ", _CHAR), (f"{base}_LQ", f"{_CHAR}_low")]
+    variants += [(f"{cinder.ASSET}_HQ", _CHAR), (f"{cinder.ASSET}_LQ", f"{_CHAR}_low")]
     return variants
 
 
@@ -210,7 +217,9 @@ def build(asset_name):
     base, hq = _split(asset_name)
     mb = kit.MeshBuilder()
     joints = None
-    if base in STORY_CAST:
+    if base == cinder.ASSET:
+        joints = cinder.build(mb, hq)
+    elif base in STORY_CAST:
         joints = story_characters.build(mb, STORY_CAST[base], hq)
     elif base in SKELETAL:
         joints = characters.build_character(mb, SKELETAL[base], hq)
@@ -228,8 +237,12 @@ def prepare(asset_name):
     faction = DEFAULT_FACTIONS.get(base, palette.DEFAULT_FACTION)
     obj = mb.to_object(asset_name, kit.palette_material(hq, faction))
     if joints:
-        arm = characters.create_armature(asset_name, joints, offset)
-        characters.add_clips(arm)
+        if base == cinder.ASSET:
+            arm = characters.create_armature(asset_name, joints, offset, cinder.BONE_PARENTS)
+            characters.add_clips(arm, cinder.CLIPS, cinder.BONE_PARENTS)
+        else:
+            arm = characters.create_armature(asset_name, joints, offset)
+            characters.add_clips(arm)
         obj.parent = arm
         modifier = obj.modifiers.new("Armature", "ARMATURE")
         modifier.object = arm
@@ -281,6 +294,10 @@ def write_manifest():
             asset["default_faction"] = DEFAULT_FACTIONS[base]
         quality = "HQ" if hq else "LQ"
         asset["variants"][quality] = {"tier": tier, "tris": mb.tris}
+        if base == cinder.ASSET:
+            # Not the crew's skeleton: its own bones and clips.
+            asset["variants"][quality]["clips"] = characters.clip_table(cinder.CLIPS)
+            asset["skeleton"] = list(cinder.BONE_PARENTS)
         asset["sockets"][quality] = {key: _gltf(p) for key, p in sorted(mb.sockets.items())}
     manifest = {
         "units": "metres",

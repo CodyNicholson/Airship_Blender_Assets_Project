@@ -338,7 +338,8 @@ def build_character(mb, name, hq):
 
 # ---- rig -----------------------------------------------------------------------------
 
-def create_armature(name, joints, offset):
+def create_armature(name, joints, offset, parents=None):
+    parents = parents or BONE_PARENTS
     data = bpy.data.armatures.new(f"{name}_Rig")
     arm = bpy.data.objects.new(f"{name}_Rig", data)
     bpy.context.scene.collection.objects.link(arm)
@@ -347,19 +348,20 @@ def create_armature(name, joints, offset):
     bpy.context.view_layer.objects.active = arm
     bpy.ops.object.mode_set(mode="EDIT")
     created = {}
-    for bone in BONE_PARENTS:
+    for bone in parents:
         head, tail = joints[bone]
         ebone = data.edit_bones.new(bone)
         ebone.head = Vector(head) + offset
         ebone.tail = Vector(tail) + offset
         created[bone] = ebone
-    for bone, parent in BONE_PARENTS.items():
+    for bone, parent in parents.items():
         if parent:
             created[bone].parent = created[parent]
             created[bone].use_connect = False
     # Roll puts each bone's +X, which is an attached item's top, up when the arm is raised to aim.
     for bone in ("weapon.R", "gun.R", "weapon.L", "gun.L"):
-        created[bone].align_roll((1, 0, 0))
+        if bone in created:
+            created[bone].align_roll((1, 0, 0))
     bpy.ops.object.mode_set(mode="OBJECT")
     return arm
 
@@ -476,8 +478,8 @@ CLIPS = {
 }
 
 
-def _apply_pose(arm, pose, frame):
-    for bone_name in BONE_PARENTS:
+def _apply_pose(arm, pose, frame, parents=None):
+    for bone_name in parents or BONE_PARENTS:
         pbone = arm.pose.bones[bone_name]
         pbone.rotation_mode = "QUATERNION"
         rest = pbone.bone.matrix_local.to_3x3()
@@ -491,15 +493,15 @@ def _apply_pose(arm, pose, frame):
     hips.keyframe_insert("location", frame=frame, group="hips")
 
 
-def add_clips(arm):
+def add_clips(arm, clips=None, parents=None):
     arm.animation_data_create()
     bpy.context.scene.render.fps = FPS
-    for clip, (_, frames) in CLIPS.items():
+    for clip, (_, frames) in (clips or CLIPS).items():
         action = bpy.data.actions.new(clip)
         action.use_fake_user = False
         arm.animation_data.action = action
         for frame, pose in frames.items():
-            _apply_pose(arm, pose, frame)
+            _apply_pose(arm, pose, frame, parents)
         arm.animation_data.action = None
         track = arm.animation_data.nla_tracks.new()
         track.name = clip
@@ -515,8 +517,8 @@ def add_clips(arm):
     bpy.context.scene.frame_set(0)
 
 
-def clip_table():
+def clip_table(clips=None):
     return {
         clip: {"loop": loop, "frames": max(frames), "seconds": round(max(frames) / FPS, 3)}
-        for clip, (loop, frames) in CLIPS.items()
+        for clip, (loop, frames) in (clips or CLIPS).items()
     }

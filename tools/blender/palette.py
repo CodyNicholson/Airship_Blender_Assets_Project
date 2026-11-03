@@ -100,6 +100,8 @@ FACTIONS = {
     "Scrap": {"faction_a": (138, 70, 36), "faction_b": (152, 142, 112), "faction_c": (54, 44, 36)},
     "Syndicate": {"faction_a": (86, 38, 128), "faction_b": (60, 196, 190), "faction_c": (30, 22, 50)},
     "Warden": {"faction_a": (70, 74, 82), "faction_b": (190, 160, 60), "faction_c": (30, 30, 36)},
+    # Dr. Thorne alone: purple clothes, a vivid green for his eyes and staff, and near-black trim.
+    "Sorcerer": {"faction_a": (92, 40, 148), "faction_b": (70, 255, 120), "faction_c": (18, 14, 26)},
 }
 
 SWATCH_INDEX = {name: i for i, (name, _, _) in enumerate(SWATCHES)}

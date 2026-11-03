@@ -174,8 +174,10 @@ def check_file(path, entry, budget, clips):
     if path.name.startswith("SK_"):
         if not skins:
             errors.append("skeletal asset has no skin")
-        _check_clips(doc, binary, clips, errors)
-        _check_socket_bones(doc, errors)
+        # An asset with its own clips is not on the crew's skeleton, so it has no hands to check.
+        _check_clips(doc, binary, entry.get("clips", clips), errors)
+        if "clips" not in entry:
+            _check_socket_bones(doc, errors)
     elif skins or doc.get("animations"):
         errors.append("static asset has a skin or animation")
     return tris, bones, path.stat().st_size, errors
