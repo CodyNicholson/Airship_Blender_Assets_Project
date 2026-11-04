@@ -211,7 +211,7 @@ def sorcerer_amulet(ctx):
         ctx.mb.sphere(stone, (0.04 * s, 0.024 * s, 0.055 * s), 6 if ctx.hq else 4, 3, "faction_b")
 
 
-def sorcerer_hood(ctx, lining="faction_a"):
+def sorcerer_hood(ctx, lining="faction_a", shell="cloth_black"):
     """Thorne: a deep cowl, open at the face. A thick shell, so the opening has a purple-lined edge."""
     s, mb = ctx.s, ctx.mb
     # Height from the head's centre, half-width, half-depth, and half-angle of the opening at that height.
@@ -238,11 +238,11 @@ def sorcerer_hood(ctx, lining="faction_a"):
     outer_faces = points - 1
 
     with mb.bound_to("head"):
-        mb.loft(rings, lambda _i, j: "cloth_black" if j < outer_faces else lining, smooth=False)
+        mb.loft(rings, lambda _i, j: shell if j < outer_faces else lining, smooth=False)
     with mb.bound_to("chest"):
         # A mantle where the cowl falls onto the shoulders, following the body rather than a circle.
         sides = ctx.q["torso"]
-        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.335, 0.205, 1.25), (0.25, 0.175, 1.36), (0.15, 0.135, 1.46))], "cloth_black", smooth=ctx.hq)
+        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.335, 0.205, 1.25), (0.25, 0.175, 1.36), (0.15, 0.135, 1.46))], shell, smooth=ctx.hq)
 
 
 def sorcerer_robe(ctx):
@@ -637,8 +637,55 @@ def ear_guards(ctx):
             ctx.mb.sphere(_at(ctx, sign * 0.15, 0.02, -0.21), (0.05 * ctx.s, 0.06 * ctx.s, 0.07 * ctx.s), 6 if ctx.hq else 4, 3, "brass", smooth=False)
 
 
+def _boot_cuffs(ctx, color, flare=1.12, cords=None):
+    """A turned-down cuff at the top of each tall boot, and optionally a cord criss-crossed down the front."""
+    mb, s, g, hq = ctx.mb, ctx.s, ctx.g, ctx.hq
+    for side in ("L", "R"):
+        knee, ankle = (Vector(p) for p in ctx.joints[f"shin.{side}"][:2])
+        r = 0.085 * s * g * ctx.hero.leg_bulk
+        with mb.bound_to(f"shin.{side}"):
+            mb.tube(knee + (ankle - knee) * 0.06, knee + (ankle - knee) * 0.2, r * flare, r * (flare - 0.06), sides=8 if hq else 4, color=color)
+            if cords and hq:
+                for k in range(3):
+                    t0, t1 = 0.25 + 0.2 * k, 0.42 + 0.2 * k
+                    top = knee + (ankle - knee) * t0 + Vector((0, -r * (1 - 0.18 * t0) * 0.97, 0))
+                    low = knee + (ankle - knee) * t1 + Vector((0, -r * (1 - 0.18 * t1) * 0.97, 0))
+                    mb.tube(top + Vector((0.04 * s, 0, 0)), low + Vector((-0.035 * s, 0, 0)), 0.006 * s, sides=3, color=cords)
+                    mb.tube(top + Vector((-0.04 * s, 0, 0)), low + Vector((0.035 * s, 0, 0)), 0.006 * s, sides=3, color=cords)
+
+
+def nomad_hair(ctx):
+    """Lyra: thick dark-brown waves streaming back on the wind, thin beaded braids by her face, and long
+    brown-and-white feathers pinned near her crown."""
+    mb, s, hq = ctx.mb, ctx.s, ctx.hq
+    hair_long(ctx, 0.46)
+    n = 5 if hq else 3
+    with mb.bound_to("head"):
+        # Locks blown back and to one side.
+        for i in range(n):
+            a = -1.0 + 2.0 * i / (n - 1)
+            x, z = 0.16 * math.sin(a), 0.1 + 0.11 * math.cos(a)
+            mb.plate([_at(ctx, x - 0.06, 0.06, z), _at(ctx, x + 0.06, 0.06, z), _at(ctx, x * 1.5 + 0.14, 0.4, z - 0.14)], 0.045 * s, ctx.hero.hair)
+        for sign in (1, -1):
+            braid = [_at(ctx, sign * 0.19, -0.07, 0.02), _at(ctx, sign * 0.205, -0.09, -0.14), _at(ctx, sign * 0.2, -0.1, -0.28)]
+            mb.path(braid, [0.016 * s] * 3, 4 if hq else 3, ctx.hero.hair)
+            mb.sphere(_at(ctx, sign * 0.203, -0.095, -0.2), 0.02 * s, 5 if hq else 4, 3, "iron_light", smooth=False)
+            mb.sphere(_at(ctx, sign * 0.2, -0.1, -0.3), (0.024 * s, 0.024 * s, 0.03 * s), 5 if hq else 4, 3, "faction_c", smooth=False)
+        # Pale feathers with dark tips, pinned at the crown and swept out to the side so their broad face shows.
+        feathers = (((0.12, 0.06, 0.2), (0.15, 0.06, 0.06), (-0.012, 0.0, 0.03), "enamel"), ((0.1, 0.09, 0.2), (0.13, 0.1, 0.09), (-0.018, 0.0, 0.026), "canvas"))
+        for base, d, u, color in feathers if hq else feathers[:1]:
+            b0, d, u = Vector(base), Vector(d), Vector(u)
+            vane = [b0 - u * 0.3, b0 + u * 0.3, b0 + d * 0.45 + u * 0.6, b0 + d * 0.76 + u * 0.45, b0 + d * 0.76 - u * 0.45, b0 + d * 0.45 - u * 0.6]
+            mb.plate([_at(ctx, *p) for p in vane], 0.01 * s, color)
+            mb.plate([_at(ctx, *p) for p in (b0 + d * 0.72 + u * 0.48, b0 + d, b0 + d * 0.72 - u * 0.48)], 0.012 * s, "leather_dark")
+        if hq:
+            mb.sphere(_at(ctx, 0.09, 0.04, 0.24), 0.026 * s, 5, 3, "faction_c", smooth=False)
+
+
 def nomad_layers(ctx):
-    """Lyra: a worn leather vest over a green tunic, a patchwork sash slung across, and coin and bone charms."""
+    """Lyra: a fitted emerald waistcoat edged in gold over her cream blouse, a heavy belt with a green sash
+    of coin charms and gold fringe, a pouch, brass trinkets and a curved dagger, green-patched knees, and
+    tall slouching boots bound with green cord."""
     mb, q, s, g, w, hq = ctx.mb, ctx.q, ctx.s, ctx.g, ctx.w, ctx.hq
     sides = q["torso"]
 
@@ -646,122 +693,393 @@ def nomad_layers(ctx):
         with mb.bound_to(bone):
             mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in rows], color, smooth=hq)
 
-    # The tunic is short at the hips, with a panel on each thigh below that, so her legs can move.
-    shell("hips", [(0.225, 0.17, 0.96), (0.262, 0.2, 0.74)], "cloth_green")
-    columns = 6 if hq else 4
-    for side, sign in (("L", 1), ("R", -1)):
-        rings = []
-        for rx, ry, z in ((0.25, 0.19, 0.8), (0.275, 0.215, 0.66), (0.3, 0.235, 0.54)):
-            ring = []
-            for k in range(columns):
-                a = math.radians(-93 + 186 * k / (columns - 1))
-                ring.append((sign * rx * w * s * math.cos(a), ry * g * s * math.sin(a), z * s))
-            rings.append(ring if sign > 0 else ring[::-1])
-        with mb.bound_to(f"thigh.{side}"):
-            mb.loft(rings, "cloth_green", smooth=False)
-    shell("chest", [(0.255, 0.18, 1.06), (0.32, 0.195, 1.28), (0.16, 0.12, 1.38)], "leather")
-    shell("spine", [(0.225, 0.17, 0.95), (0.25, 0.18, 1.1)], "leather")
-    with mb.bound_to("chest"):
-        front = 0.195 * g * s
-        mb.plate([(-0.085 * s, -front, 1.33 * s), (0.085 * s, -front, 1.33 * s), (0.065 * s, -0.17 * g * s, 1.06 * s), (-0.065 * s, -0.17 * g * s, 1.06 * s)], 0.03 * s, "cloth_green")
-    with mb.bound_to("spine"):
-        mb.plate([(-0.065 * s, -0.17 * g * s, 1.07 * s), (0.065 * s, -0.17 * g * s, 1.07 * s), (0.06 * s, -0.165 * g * s, 0.95 * s), (-0.06 * s, -0.165 * g * s, 0.95 * s)], 0.03 * s, "cloth_green")
+    shell("chest", [(0.25, 0.175, 1.06), (0.315, 0.19, 1.28), (0.16, 0.12, 1.37)], "faction_b")
+    shell("spine", [(0.22, 0.165, 0.92), (0.25, 0.175, 1.1)], "faction_b")
+    # The waistcoat is open down the middle: cream blouse between two gold-embroidered edges.
+    for bone, z_top, z_low, d_top, d_low in (("chest", 1.34, 1.06, 0.19, 0.18), ("spine", 1.08, 0.93, 0.175, 0.168)):
+        with mb.bound_to(bone):
+            mb.plate([(-0.05 * s, -d_top * g * s, z_top * s), (0.05 * s, -d_top * g * s, z_top * s), (0.04 * s, -d_low * g * s, z_low * s), (-0.04 * s, -d_low * g * s, z_low * s)], 0.026 * s, "canvas")
+            for sign in (1, -1):
+                mb.plate([(sign * 0.05 * s, -d_top * g * s, z_top * s), (sign * 0.075 * s, -d_top * g * s, z_top * s), (sign * 0.065 * s, -d_low * g * s, z_low * s), (sign * 0.04 * s, -d_low * g * s, z_low * s)], 0.03 * s, "gold")
     with mb.bound_to("hips"):
-        # Patchwork: strips of different cloth hanging from the sash on one side.
-        patches = (("gold", 0.05, 0.09, 0.56), ("cloth_green", 0.14, 0.09, 0.62), ("gold_dark", 0.23, 0.08, 0.68))
-        for color, x, half, low in patches if hq else patches[:2]:
-            mb.plate([((x - half / 2) * w * s, -0.195 * g * s, 0.88 * s), ((x + half / 2) * w * s, -0.195 * g * s, 0.88 * s),
-                      ((x + half / 2) * w * s, -0.235 * g * s, low * s), ((x - half / 2) * w * s, -0.235 * g * s, low * s)], 0.02 * s, color)
-        for k, x in enumerate((-0.15, -0.09, -0.03) if hq else (-0.09,)):
-            # Following the curve of the hip, so each charm stays on the body.
-            on_hip = 0.19 * g * s * math.sqrt(max(0.1, 1 - (x / 0.25) ** 2))
-            mb.tube((x * w * s, -on_hip, 0.86 * s), (x * w * s, -on_hip - 0.012 * s, 0.78 * s), 0.006 * s, sides=3, color="leather_dark")
-            mb.sphere((x * w * s, -on_hip - 0.012 * s, 0.76 * s), 0.024 * s, 5 if hq else 4, 3, "gold" if k % 2 else "enamel", smooth=False)
+        # The sash hangs from her left hip, edged with coins and fringe.
+        x0, x1 = 0.1, 0.24
+        mb.plate([(x0 * w * s, -0.2 * g * s, 0.9 * s), (x1 * w * s, -0.19 * g * s, 0.9 * s), (x1 * w * s, -0.225 * g * s, 0.62 * s), ((x0 + 0.03) * w * s, -0.235 * g * s, 0.6 * s)], 0.022 * s, "faction_b")
+        for k in range(4 if hq else 2):
+            x = (x0 + 0.03 + (x1 - x0 - 0.03) * (k + 0.5) / (4 if hq else 2)) * w * s
+            mb.sphere((x, -0.245 * g * s, 0.61 * s), (0.02 * s, 0.01 * s, 0.02 * s), 5 if hq else 4, 3, "gold", smooth=False)
+            if hq:
+                mb.tube((x, -0.235 * g * s, 0.6 * s), (x, -0.235 * g * s, 0.54 * s), 0.006 * s, sides=3, color="gold_dark")
+        # A buttoned pouch on the right hip.
+        on_hip = Vector((-0.17 * w * s, -0.18 * g * s + 0.03 * s, (0.82 if hq else 0.83) * s))
+        mb.box(tuple(on_hip), (0.08 * s, 0.05 * s, 0.08 * s), "leather")
+        if hq:
+            mb.sphere(tuple(on_hip + Vector((0, -0.027 * s, 0.02 * s))), 0.012 * s, 4, 3, "brass", smooth=False)
+            for k, x in enumerate((-0.05, -0.02)):
+                hip_y = 0.19 * g * s * math.sqrt(max(0.1, 1 - (x / 0.25) ** 2))
+                mb.tube((x * w * s, -hip_y, 0.86 * s), (x * w * s, -hip_y - 0.01 * s, 0.79 * s), 0.005 * s, sides=3, color="brass")
+                mb.sphere((x * w * s, -hip_y - 0.012 * s, 0.77 * s), 0.018 * s, 4, 3, "brass", smooth=False)
+        # The curved dagger in its green-and-silver scabbard, at the back of her left hip.
+        sheath = [Vector((0.23 * w * s, 0.08 * s, 0.98 * s)), Vector((0.27 * w * s, 0.12 * s, 0.78 * s)), Vector((0.26 * w * s, 0.18 * s, 0.6 * s))]
+        mb.path(sheath, [0.026 * s, 0.024 * s, 0.012 * s], 4 if hq else 3, "faction_b")
+        mb.tube(sheath[0], sheath[0] + Vector((-0.01 * s, -0.01 * s, 0.11 * s)), 0.016 * s, sides=4 if hq else 3, color="silver")
+        if hq:
+            mb.tube(sheath[1] + Vector((0, 0, 0.03 * s)), sheath[1] - Vector((0, 0, 0.03 * s)), 0.03 * s, sides=4, color="silver")
     for side in ("L", "R"):
         elbow, wrist = (Vector(p) for p in ctx.joints[f"lower_arm.{side}"][:2])
         with mb.bound_to(f"lower_arm.{side}"):
-            mb.tube(elbow + (wrist - elbow) * 0.4, wrist - (wrist - elbow) * 0.05, 0.06 * s, 0.056 * s, sides=6 if hq else 4, color="leather")
-
-
-def nomad_headwrap(ctx):
-    """Lyra: a green band tied round the head over her hair, with gold coins and short tied tails."""
-    mb, s, hq = ctx.mb, ctx.s, ctx.hq
-    sides = ctx.q["head_s"]
-    rings = []
-    for z, r in ((0.06, 0.226), (0.17, 0.214)):
-        rings.append([tuple(_at(ctx, r * math.cos(2 * math.pi * j / sides), 0.04 + r * 1.02 * math.sin(2 * math.pi * j / sides), z)) for j in range(sides)])
-    with mb.bound_to("head"):
-        mb.loft(rings, "cloth_green", smooth=False)
-        for x in (-0.11, -0.055, 0.0, 0.055, 0.11) if hq else (-0.08, 0.0, 0.08):
-            front = 0.04 - 0.226 * 1.02 * math.sqrt(max(0.1, 1 - (x / 0.226) ** 2))
-            mb.sphere(_at(ctx, x, front + (-0.004 if hq else 0.018), 0.115), (0.02 * s, 0.014 * s if hq else 0.03 * s, 0.02 * s), 5 if hq else 4, 3, "gold", smooth=False)
-        mb.plate([_at(ctx, -0.14, 0.2, 0.13), _at(ctx, -0.06, 0.25, 0.12), _at(ctx, -0.17, 0.3, -0.06)], 0.02 * s, "cloth_green")
-        mb.plate([_at(ctx, 0.14, 0.2, 0.13), _at(ctx, 0.06, 0.25, 0.12), _at(ctx, 0.13, 0.3, -0.1)], 0.02 * s, "grass")
+            # Stacked leather wraps, then a beaded bracelet at the wrist.
+            mb.tube(elbow + (wrist - elbow) * 0.4, wrist - (wrist - elbow) * 0.2, 0.06 * s, 0.056 * s, sides=6 if hq else 4, color="leather")
+            mb.tube(wrist - (wrist - elbow) * 0.18, wrist - (wrist - elbow) * 0.06, 0.058 * s, sides=6 if hq else 4, color="faction_c")
+        knee = Vector(ctx.joints[f"shin.{side}"][0])
+        r = 0.08 * s * g * ctx.hero.leg_bulk * (1.0 if hq else 0.87)
+        with mb.bound_to(f"thigh.{side}"):
+            mb.plate([knee + Vector((-0.045 * s, -r, 0.16 * s)), knee + Vector((0.045 * s, -r, 0.16 * s)), knee + Vector((0.045 * s, -r, 0.03 * s)), knee + Vector((-0.045 * s, -r, 0.03 * s))], 0.022 * s, "cloth_green")
+    _boot_cuffs(ctx, ctx.hero.boots, 1.2, cords="faction_b")
 
 
 def nomad_scarf(ctx):
-    """Lyra: a gold scarf wound close round the neck, with one short end hanging at the shoulder."""
-    mb, s, g = ctx.mb, ctx.s, ctx.g
+    """Lyra: a thick ribbed emerald scarf wound tight round the neck, trailing back into a patchwork cloak
+    of green, olive and earth-toned squares with a frayed hem."""
+    mb, s, g, w, hq = ctx.mb, ctx.s, ctx.g, ctx.w, ctx.hq
     with mb.bound_to("chest"):
-        mb.lathe([(0.17 * s, 1.27 * s), (0.18 * s, 1.35 * s), (0.13 * s, 1.42 * s)], ctx.q["limb"], "gold_dark", smooth=False)
-        mb.plate([(0.05 * s, -0.17 * g * s, 1.32 * s), (0.14 * s, -0.16 * g * s, 1.32 * s), (0.17 * s, -0.19 * g * s, 1.02 * s), (0.08 * s, -0.2 * g * s, 1.02 * s)], 0.022 * s, "gold_dark")
+        mb.lathe([(0.19 * s, 1.27 * s), (0.192 * s, 1.31 * s), (0.18 * s, 1.35 * s), (0.17 * s, 1.38 * s), (0.14 * s, 1.42 * s)], ctx.q["limb"], "faction_b", smooth=False)
+    # The cloak, in patches: two columns, three rows, each patch its own cloth. The lowest row is cut ragged.
+    colors = ("faction_a", "cloth_green", "leather", "faction_b", "gold_dark", "faction_a") if hq else ("faction_a", "cloth_green", "cloth_green", "faction_a", "faction_a", "leather")
+    rows = (("chest", 1.36, 1.1, 0.2, 0.215), ("spine", 1.1, 0.92, 0.2, 0.215), ("hips", 0.92, 0.72, 0.225, 0.255))
+    for r, (bone, z_top, z_low, d_top, d_low) in enumerate(rows):
+        with mb.bound_to(bone):
+            for c, (xa, xb) in enumerate(((-0.25, 0.0), (0.0, 0.25))):
+                low = z_low
+                poly = [(xa * w * s, d_top * g * s, z_top * s), (xb * w * s, d_top * g * s, z_top * s)]
+                if r == 2:
+                    poly += [(xb * w * s, d_low * g * s, (low + 0.02) * s), ((xa + xb) / 2 * w * s, d_low * g * s, (low - 0.05) * s), (xa * w * s, d_low * g * s, (low + 0.03) * s)]
+                else:
+                    poly += [(xb * w * s, d_low * g * s, low * s), (xa * w * s, d_low * g * s, low * s)]
+                mb.plate(poly, 0.02 * s + 0.004 * s * c, colors[r * 2 + c])
+    with mb.bound_to("chest"):
+        # The scarf's long end, blown back over her shoulder into the cloak.
+        mb.plate([(0.1 * s, 0.12 * g * s, 1.38 * s), (0.2 * s, 0.14 * g * s, 1.34 * s), (0.22 * s, 0.24 * g * s, 1.06 * s), (0.12 * s, 0.24 * g * s, 1.08 * s)], 0.024 * s, "faction_b")
 
 
 def assassin_gear(ctx):
-    """Sable: a dark leather vest, a strap of poison vials, a bow, poison arrows and a poison bottle, one steel pauldron and steel bracers."""
+    """Sable: a weathered double-breasted grey coat with pewter buttons over a dark vest, crossed leather
+    bandoliers with a bone-handled dagger across her chest, twin daggers at her left hip, knife bracers,
+    a steel-bracketed recurve bow and a quiver of green-fletched poison arrows, and a poison bottle."""
     mb, q, s, g, w, hq = ctx.mb, ctx.q, ctx.s, ctx.g, ctx.w, ctx.hq
     sides = q["torso"]
-    with mb.bound_to("chest"):
-        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.25, 0.175, 1.06), (0.31, 0.218, 1.24), (0.16, 0.12, 1.38))], "leather_dark", smooth=hq)
-        mb.plate([(-0.06 * s, -0.19 * g * s, 1.35 * s), (0.06 * s, -0.19 * g * s, 1.35 * s), (0.05 * s, -0.17 * g * s, 1.06 * s), (-0.05 * s, -0.17 * g * s, 1.06 * s)], 0.026 * s, "cloth_black")
 
-        def on_chest(u):
-            x = (0.27 - 0.5 * u) * w * s
-            z = (1.3 - 0.22 * u) * s
-            depth = (0.208 - 0.03 * u) * g * s
-            return Vector((x, -depth * math.sqrt(max(0.05, 1 - (x / (0.3 * w * s)) ** 2)) - 0.012 * s, z))
+    def shell(bone, rows, color):
+        with mb.bound_to(bone):
+            mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in rows], color, smooth=hq)
 
-        strap = [on_chest(k / 6) for k in range(7)]
-        mb.path(strap, [0.024 * s] * len(strap), 4, "leather")
-        for k in range(4 if hq else 3):
-            at = on_chest((k + 0.6) / (4 if hq else 3))
-            mb.sphere(tuple(at + Vector((0, -0.02 * s, 0))), (0.027 * s, 0.022 * s, 0.042 * s), 5 if hq else 4, 3, "grass", smooth=False)
-            if hq:
-                mb.box(tuple(at + Vector((0, -0.018 * s, 0.035 * s))), (0.018 * s, 0.018 * s, 0.014 * s), "iron_light")
-    with mb.bound_to("spine"):
-        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.22, 0.165, 0.95), (0.25, 0.175, 1.1))], "leather_dark", smooth=hq)
-    # The rest of her arsenal, on her back and belt: a bow, a quiver of poison arrows, her poison bottle.
+    shell("chest", [(0.25, 0.175, 1.06), (0.31, 0.2, 1.24), (0.16, 0.12, 1.38)], "faction_a")
+    shell("spine", [(0.22, 0.165, 0.95), (0.25, 0.175, 1.1)], "faction_a")
     with mb.bound_to("chest"):
-        back = 0.19 * g * s
-        bow = [(0.14 * w * s, back, 1.42 * s), (0.34 * w * s, back + 0.015 * s, 1.2 * s), (0.28 * w * s, back + 0.015 * s, 0.98 * s), (0.06 * w * s, back, 0.82 * s)]
-        mb.path([Vector(p) for p in bow], [0.016 * s, 0.03 * s, 0.03 * s, 0.016 * s], 4, "wood_light")
-        mb.tube(Vector(bow[0]), Vector(bow[-1]), 0.005 * s, sides=3, color="canvas")
-        mb.tube((-0.15 * w * s, back, 1.0 * s), (-0.25 * w * s, back + 0.02 * s, 1.34 * s), 0.05 * s, 0.056 * s, sides=6 if hq else 4, color="leather")
-        for dx, h in ((0.0, 0.2), (0.035, 0.16), (-0.03, 0.14)) if hq else ((0.0, 0.18),):
-            base = Vector(((-0.25 * w + dx) * s, back + 0.02 * s, 1.34 * s))
+        # The dark vest shows in a V at the throat; the coat's front laps over it, buttoned twice.
+        mb.plate([(-0.06 * s, -0.2 * g * s, 1.35 * s), (0.06 * s, -0.2 * g * s, 1.35 * s), (0, -0.19 * g * s, 1.2 * s)], 0.024 * s, "cloth_black")
+        for sign in (1, -1):
+            for k in range(3 if hq else 2):
+                z = 1.17 - k * (0.07 if hq else 0.1)
+                depth = (0.175 + 0.025 * max(0.0, z - 1.06) / 0.18) * g * s + (0.006 if hq else -0.006) * s - (0.004 * s if z < 1.05 else 0.0)
+                mb.sphere((sign * 0.055 * s, -depth, z * s), 0.014 * s, 5 if hq else 4, 3, "faction_b", smooth=False)
+
+        def on_chest(u, flip):
+            x = (0.27 - 0.52 * u) * w * s * (-1 if flip else 1)
+            z = (1.3 - 0.24 * u) * s
+            depth = (0.21 - 0.025 * u) * g * s
+            return Vector((x, -depth * math.sqrt(max(0.05, 1 - (x / (0.31 * w * s)) ** 2)) - 0.014 * s, z))
+
+        # Two bandoliers crossing her chest.
+        for flip in (False, True):
+            strap = [on_chest(k / 6, flip) for k in range(7)]
+            mb.path(strap, [0.022 * s] * len(strap), 4, "leather")
+        # The bone-handled dagger, sheathed diagonally along one strap.
+        top, low = on_chest(0.2, False) + Vector((0, -0.018 * s, 0)), on_chest(0.72, False) + Vector((0, -0.02 * s, 0))
+        mb.tube(top, low, 0.024 * s, 0.014 * s, sides=4, color="leather_dark")
+        grip_end = top + (top - low).normalized() * 0.1 * s
+        mb.tube(top, grip_end, 0.016 * s, sides=4 if hq else 3, color="enamel")
+        if hq:
+            mb.box(tuple(top), (0.07 * s, 0.02 * s, 0.02 * s), "iron_light")
+
+    with mb.bound_to("hips"):
+        # Hips wider than the waist: most of what makes her silhouette read as a woman's.
+        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.27, 0.185, 0.68), (0.33, 0.2, 0.8), (0.235, 0.165, 0.95))], "faction_a", smooth=hq)
+        if not hq:
+            # The base LQ belt's buckle would be a bright patch in the middle of a dark waist.
+            mb.box((0, -0.18 * g * s, 0.93 * s), (0.11 * s, 0.04 * s, 0.09 * s), "leather_dark")
+        # Twin curved daggers at her left hip.
+        for dy in (0.06, 0.14):
+            start = Vector((0.235 * w * s, dy * s - 0.04 * s, 0.98 * s))
+            sheath = [start, start + Vector((0.05 * w * s, 0.02 * s, -0.2 * s)), start + Vector((0.07 * w * s, 0.05 * s, -0.36 * s))]
+            mb.path(sheath, [0.022 * s, 0.02 * s, 0.01 * s], 4 if hq else 3, "leather_dark")
+            mb.tube(start, start + Vector((-0.01 * s, -0.01 * s, 0.1 * s)), 0.014 * s, sides=4 if hq else 3, color="iron_light")
+        # The poison bottle on her right hip.
+        at = Vector((-0.2 * w * s, -0.165 * g * s, 0.82 * s))
+        mb.sphere(at, (0.05 * s, 0.04 * s, 0.065 * s), 6 if hq else 4, 3, "grass", smooth=False)
+        mb.tube(at + Vector((0, 0, 0.05 * s)), at + Vector((0.01 * s, 0.01 * s, 0.12 * s)), 0.02 * s, 0.024 * s, sides=4, color="leather")
+    columns = 6 if hq else 4
+    for side, sign in (("L", 1), ("R", -1)):
+        # The coat's skirts, one panel per leg so they part when she moves.
+        rings = []
+        for rx, ry, z in ((0.27, 0.19, 0.74), (0.3, 0.235, 0.62), (0.33, 0.27, 0.52)):
+            ring = []
+            for k in range(columns):
+                a = math.radians(-89 + 178 * k / (columns - 1))
+                ring.append((sign * rx * w * s * math.cos(a), ry * g * s * math.sin(a), z * s))
+            rings.append(ring if sign > 0 else ring[::-1])
+        with mb.bound_to(f"thigh.{side}"):
+            mb.loft(rings, "faction_a", smooth=False)
+        # Leather bracers with throwing knives along the outside of each forearm.
+        near, far = (Vector(p) for p in ctx.joints[f"lower_arm.{side}"][:2])
+        with mb.bound_to(f"lower_arm.{side}"):
+            mb.tube(near + (far - near) * 0.3, far - (far - near) * 0.05, 0.058 * s, 0.05 * s, sides=6 if hq else 4, color="leather")
+            for k in range(2 if hq else 1):
+                out = Vector((sign * (0.056 if hq else 0.049) * s, (0.018 - 0.036 * k) * s, 0))
+                mb.tube(near + (far - near) * 0.38 + out, near + (far - near) * 0.85 + out, 0.009 * s, sides=3, color="iron_light")
+    # Bow and quiver on her back: a recurve with steel brackets, venom dripping from its upper limb.
+    with mb.bound_to("chest"):
+        back = 0.2 * g * s
+        bow = [(0.2 * w * s, back + 0.02 * s, 1.47 * s), (0.14 * w * s, back, 1.42 * s), (0.34 * w * s, back + 0.015 * s, 1.2 * s), (0.28 * w * s, back + 0.015 * s, 0.98 * s), (0.06 * w * s, back, 0.82 * s), (0.02 * w * s, back + 0.02 * s, 0.86 * s)]
+        mb.path([Vector(p) for p in bow], [0.012 * s, 0.016 * s, 0.03 * s, 0.03 * s, 0.016 * s, 0.012 * s], 4, "wood_light")
+        mb.tube(Vector(bow[1]), Vector(bow[-2]), 0.005 * s, sides=3, color="canvas")
+        if hq:
+            for p in (bow[2], bow[3]):
+                mb.box(p, (0.05 * s, 0.05 * s, 0.03 * s), "iron_light")
+            mb.sphere((bow[0][0], bow[0][1] - 0.01 * s, bow[0][2] - 0.03 * s), (0.012 * s, 0.012 * s, 0.02 * s), 4, 3, "grass", smooth=False)
+        mb.tube((-0.15 * w * s, back, 1.0 * s), (-0.25 * w * s, back - 0.004 * s, 1.34 * s), 0.05 * s, 0.056 * s, sides=6 if hq else 4, color="leather")
+        for dx, h in ((0.0, 0.2), (0.035, 0.16), (-0.03, 0.14)) if hq else ((0.0, 0.18), (0.03, 0.14)):
+            base = Vector(((-0.25 * w + dx) * s, back - 0.004 * s, 1.34 * s))
             tip = base + Vector((-0.02 * s, 0, h * s))
             mb.tube(base, tip, 0.006 * s, sides=3, color="wood_light")
             mb.tube(tip, tip + Vector((0, 0, 0.05 * s)), 0.02 * s, 0.002, sides=4, color="grass")
     with mb.bound_to("head"):
-        # Long dark hair escaping the hood, down both sides of her face.
+        # Salt-matted strands escaping the cowl, and thin beaded braids along her jaw.
         for sign in (1, -1):
             mb.path([_at(ctx, sign * 0.14, -0.13, 0.08), _at(ctx, sign * 0.175, -0.16, -0.12), _at(ctx, sign * 0.165, -0.15, -0.34)], [0.03 * s, 0.038 * s, 0.012 * s], 5 if hq else 4, ctx.hero.hair)
+            mb.sphere(_at(ctx, sign * 0.168, -0.16, -0.24), 0.02 * s, 5 if hq else 4, 3, "faction_b", smooth=False)
+        if hq:
+            # Heavy black kohl round her pale eyes, and a jagged crimson scar on her left cheekbone.
+            for sign in (1, -1):
+                ctx.mb.sphere(_at(ctx, sign * 0.078, -0.168, 0.03), (0.054 * s, 0.014 * s, 0.036 * s), 8, 4, "cloth_black")
+            mb.path([_at(ctx, 0.06, -0.188, -0.0), _at(ctx, 0.095, -0.18, -0.035), _at(ctx, 0.085, -0.182, -0.055), _at(ctx, 0.125, -0.165, -0.085)], [0.004 * s, 0.007 * s, 0.007 * s, 0.003 * s], 3, "faction_c")
+    _boot_cuffs(ctx, ctx.hero.boots, 1.2)
+
+
+def bosun_build(ctx):
+    """Bosun Brill: a barrel of a man. A massive chest and round belly in an indigo-and-cream striped shirt,
+    an open, tar-stained navy waistcoat with mismatched buttons, a thick neck, and a bushy grizzled beard
+    with beaded braids spilling down his chest. A charcoal watch cap stuck with pins, a tarnished gold
+    hoop, and an anchor tattoo on his right cheek. A brass bosun's call on a hemp cord, a coil of rope
+    over his right shoulder, and a sagging belt with a knife, a marlinspike and a ring of rusted keys.
+    Rolled sleeves over tattooed forearms, huge hands, patched trousers and cord-bound sea boots."""
+    mb, q, s, g, w, hq = ctx.mb, ctx.q, ctx.s, ctx.g, ctx.w, ctx.hq
+    sides = q["torso"]
+
+    def ring(rx, ry, z, dy=0.0):
+        return [(x, y + dy * g * s, z_) for x, y, z_ in _body_ring(ctx, rx, ry, z, sides)]
+
+    # The shirt, in horizontal stripes: chest and the belly below it.
+    chest_rows = [(0.27, 0.2, 1.06, -0.02), (0.31, 0.23, 1.14, -0.02), (0.33, 0.235, 1.22, -0.01), (0.32, 0.22, 1.3, 0.0), (0.2, 0.15, 1.38, 0.0)]
+    belly_rows = [(0.26, 0.2, 0.84, -0.02), (0.29, 0.23, 0.89, -0.05), (0.31, 0.25, 0.95, -0.06), (0.31, 0.25, 1.01, -0.05), (0.27, 0.2, 1.1, -0.02)]
+    if not hq:
+        chest_rows = [chest_rows[i] for i in (0, 2, 4)]
+        belly_rows = [belly_rows[i] for i in (0, 1, 2, 4)]
+    stripe = lambda i, _j: "faction_a" if i % 2 else "faction_b"
+    with mb.bound_to("chest"):
+        mb.loft([ring(*r) for r in chest_rows], stripe, smooth=hq)
+    with mb.bound_to("spine"):
+        mb.loft([ring(*r) for r in belly_rows], stripe, smooth=hq)
+
+    def front_y(z):
+        # How far forward the shirt is at height z (unscaled), down the middle.
+        table = [(r[2], (r[1] - r[3]) * (0.966 if hq else 1.0)) for r in chest_rows]
+        for (z0, d0), (z1, d1) in zip(table, table[1:]):
+            if z0 <= z <= z1:
+                return -(d0 + (d1 - d0) * (z - z0) / (z1 - z0)) * g * s
+        return -table[0][1] * g * s
+
+    # The open waistcoat: a thick shell with the front left open, over chest and belly.
+    points = 9 if hq else 5
+    wall = 0.022
+
+    def vest_rings(rows, opening):
+        out = []
+        for rx, ry, z, dy in rows:
+            def arc(rx_, ry_, backward):
+                pts = []
+                for k in range(points):
+                    a = math.radians(270 + opening + (360 - 2 * opening) * k / (points - 1))
+                    pts.append((rx_ * w * s * math.cos(a), (ry_ * math.sin(a) + dy) * g * s, z * s))
+                return pts[::-1] if backward else pts
+            out.append(arc(rx, ry, False) + arc(rx - wall, ry - wall, True))
+        return out
+
+    vest_chest = [(0.295, 0.215, 1.06, -0.02), (0.35, 0.255, 1.22, -0.01), (0.225, 0.17, 1.37, 0.0)]
+    vest_belly = [(0.305, 0.25, 0.9, -0.05), (0.33, 0.275, 0.97, -0.06), (0.295, 0.215, 1.08, -0.02)]
+    with mb.bound_to("chest"):
+        mb.loft(vest_rings(vest_chest, 34), "navy", smooth=False)
+    with mb.bound_to("spine"):
+        mb.loft(vest_rings(vest_belly, 42), "navy", smooth=False)
+        # Mismatched buttons down the left edge.
+        a = math.radians(270 + 42)
+        for k, (z, color) in enumerate(((1.05, "brass"), (0.99, "iron_light"), (0.95, "brass")) if hq else ((1.0, "brass"),)):
+            for (z0, *r0), (z1, *r1) in zip([(r[2], r[0], r[1], r[3]) for r in vest_belly], [(r[2], r[0], r[1], r[3]) for r in vest_belly[1:]]):
+                if z0 <= z <= z1:
+                    t = (z - z0) / (z1 - z0)
+                    rx, ry, dy = (u + (v - u) * t for u, v in zip(r0, r1))
+            face = 1.0 if hq else 0.93
+            mb.sphere((rx * w * s * math.cos(a) * face, (ry * math.sin(a) * face + dy) * g * s - 0.004 * s, z * s), 0.016 * s, 5 if hq else 4, 3, color, smooth=False)
+
+    # A thick neck.
+    with mb.bound_to("neck"):
+        mb.tube((0, 0.01 * s, 1.3 * s), (0, 0.01 * s, 1.42 * s), 0.115 * s * g, 0.105 * s * g, sides=8 if hq else 6, color=ctx.hero.skin)
+
+    with mb.bound_to("head"):
+        # The beard under the jaw: a bushy mass, grizzled grey.
+        mb.sphere(_at(ctx, 0, -0.1, -0.15), (0.15 * s, 0.12 * s, 0.12 * s), 8 if hq else 6, 4 if hq else 3, ctx.hero.hair, smooth=False)
+        mb.plate([_at(ctx, -0.15, -0.14, -0.05), _at(ctx, 0.15, -0.14, -0.05), _at(ctx, 0.13, -0.19, -0.2), _at(ctx, 0, -0.21, -0.25), _at(ctx, -0.13, -0.19, -0.2)], 0.06 * s, ctx.hero.hair)
+        # A charcoal watch cap with a turned-up cuff, pins stuck in its side.
+        with mb.xf(Matrix.Translation(_at(ctx, 0, 0.04, 0))):
+            mb.lathe([(0.235 * s, 0.115 * s), (0.236 * s, 0.17 * s)], q["head_s"], "cloth_black", smooth=False)
+            mb.lathe([(0.226 * s, 0.168 * s), (0.212 * s, 0.24 * s), (0.15 * s, 0.3 * s), (0.04 * s, 0.322 * s)], q["head_s"], "faction_c", smooth=hq)
+        if hq:
+            for theta, z, r in ((-55, 0.25, 0.2), (-30, 0.21, 0.214)):
+                c, n = math.cos(math.radians(theta)), math.sin(math.radians(theta))
+                base, tip = _at(ctx, r * 0.9 * c, 0.04 + r * 0.9 * n, z), _at(ctx, r * 1.18 * c, 0.04 + r * 1.18 * n, z + 0.04)
+                mb.tube(base, tip, 0.005 * s, sides=3, color="rust")
+                mb.sphere(tip, 0.01 * s, 4, 3, "iron_light", smooth=False)
+        # A heavy, tarnished gold hoop in his left ear.
+        hoop = [_at(ctx, 0.198 + 0.03 * math.cos(t), -0.01, -0.09 + 0.03 * math.sin(t)) for t in [2 * math.pi * k / 6 for k in range(6)]]
+        mb.path(hoop + [hoop[0]], [0.008 * s] * 7, 4 if hq else 3, "gold_dark")
+        if hq:
+            # Squinting lids, a bulbous sea-worn nose, and a faded indigo anchor on his right cheek.
+            for sign in (1, -1):
+                mb.sphere(_at(ctx, sign * 0.078, -0.176, 0.046), (0.05 * s, 0.016 * s, 0.016 * s), 8, 3, ctx.hero.skin, smooth=False)
+            mb.sphere(_at(ctx, 0, -0.205, -0.035), (0.046 * s, 0.042 * s, 0.044 * s), 8, 4, "skin_mid")
+            mb.sphere(_at(ctx, 0.026, -0.215, -0.02), 0.018 * s, 5, 3, "skin_mid", smooth=False)
+            tat = [(_at(ctx, -0.1, -0.174, -0.02), _at(ctx, -0.1, -0.172, -0.09)), (_at(ctx, -0.122, -0.166, -0.035), _at(ctx, -0.078, -0.176, -0.035)),
+                   (_at(ctx, -0.125, -0.164, -0.07), _at(ctx, -0.1, -0.174, -0.093)), (_at(ctx, -0.1, -0.174, -0.093), _at(ctx, -0.075, -0.178, -0.07))]
+            for a, b in tat:
+                mb.tube(a, b, 0.004 * s, sides=3, color="faction_a", flat=1.6)
+        else:
+            mb.box(tuple(_at(ctx, 0, -0.2, -0.04)), (0.08 * s, 0.07 * s, 0.07 * s), "skin_mid")
+        # A brown moustache over the grey, so the beard reads grizzled.
+        for sign in (1, -1):
+            mb.plate([_at(ctx, 0.0, -0.215, -0.075), _at(ctx, sign * 0.11, -0.19, -0.11), _at(ctx, sign * 0.05, -0.212, -0.115)], 0.028 * s, "hair_brown")
+
+    with mb.bound_to("chest"):
+        # The beard cascades down his chest: a slab following the shirt, thick and tapering.
+        beard = []
+        for z, half in ((1.37, 0.15), (1.29, 0.15), (1.2, 0.12), (1.12, 0.06)) if hq else ((1.37, 0.15), (1.24, 0.13), (1.12, 0.05)):
+            y = front_y(z)
+            beard.append([(-half * s, y - 0.075 * s, z * s), (half * s, y - 0.075 * s, z * s), (half * 0.9 * s, y - 0.01 * s, z * s), (-half * 0.9 * s, y - 0.01 * s, z * s)])
+        mb.loft(beard, ctx.hero.hair, smooth=False)
+        # A couple of braids in it, bound with tarnished beads and twine.
+        for x in (-0.06, 0.06):
+            y = front_y(1.12)
+            braid = [Vector((x * s, y - 0.05 * s, 1.14 * s)), Vector((x * s, y - 0.07 * s, 1.07 * s)), Vector((x * s, y - 0.09 * s, 1.02 * s))]
+            mb.path(braid, [0.016 * s, 0.014 * s, 0.01 * s], 4 if hq else 3, "hair_brown")
+            mb.sphere(tuple(braid[1]), 0.016 * s, 5 if hq else 4, 3, "iron_light", smooth=False)
+            if hq:
+                mb.sphere(tuple(braid[2] + Vector((0, -0.002 * s, 0.012 * s))), 0.012 * s, 4, 3, "rope", smooth=False)
+
+        # A coil of Manila rope slung over his right shoulder, near the neck where the arm can't reach it, and
+        # across to his left ribs: separate strands fanning out from the shoulder, front and back.
+        def chest_at(z):
+            rows = [(r[2], r[0], r[1], r[3]) for r in chest_rows]
+            for (z0, *a0), (z1, *a1) in zip(rows, rows[1:]):
+                if z0 <= z <= z1:
+                    t = (z - z0) / (z1 - z0)
+                    return [u + (v - u) * t for u, v in zip(a0, a1)]
+            return rows[0][1:]
+
+        def on_surface(x, z, back, lift):
+            rx, ry, dy = chest_at(z / s)
+            half = rx * w * s
+            depth = (ry + (dy if back else -dy)) * g * s * math.sqrt(max(0.05, 1 - (x / half) ** 2)) * (0.966 if hq else 0.9)
+            return Vector((x, depth + lift if back else -depth - lift, z))
+
+        # The coil itself hangs on his right shoulder blade: stacked loops lying against his back, each turn
+        # offset so the coil reads. One strand runs from it over the shoulder, by the neck, and tucks under the beard.
+        cx, cz = -0.15 * w * s, 1.2 * s
+        n = 10 if hq else 6
+        for k in range(3 if hq else 2):
+            rad = (0.12 - 0.012 * k) * s
+            loop = []
+            for j in range(n):
+                t = 2 * math.pi * j / n
+                x, z = cx + 0.012 * s * k + rad * math.cos(t), cz - 0.012 * s * k + rad * 1.0 * math.sin(t)
+                loop.append(on_surface(x, min(z, 1.36 * s), True, 0.045 * s + 0.03 * s * k))
+            mb.path(loop + [loop[0]], [0.022 * s] * (n + 1), 6 if hq else 4, "rope")
+        top_x = -0.185 * s
+        sling = [on_surface(cx - 0.02 * s, cz + 0.1 * s, True, 0.05 * s), on_surface(top_x, 1.3 * s, True, 0.026 * s),
+                 Vector((top_x, 0.1 * s, 1.37 * s)), Vector((top_x, -0.1 * s, 1.37 * s)), on_surface(top_x, 1.3 * s, False, 0.026 * s),
+                 on_surface(-0.11 * s, 1.2 * s, False, 0.022 * s)]
+        mb.path(sling, [0.022 * s] * len(sling), 6 if hq else 4, "rope")
+        # The brass bosun's call on a knotted hemp cord, to the left of the beard.
+        x = 0.19 * w * s
+        y = front_y(1.2) * math.sqrt(max(0.05, 1 - (x / (0.33 * w * s)) ** 2)) - 0.02 * s
+        call = Vector((x, y, 1.2 * s))
+        mb.path([Vector((0.09 * s, front_y(1.36) + 0.01 * s, 1.37 * s)), Vector((0.15 * w * s, front_y(1.3) * 0.92 - 0.01 * s, 1.29 * s)), call], [0.007 * s] * 3, 3, "rope")
+        mb.tube(call, call + Vector((0.06 * s, -0.004 * s, 0.02 * s)), 0.011 * s, 0.008 * s, sides=5 if hq else 4, color="brass")
+        mb.sphere(tuple(call + Vector((0.065 * s, -0.004 * s, 0.022 * s))), 0.02 * s, 6 if hq else 4, 3, "brass", smooth=False)
+
     with mb.bound_to("hips"):
-        # Hips wider than the waist: most of what makes her silhouette read as a woman's.
-        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.27, 0.185, 0.68), (0.33, 0.2, 0.8), (0.235, 0.165, 0.95))], "cloth_black", smooth=hq)
-        at = Vector((0.2 * w * s, -0.165 * g * s, 0.82 * s))
-        if not hq:
-            # The base LQ belt's buckle would be a bright patch in the middle of a dark waist.
-            mb.box((0, -0.18 * g * s, 0.93 * s), (0.11 * s, 0.04 * s, 0.09 * s), "leather_dark")
-        mb.sphere(at, (0.05 * s, 0.04 * s, 0.065 * s), 6 if hq else 4, 3, "grass", smooth=False)
-        mb.tube(at + Vector((0, 0, 0.05 * s)), at + Vector((-0.01 * s, 0.01 * s, 0.13 * s)), 0.02 * s, 0.024 * s, sides=4, color="leather")
-    shoulder, elbow = (Vector(p) for p in ctx.joints["upper_arm.R"][:2])
-    with mb.bound_to("upper_arm.R"):
-        mb.sphere(shoulder + (elbow - shoulder) * 0.12 + Vector((0, 0, 0.02)) * s, (0.092 * s, 0.086 * s, 0.058 * s), 6 if hq else 4, 3, "silver", smooth=False)
-    for side in ("L", "R"):
-        near, far = (Vector(p) for p in ctx.joints[f"lower_arm.{side}"][:2])
+        # A wide, sagging leather belt with a brass buckle.
+        mb.loft([ring(0.26, 0.2, 0.79, -0.02), ring(0.265, 0.205, 0.86, -0.02)], "leather", smooth=hq)
+        front = (0.205 + 0.02) * g * s
+        mb.box((0, -front - 0.005 * s, 0.83 * s), (0.11 * s, 0.03 * s, 0.08 * s), "brass")
+        # A folding knife in its sheath on the right hip.
+        mb.box((-0.24 * w * s, -0.17 * g * s, 0.8 * s), (0.05 * s, 0.05 * s, 0.13 * s), "leather_dark")
+        if hq:
+            mb.tube((-0.24 * w * s, -0.17 * g * s, 0.86 * s), (-0.24 * w * s, -0.17 * g * s, 0.92 * s), 0.014 * s, sides=4, color="wood_mid")
+        # A steel marlinspike at the left hip.
+        spike_x = (0.28 if hq else 0.25) * w * s
+        mb.tube((spike_x, -0.08 * g * s, 0.92 * s), (spike_x + 0.01 * s, -0.1 * g * s, 0.62 * s), 0.016 * s, 0.003 * s, sides=4, color="iron_light")
+        # A ring of giant rusted keys hanging at the front of his left hip.
+        at = Vector((0.18 * w * s, (-0.2 if hq else -0.18) * g * s + 0.01 * s, 0.77 * s))
+        loop = [at + Vector((0.035 * s * math.cos(t), -0.01 * s * math.sin(t), 0.035 * s * math.sin(t))) for t in [2 * math.pi * k / 6 for k in range(6)]]
+        mb.path(loop + [loop[0]], [0.008 * s] * 7, 4 if hq else 3, "rust")
+        # A short leather hanger from the belt's lower edge down to the ring.
+        half = 0.26 * w * s
+        belt_y = -(0.2 * math.sqrt(max(0.05, 1 - (at.x / half) ** 2)) + 0.02) * g * s * (0.966 if hq else 0.9)
+        mb.tube(Vector((at.x, belt_y + 0.006 * s, 0.805 * s)), at + Vector((0, -0.01 * s, 0.033 * s)), 0.009 * s, sides=4 if hq else 3, color="leather")
+        for k, dx in enumerate((-0.025, 0.0, 0.025) if hq else (-0.015, 0.015)):
+            top = at + Vector((dx * s, 0.0, -0.028 * s))
+            mb.tube(top, top + Vector((dx * 0.4 * s, -0.005 * s, -0.11 * s)), 0.008 * s, sides=4, color="rust_dark")
+            mb.box(tuple(top + Vector((dx * 0.4 * s + 0.012 * s, -0.005 * s, -0.1 * s))), (0.022 * s, 0.01 * s, 0.02 * s), "rust_dark")
+
+    for side, sign in (("L", 1), ("R", -1)):
+        shoulder, elbow = (Vector(p) for p in ctx.joints[f"upper_arm.{side}"][:2])
+        wrist, tip = (Vector(p) for p in ctx.joints[f"hand.{side}"][:2])
+        bulk = ctx.hero.arm_bulk
+        with mb.bound_to(f"upper_arm.{side}"):
+            # Round, heavy shoulders, so the silhouette reads as a barrel rather than a box.
+            mb.sphere(shoulder + (elbow - shoulder) * 0.12 + Vector((sign * 0.03 * s, 0, 0)), 0.12 * s * g, 8 if hq else 6, 4 if hq else 3, "faction_a", smooth=hq)
+            # The rolled-up, frayed sleeve.
+            mb.tube(shoulder + (elbow - shoulder) * 0.78, elbow + (elbow - shoulder) * 0.02, 0.07 * s * g * bulk, sides=8 if hq else 4, color="faction_b")
         with mb.bound_to(f"lower_arm.{side}"):
-            mb.tube(near + (far - near) * 0.35, far - (far - near) * 0.05, 0.05 * s, 0.045 * s, sides=6 if hq else 4, color="iron")
+            if hq:
+                # Faded tattoos of waves and an anchor.
+                mid = elbow + (wrist - elbow) * 0.5
+                r = 0.058 * s * g * bulk
+                mb.tube(mid + Vector((sign * r * 0.5, -r * 0.88, 0.04 * s)), mid + Vector((sign * r * 0.5, -r * 0.88, -0.05 * s)), 0.006 * s, sides=3, color="faction_a", flat=1.6)
+                mb.tube(mid + Vector((sign * r * 0.88, -r * 0.45, 0.0)), mid + Vector((sign * r * 0.88, -r * 0.45, -0.07 * s)), 0.006 * s, sides=3, color="faction_a", flat=1.6)
+        with mb.bound_to(f"hand.{side}"):
+            # Huge calloused hands.
+            if hq:
+                mb.sphere((wrist + tip) / 2, (0.07 * s, 0.06 * s, 0.085 * s), 8, 4, ctx.hero.skin)
+            else:
+                mb.box(tuple((wrist + tip) / 2), (0.12 * s, 0.11 * s, 0.15 * s), ctx.hero.skin)
+        # Patches on the baggy trousers.
+        hip, knee = (Vector(p) for p in ctx.joints[f"thigh.{side}"][:2])
+        t = 0.45 if sign > 0 else 0.7
+        r = (0.1 - 0.025 * t) * s * g * ctx.hero.leg_bulk * (0.97 if hq else 0.76)
+        mid = hip + (knee - hip) * t
+        with mb.bound_to(f"thigh.{side}"):
+            mb.plate([mid + Vector((-0.05 * s, -r, 0.06 * s)), mid + Vector((0.05 * s, -r, 0.06 * s)), mid + Vector((0.05 * s, -r, -0.05 * s)), mid + Vector((-0.05 * s, -r, -0.05 * s))], 0.02 * s, "canvas_dark")
+    _boot_cuffs(ctx, ctx.hero.boots, 1.18, cords="rope")
 
 
 def morrow_finery(ctx):
@@ -814,7 +1132,7 @@ def morrow_finery(ctx):
             mb.tube(elbow + (wrist - elbow) * 0.82, wrist + (wrist - elbow) * 0.08, 0.05 * s, 0.075 * s, sides=6 if hq else 4, color="cloth_white")
     with mb.bound_to("hips"):
         # Brass rings at the belt, hung with skeleton keys.
-        for k, x in enumerate((0.1, 0.17, 0.24) if hq else (0.13, 0.22)):
+        for k, x in enumerate((0.09, 0.15, 0.21) if hq else (0.1, 0.16)):
             on_hip = 0.17 * g * s * math.sqrt(max(0.1, 1 - (x / 0.3) ** 2))
             top = Vector((x * w * s, -on_hip - 0.014 * s, 0.9 * s))
             low = top + Vector((0, -0.006 * s, -0.16 * s))
@@ -822,20 +1140,23 @@ def morrow_finery(ctx):
             mb.sphere(top, 0.022 * s, 5 if hq else 4, 3, "brass", smooth=False)
             mb.box(tuple(low + Vector((0.012 * s, 0, 0.018 * s))), (0.03 * s, 0.012 * s, 0.022 * s), "brass")
     with mb.bound_to("head"):
-        # A black tricorn with gold braid, the hair tucked up under it.
+        # A black tricorn with gold braid, the hair tucked up under it. The brim turns up most at its three
+        # corners, and the braid is only a thin band along the edge.
         z = ctx.centre.z + 0.12 * s
         ring_sides = 12 if hq else 6
-        brim = []
-        for dz in (-0.02, 0.03):
+
+        def brim_ring(scale_r, lift):
             ring = []
             for j in range(ring_sides):
                 a = 2 * math.pi * (j + 0.5) / ring_sides
-                lobe = 1.0 + 0.3 * math.cos(3 * (a + math.pi / 2))
-                ring.append((0.3 * s * lobe * math.cos(a), 0.3 * s * lobe * math.sin(a), z + dz * s))
-            brim.append(ring)
-        mb.loft(brim, "cloth_black")
-        trim = [[(x * 1.03, y * 1.03, h) for x, y, h in brim[1]], [(x * 1.03, y * 1.03, h + 0.012 * s) for x, y, h in brim[1]]]
-        mb.loft(trim, "gold")
+                corner = 0.5 + 0.5 * math.cos(3 * (a + math.pi / 2))
+                lobe = 1.0 + 0.25 * corner
+                ring.append((0.3 * s * scale_r * lobe * math.cos(a), 0.3 * s * scale_r * lobe * math.sin(a), z + (lift * (0.3 + 0.7 * corner)) * s))
+            return ring
+
+        mb.loft([brim_ring(0.62, 0.0), brim_ring(0.85, 0.03), brim_ring(1.0, 0.11)], "cloth_black")
+        edge = [Vector(p) for p in brim_ring(1.0, 0.11)]
+        mb.path(edge + [edge[0]], [0.011 * s] * (len(edge) + 1), 4, "gold")  # A braided cord along the very edge.
         with mb.xf(Matrix.Translation((0, 0, z))):
             mb.lathe([(0.2 * s, 0.0), (0.19 * s, 0.11 * s), (0.11 * s, 0.17 * s)], ring_sides, "cloth_black", smooth=hq)
         # Dark round lenses in brass rims, with brass side cages. His eyes never show.
@@ -849,7 +1170,8 @@ def morrow_finery(ctx):
         mb.tube(_at(ctx, -0.03, -0.205, 0.04), _at(ctx, 0.03, -0.205, 0.04), 0.008 * s, sides=3, color="brass")
         # A square jaw, and a tight smirk that lifts on one side.
         mb.sphere(_at(ctx, 0, -0.07, -0.16), (0.15 * s, 0.11 * s, 0.075 * s), 6 if hq else 5, 3, ctx.hero.skin, smooth=hq)
-        mb.tube(_at(ctx, -0.055, -0.183, -0.115), _at(ctx, 0.06, -0.178, -0.09), 0.007 * s, sides=3, color="skin_dark", flat=1.4)
+        if hq:
+            mb.tube(_at(ctx, -0.055, -0.183, -0.115), _at(ctx, 0.06, -0.178, -0.09), 0.007 * s, sides=3, color="skin_dark", flat=1.4)
 
 
 def big_guns(ctx):
@@ -914,7 +1236,7 @@ def torn_shoulder(ctx, color="navy"):
 
 
 FEATURES = {f.__name__: f for f in (
-    big_guns, morrow_finery, nomad_layers, nomad_headwrap, nomad_scarf, assassin_gear, sorcerer_amulet, sorcerer_hood, sorcerer_robe, sorcerer_sleeves, hair_cap, hair_wild, hair_long, hair_braid, hair_ponytail, hair_slick, hair_side_shave, hair_gray_sides,
+    big_guns, bosun_build, morrow_finery, nomad_layers, nomad_hair, nomad_scarf, assassin_gear, sorcerer_amulet, sorcerer_hood, sorcerer_robe, sorcerer_sleeves, hair_cap, hair_wild, hair_long, hair_braid, hair_ponytail, hair_slick, hair_side_shave, hair_gray_sides,
     beard_full, goatee, moustache, eyepatch, scar, spectacles, goggles_up, face_mask, hood, bandana, tricorn,
     bicorne, shako, morion, warden_helm, hat_officer, long_coat, short_jacket, cuirass, pauldrons, epaulettes,
     cape, sash, cross_belt, bandolier, apron, tool_belt, tabard, keyring, medals, gold_buttons, high_collar,
@@ -941,11 +1263,14 @@ CAST = {
     "Rook": Hero(skin="skin_dark", hair="hair_black", top="canvas_dark", legs="navy", sleeve="skin_dark", forearm="skin_dark", scale=1.12, width=1.32, girth=1.28, arm_bulk=1.3, leg_bulk=1.2, iris="eye_dark", features=[
         ("hair_cap",), ("goggles_up",), ("big_guns",),
     ]),
-    "Lyra": Hero(skin="skin_mid", hair="hair_white", top="cloth_green", legs="cloth_brown", boots="leather_dark", belt="grass", sleeve="cloth_green", forearm="skin_mid", width=0.86, girth=0.82, iris="eye_dark", features=[
-        ("hair_braid",), ("nomad_headwrap",), ("nomad_layers",), ("nomad_scarf",),
+    "Lyra": Hero(skin="skin_mid", hair="hair_brown", top="canvas", legs="faction_a", boots="leather", belt="leather", sleeve="canvas", forearm="skin_mid", width=0.86, girth=0.82, iris="eye_dark", features=[
+        ("nomad_hair",), ("nomad_layers",), ("nomad_scarf",),
     ]),
-    "Sable": Hero(mouth=False, skin="skin_light", hair="hair_black", top="cloth_black", legs="cloth_black", boots="leather_dark", belt="leather_dark", sleeve="cloth_black", forearm="cloth_black", glove="leather_dark", scale=0.97, width=0.76, girth=0.8, arm_bulk=0.82, leg_bulk=0.88, brow=0, iris="grass", features=[
-        ("sorcerer_hood", "storm_dark"), ("face_mask", "storm"), ("assassin_gear",), ("dagger_sheaths",),
+    "Sable": Hero(mouth=False, skin="skin_light", hair="hair_black", top="faction_a", legs="cloth_black", boots="cloth_black", belt="leather", sleeve="faction_a", forearm="faction_a", glove="cloth_black", scale=0.97, width=0.76, girth=0.8, arm_bulk=0.82, leg_bulk=0.88, brow=0, iris="silver", features=[
+        ("sorcerer_hood", "cloth_black", "faction_a"), ("assassin_gear",),
+    ]),
+    "Brill": Hero(mouth=False, skin="skin_light", hair="hair_gray", top="faction_b", legs="cloth_black", boots="leather_dark", belt="leather", sleeve="faction_a", forearm="skin_light", scale=0.95, width=1.3, girth=1.38, arm_bulk=1.25, leg_bulk=1.25, brow=1, iris="eye_dark", features=[
+        ("hair_cap",), ("bosun_build",),
     ]),
     "Thorne": Hero(skin="enamel", hair="hair_black", top="faction_a", legs="faction_a", boots="cloth_black", belt="faction_c", sleeve="cloth_black", scale=1.06, brow=2, iris="faction_b", sclera="abyss", features=[
         ("sorcerer_robe",), ("sorcerer_hood",), ("sorcerer_sleeves",), ("sorcerer_amulet",),

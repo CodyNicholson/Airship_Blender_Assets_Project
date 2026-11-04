@@ -150,6 +150,10 @@ SKELETAL.update(STORY_CAST)
 DEFAULT_FACTIONS = {
     "SK_Morrow": "Emerald",
     "SK_Thorne": "Sorcerer",
+    "SK_Lyra": "Nomad",
+    "SK_Brill": "Bosun",
+    "SK_Sable": "Shadow",
+    "SM_Prop_SableDagger": "Shadow",
     "SM_Prop_ShadowStaff": "Sorcerer",
     "SM_Ship_RustWing": "Scrap",
     "SM_Ship_IronMaw": "Scrap",
