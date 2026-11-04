@@ -595,6 +595,7 @@ def sable_dagger(mb, hq):
         mb.path([(-0.06, 0, 0.145), (0, 0, 0.135), (0.06, 0, 0.17)], [0.008, 0.012, 0.008], 4, "iron_light")
         mb.plate([(-0.018, 0, 0.145), (0.018, 0, 0.145), (0.01, 0, 0.4), (0, 0, 0.47), (-0.01, 0, 0.4)], 0.008, "iron_light")
         mb.plate([(-0.004, -0.005, 0.17), (0.004, -0.005, 0.17), (0.002, -0.005, 0.38), (-0.002, -0.005, 0.38)], 0.002, "toxic")
+        mb.plate([(-0.008, 0, 0.41), (0.008, 0, 0.41), (0, 0, 0.465)], 0.01, "faction_c")  # Blood on the tip.
     else:
         mb.tube((0, 0, 0.0), (0, 0, 0.135), 0.018, sides=4, color="cloth_black")
         mb.plate([(-0.02, 0, 0.14), (0.02, 0, 0.14), (0, 0, 0.47)], 0.012, "iron_light")
@@ -640,7 +641,8 @@ def shadow_staff(mb, hq):
 
 
 def driftwood_lyre(mb, hq):
-    """Lyra's lyre: two bleached driftwood arms, a bone crossbar and horn tips, and gold strings."""
+    """Lyra's lyre: two curved driftwood arms, a pale bone crossbar and horn tips, gold strings, and feathers
+    and wind chimes hanging from the crossbar."""
     sides = _q(hq, 6, 4)
     mb.tube((0, 0, -0.1), (0, 0, 0.06), 0.02, sides=sides, color="wood_mid")  # A short handle, to hold it by.
     mb.box((0, 0, 0.12), (0.26, 0.08, 0.16), "wood_light")
@@ -650,6 +652,13 @@ def driftwood_lyre(mb, hq):
     mb.tube((-0.14, 0, 0.47), (0.14, 0, 0.47), 0.014, sides=sides, color="enamel")
     for x in (-0.06, -0.02, 0.02, 0.06) if hq else (-0.04, 0.04):
         mb.tube((x, -0.01, 0.2), (x, -0.01, 0.47), 0.003, sides=3, color="gold")
+    for sign, color in ((1, "enamel"), (-1, "wood_light")):
+        mb.tube((sign * 0.13, -0.01, 0.465), (sign * 0.14, -0.01, 0.42), 0.003, sides=3, color="leather_dark")
+        mb.plate([(sign * 0.13, -0.012, 0.42), (sign * 0.15, -0.012, 0.42), (sign * 0.15, -0.012, 0.3), (sign * 0.14, -0.012, 0.28)], 0.008, color)
+    if hq:
+        for k, x in enumerate((-0.09, 0.09)):
+            mb.tube((x, -0.02, 0.46), (x, -0.02, 0.4 - 0.02 * k), 0.002, sides=3, color="leather_dark")
+            mb.tube((x, -0.02, 0.4 - 0.02 * k), (x, -0.02, 0.33 - 0.02 * k), 0.008, sides=4, color="silver")
     mb.socket("grip", (0, 0, -0.03))
     mb.socket("trail_tip", (0, 0, 0.6))
 

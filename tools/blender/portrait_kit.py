@@ -899,6 +899,20 @@ def motif(kind, x, y, rng):
             m |= np.abs(x - k) < 0.024
         m |= np.abs(y - 0.12) < 0.018
         m |= np.abs(y - 0.88) < 0.018
+    elif kind == "deck":
+        # A ship's rigging: masts and shrouds on both sides, a yard across the top, hanging blocks, and deck planks.
+        for x0 in (0.08, 0.93):
+            m |= np.abs(x - x0) < 0.014
+        m |= (np.abs(y - 0.1 - (x - 0.5) * 0.04) < 0.012) & (x > 0.02) & (x < 0.98)
+        for k in range(5):
+            m |= (np.abs((y - 0.1) - (x - 0.08 - 0.05 * k) * 2.6) < 0.004) & (y > 0.1) & (y < 0.8)
+            m |= (np.abs((y - 0.1) + (x - 0.93 + 0.05 * k) * 2.6) < 0.004) & (y > 0.1) & (y < 0.8)
+        for cx, cy in ((0.22, 0.3), (0.8, 0.24), (0.68, 0.42)):
+            m |= np.abs(x - cx) < 0.003
+            m &= ~((y > cy) & (np.abs(x - cx) < 0.003)) | (y < cy + 0.05)
+            m |= np.hypot((x - cx) * 1.4, y - cy - 0.06) < 0.026
+        for k in range(4):
+            m |= np.abs(y - (0.86 + 0.045 * k)) < 0.004
     elif kind == "clouds":
         for cx, cy, r in ((0.08, 0.9, 0.16), (0.24, 0.98, 0.14), (0.0, 0.76, 0.1), (0.9, 0.86, 0.17), (1.0, 0.72, 0.12), (0.75, 1.0, 0.12), (0.94, 0.12, 0.1), (0.84, 0.17, 0.08), (0.05, 0.22, 0.08), (0.14, 0.18, 0.07)):
             m |= np.hypot(x - cx, y - cy) < r

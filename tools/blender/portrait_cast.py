@@ -135,91 +135,101 @@ def vane(p):
 
 
 def lyra(p):
-    """Nomad wind mage and musician. The only character who isn't looking at you: she's listening to something
-    you can't hear. Wind-charts tattooed across her cheek, a white braid, worn leathers and patchwork in greens
-    and gold, and a driftwood-and-bone lyre with the wind running through it."""
-    skin, shade, blush = rgb(186, 128, 92), rgb(124, 86, 92), rgb(196, 110, 96)
+    """Nomad wind mage and musician, mid-song on a windswept cliff. Bronze skin, bright eyes and an open, spirited
+    smile. Wind-swirl markings trace her cheekbones and temples. Dark brown hair streams in the wind, threaded
+    with thin braids, turquoise beads, metal rings and feathers. A ribbed emerald scarf runs back into a patchwork
+    cloak. Cream blouse, green waistcoat edged in gold, and a driftwood-and-bone lyre hung with feathers and chimes."""
+    skin, shade, blush = rgb(178, 118, 78), rgb(116, 72, 62), rgb(196, 112, 84)
+    hair, hair2 = rgb(70, 44, 28), rgb(98, 64, 40)
+    mark = rgb(46, 128, 118)
+    turquoise, metal, gold = rgb(64, 208, 196), rgb(184, 188, 196), rgb(232, 182, 62)
+    emerald, emerald2, sage, olive = rgb(26, 122, 82), rgb(14, 82, 56), rgb(140, 166, 120), rgb(110, 118, 60)
+    cream, bone, wood, wood2 = rgb(238, 228, 204), rgb(232, 222, 196), rgb(150, 122, 92), rgb(104, 82, 62)
+
+    # The patchwork cloak trails behind her, so it's drawn first.
+    patches = (emerald, olive, sage, rgb(120, 92, 58), emerald2, rgb(150, 132, 84))
+    for k in range(6):
+        x0, z0 = 1.05 + (k % 3) * 0.42, -1.25 - (k // 3) * 0.42 + 0.12 * (k % 3)
+        p.plate([(x0, 0.5, z0), (x0 + 0.44, 0.5, z0 + 0.12), (x0 + 0.44, 0.5, z0 - 0.32), (x0, 0.5, z0 - 0.44)], 0.03, patches[k], root=p.body_root)
+    for x in np.linspace(1.1, 2.2, 9):
+        p.sweep([(x, 0.48, -2.08 + 0.12 * (x - 1.1)), (x + 0.03, 0.48, -2.22 + 0.12 * (x - 1.1))], 0.012, olive, outline=0.0, root=p.body_root, seg=3)
+
     p.skull()
-    tattoo = rgb(38, 110, 150)
     p.base_skin(shade, blush)
-    white = rgb(232, 236, 240)
-    # Hooded, far-off eyes, pale as a sky at altitude.
-    iris = rgb(136, 220, 232)
-    p.eye(-1, iris, up=0.086, low=0.038, tilt=0.012, gaze=(0.046, 0.022), lid=0.34, iris_r=0.07)
-    p.eye(1, iris, up=0.086, low=0.038, tilt=0.012, gaze=(0.05, 0.022), lid=0.34, iris_r=0.07)
-    p.brow(-1, white, inner=0.13, outer=0.13, thick=0.018, arch=0.03, thin_end=True)
-    p.brow(1, white, inner=0.13, outer=0.13, thick=0.018, arch=0.03, thin_end=True)
-    p.nostrils(rgb(86, 48, 50))
-    p.mouth(INK, lip=rgb(166, 86, 92), lip_alpha=0.7, line=0.0085)
+    iris = rgb(176, 214, 92)
+    p.eye(-1, iris, up=0.098, low=0.046, tilt=0.03, gaze=(0.0, 0.01), lid=0.04, iris_r=0.074, lash=0.02)
+    p.eye(1, iris, up=0.098, low=0.046, tilt=0.03, gaze=(0.005, 0.01), lid=0.04, iris_r=0.074, lash=0.02)
+    p.brow(-1, hair, inner=0.12, outer=0.12, thick=0.03, arch=0.05)
+    p.brow(1, hair, inner=0.12, outer=0.12, thick=0.03, arch=0.05)
+    p.nostrils(rgb(90, 52, 44))
+    # An open, confident smile.
+    p.mouth(INK, lip=rgb(166, 82, 70), lip_alpha=0.8, open_amt=0.06, teeth=True, line=0.01)
     p.under_lip(shade)
-    # Isobars: flowing contour lines, like her mother's charts, across one cheek.
-    for k, offset in enumerate((0.0, 0.05, 0.1, 0.15)):
-        p.paint.line([(-0.72, -0.1 - offset), (-0.55, -0.02 - offset), (-0.4, -0.13 - offset), (-0.27, -0.14 - offset * 0.8), (-0.18, -0.08 - offset * 0.7)], [0.0035, 0.008, 0.007, 0.003], tattoo, 0.95)
-    p.paint.blob(-0.2, -0.05, 0.016, 0.016, tattoo, 1.0, soft=0.2)
-    for x, z in ((0.14, -0.1), (0.24, -0.16), (0.36, -0.13), (0.3, -0.23), (0.44, -0.21), (0.13, -0.2), (0.22, -0.26), (-0.08, -0.16)):
-        p.paint.blob(x, z, 0.011, 0.01, rgb(128, 76, 62), 0.7, soft=0.5)
+    # Wind-swirl markings across both cheekbones and up the temples.
+    for sign in (-1, 1):
+        for k, (r, z0) in enumerate(((0.07, -0.26), (0.045, -0.2))):
+            pts = [(sign * (0.46 + r * math.cos(t)), z0 + r * math.sin(t)) for t in np.linspace(0, 1.7 * math.pi, 7)]
+            p.paint.line(pts, [0.003, 0.007, 0.007, 0.006, 0.005, 0.004, 0.002], mark)
+        p.paint.line([(sign * 0.4, -0.3), (sign * 0.56, -0.16), (sign * 0.6, 0.1), (sign * 0.55, 0.34)], [0.002, 0.006, 0.006, 0.002], mark)
+        p.paint.line([(sign * 0.55, 0.2), (sign * 0.48, 0.28), (sign * 0.5, 0.36)], [0.002, 0.005, 0.002], mark)
     p.finish_skull()
     p.ear(1, skin, shade)
     p.neck(skin, width=0.27, depth=0.27)
 
-    p.cap(white, lambda x, y, z: (z > 0.62 - 0.7 * x * x) | ((y > 0.1) & (z > -0.8)), inflate=0.045)
-    # Hair parted off-centre, sweeping back from a high forehead.
-    for x0, x1, z1 in ((0.05, -0.74, 0.3), (0.05, 0.76, 0.28), (0.04, -0.5, 0.74), (0.05, 0.52, 0.72)):
-        p.sweep([(x0, -0.9, 0.76), ((x0 + x1) / 2, -0.7, 0.8), (x1, -0.2, z1)], [0.13, 0.17, 0.09], white, depth=0.4, gloss=0.2)
-    # The braid: overlapping plaits that lean alternately, over the shoulder to a lift-stone charm.
-    braid = rgb(204, 214, 228)
-    path = _spline(np.array([(-0.72, -0.2, 0.05), (-0.96, -0.42, -0.45), (-1.04, -0.66, -1.05), (-1.0, -0.84, -1.65), (-0.92, -0.94, -2.2)]), 10)
-    count = 13
-    for k in range(count):
-        t = (k + 0.5) / count
-        c = path[int(t * (len(path) - 1))]
-        lean = 0.1 * (-1) ** k
-        w = 0.15 - 0.06 * t
-        p.sweep([c + (-lean, 0, 0.14), c + (lean * 0.6, -0.03, 0), c + (lean, 0, -0.14)], [w * 0.5, w, w * 0.5], white if k % 2 else braid, depth=0.7, root=p.body_root, outline=0.012)
-    p.ball((-0.92, -0.97, -2.34), (0.1, 0.1, 0.13), rgb(80, 230, 230), gloss=0.9, root=p.body_root)
+    # Thick dark-brown hair in loose waves, streaming out on the wind.
+    p.cap(hair, lambda x, y, z: (z > 0.6 - 0.7 * x * x) | ((y > 0.1) & (z > -0.9)), inflate=0.06)
+    for k, (z0, reach, drop) in enumerate(((0.6, 2.1, 0.3), (0.35, 2.3, 0.0), (0.1, 2.2, -0.3), (-0.2, 2.0, -0.6), (-0.5, 1.8, -0.9))):
+        p.sweep([(0.55, 0.15, z0), (1.1, 0.25, z0 + 0.15), (1.6, 0.3, z0 - 0.05 + 0.1 * math.sin(k)), (reach, 0.35, drop)], [0.16, 0.18, 0.12, 0.01], hair if k % 2 else hair2, depth=0.4)
+    # Thin nomad braids with turquoise beads and metal rings, framing her face.
+    for side, x in ((-1, -0.66), (1, 0.7)):
+        path = [(x, -0.62, 0.15), (x + side * 0.06, -0.7, -0.35), (x + side * 0.02, -0.74, -0.85)]
+        p.sweep(path, 0.035, hair, depth=0.6, outline=0.008)
+        for k, (bx, bz) in enumerate(((x + side * 0.05, -0.25), (x + side * 0.04, -0.55), (x + side * 0.02, -0.9))):
+            if k == 1:
+                p.ring((bx, -0.74, bz), 0.05, 0.016, metal, gloss=0.9, normal=(0, 0, 1))
+            else:
+                p.ball((bx, -0.75, bz), (0.05, 0.05, 0.06), turquoise, gloss=0.8, outline=0.006)
+    # Long brown-and-white feathers pinned near the crown.
+    for k, (x0, lean) in enumerate(((0.32, 0.5), (0.45, 0.75))):
+        p.plate([(x0, -0.3, 0.92), (x0 + 0.08, -0.3, 0.95), (x0 + lean + 0.06, -0.2, 1.6), (x0 + lean, -0.2, 1.62)], 0.02, bone, outline=0.006)
+        for t in (0.35, 0.6, 0.85):
+            p.sweep([(x0 + lean * t - 0.02, -0.33, 0.92 + 0.68 * t), (x0 + lean * t + 0.1, -0.33, 0.92 + 0.68 * t - 0.03)], 0.02, rgb(110, 76, 50), depth=0.2, outline=0.0, seg=3)
+    p.ball((0.36, -0.42, 0.9), (0.06, 0.05, 0.06), turquoise, gloss=0.8, outline=0.006)
 
-    # A green headwrap with gold coins sewn along it, tied off with tails the wind has caught.
-    wrap, wrap2, gold, bone = rgb(58, 112, 66), rgb(38, 78, 50), rgb(232, 180, 58), rgb(232, 222, 196)
-    p.sweep([(-0.74, -0.42, 0.62), (0, -0.92, 0.72), (0.74, -0.42, 0.6)], 0.11, wrap, depth=0.5)
-    for k, x in enumerate(np.linspace(-0.42, 0.42, 5)):
-        p.ball((x, -0.97 + 0.5 * x * x, 0.68), (0.045, 0.02, 0.045), gold, gloss=0.9, outline=0.006)
-    p.sweep([(0.72, -0.2, 0.58), (1.2, 0.0, 0.84), (1.9, 0.1, 0.78)], [0.09, 0.1, 0.01], wrap, depth=0.3)
-    p.sweep([(0.72, -0.2, 0.5), (1.15, 0.0, 0.46), (1.8, 0.1, 0.56)], [0.08, 0.09, 0.01], wrap2, depth=0.3)
+    # Cream linen blouse, with a fitted green waistcoat bordered in gold geometric embroidery.
+    shoulders(p, 1.24, cream, neck=0.34, slope=0.08)
+    for sign in (-1, 1):
+        p.plate([(sign * 0.26, -0.62, -1.45), (sign * 1.02, -0.46, -1.6), (sign * 1.02, -0.6, -2.9), (sign * 0.22, -0.8, -2.9)], 0.04, emerald, root=p.body_root)
+        edge = [(sign * 0.26, -0.84, -1.45), (sign * 0.22, -0.86, -2.9)]
+        p.sweep(edge, 0.026, gold, root=p.body_root, outline=0.004)
+        for k in range(7):
+            z = -1.6 - k * 0.18
+            p.sweep([(sign * 0.33, -0.86, z), (sign * 0.41, -0.86, z - 0.09), (sign * 0.33, -0.86, z - 0.18)], 0.01, gold, root=p.body_root, outline=0.0, seg=3)
+    # A thick ribbed emerald scarf wound tight round the neck, its tail flying back into the cloak.
+    for k, (z, f) in enumerate(((-1.72, 1.3), (-1.58, 1.2), (-1.44, 1.1), (-1.3, 1.0), (-1.16, 0.92))):
+        ring = [[(math.cos(a) * 0.6 * f, 0.1 + math.sin(a) * 0.72 * f, zz + 0.08 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 64, endpoint=False)] for zz in (z, z + 0.12)]
+        p.loft(ring, emerald if k % 2 else emerald2, root=p.body_root)
+    p.sweep([(0.55, -0.35, -1.42), (1.05, 0.05, -1.36), (1.55, 0.3, -1.3)], [0.18, 0.2, 0.18], emerald, depth=0.3, root=p.body_root)
 
-    # Worn leather over green, the shoulders patched, and a patchwork sash slung across.
-    leather, leather2, green = rgb(112, 76, 46), rgb(78, 52, 36), rgb(66, 124, 74)
-    shoulders(p, 1.26, leather, neck=0.34, slope=0.08)
-    p.plate([(-0.3, -0.72, -1.95), (0.3, -0.72, -1.95), (0.1, -0.83, -2.9), (-0.1, -0.83, -2.9)], 0.04, green, root=p.body_root)
-    p.plate([(0.82, -0.42, -1.5), (1.14, -0.3, -1.66), (1.04, -0.5, -2.02), (0.72, -0.62, -1.84)], 0.02, leather2, root=p.body_root)
-    for k, (x, z) in enumerate(((0.8, -1.56), (1.0, -1.66), (0.72, -1.82), (0.96, -1.98))):
-        p.ball((x, -0.68, z), (0.022, 0.012, 0.022), gold, root=p.body_root, outline=0.004)
-    for k, u in enumerate(np.linspace(0, 0.85, 5)):
-        x0, z0 = 0.95 - 1.75 * u, -1.5 - 1.1 * u
-        p.plate([(x0, -0.9, z0), (x0 - 0.3, -0.92, z0 - 0.19), (x0 - 0.3, -0.92, z0 - 0.42), (x0, -0.9, z0 - 0.23)], 0.03, (green, gold, rgb(38, 78, 50), rgb(176, 130, 50), rgb(106, 152, 72))[k], root=p.body_root)
-    # Her scarf, gold now, still rides up around the chin and whips away with the wind.
-    scarf, scarf2 = rgb(232, 180, 58), rgb(176, 130, 50)
-    rings = []
-    for z, f in ((-1.68, 1.28), (-1.46, 1.1), (-1.22, 0.94)):
-        rings.append([(math.cos(a) * 0.62 * f, 0.1 + math.sin(a) * 0.76 * f, z + 0.1 * math.sin(a)) for a in np.linspace(0, 2 * math.pi, 64, endpoint=False)])
-    p.loft(rings, scarf, root=p.body_root)
-    p.sweep([(0.55, -0.45, -1.42), (1.05, -0.15, -1.3), (1.5, 0.05, -1.38), (2.15, 0.1, -1.1)], [0.16, 0.17, 0.15, 0.015], scarf, depth=0.25, root=p.body_root)
-    p.sweep([(0.6, -0.42, -1.55), (1.15, -0.1, -1.72), (2.1, 0.2, -1.7)], [0.12, 0.13, 0.01], scarf2, depth=0.25, root=p.body_root)
-
-    # The lyre: driftwood arms, a bone crossbar and horn tips, gold strings. She's mid-chord.
-    wood, wood2 = rgb(150, 122, 92), rgb(104, 82, 62)
+    # The lyre: driftwood arms, a bone crossbar and horn tips, gold strings, feathers and hanging chimes.
     lx, ly, lz = 1.02, -1.5, 0.3
     p.ball((lx, ly, lz - 2.2), (0.42, 0.15, 0.27), wood2, root=p.body_root)
     for sign in (-1, 1):
         p.sweep([(lx + sign * 0.28, ly, lz - 2.1), (lx + sign * 0.5, ly, lz - 1.72), (lx + sign * 0.36, ly, lz - 1.36), (lx + sign * 0.5, ly, lz - 1.1)], [0.075, 0.07, 0.055, 0.015], wood if sign > 0 else wood2, depth=0.6, root=p.body_root)
     p.sweep([(lx - 0.42, ly, lz - 1.4), (lx + 0.42, ly, lz - 1.4)], 0.038, bone, root=p.body_root)
-    for k, off in enumerate(np.linspace(-0.2, 0.2, 5)):
+    for off in np.linspace(-0.2, 0.2, 5):
         p.sweep([(lx + off, ly - 0.05, lz - 1.4), (lx + off * 0.8, ly - 0.05, lz - 2.06)], 0.012, gold, root=p.body_root, outline=0.0, seg=4)
+    for k, x in enumerate((lx - 0.38, lx + 0.4)):
+        p.sweep([(x, ly - 0.04, lz - 1.42), (x + 0.02, ly - 0.04, lz - 1.66)], 0.008, rgb(90, 70, 52), root=p.body_root, outline=0.0, seg=3)
+        p.plate([(x - 0.03, ly - 0.06, lz - 1.64), (x + 0.04, ly - 0.06, lz - 1.64), (x + 0.02, ly - 0.06, lz - 1.98), (x - 0.01, ly - 0.06, lz - 1.98)], 0.015, bone if k else rgb(120, 86, 58), root=p.body_root, outline=0.005)
+    for k, off in enumerate((-0.12, 0.0, 0.12)):
+        p.sweep([(lx + off, ly - 0.08, lz - 1.42), (lx + off, ly - 0.08, lz - 1.52 - 0.06 * k)], 0.005, metal, root=p.body_root, outline=0.0, seg=3)
+        p.sweep([(lx + off, ly - 0.08, lz - 1.52 - 0.06 * k), (lx + off, ly - 0.08, lz - 1.7 - 0.06 * k)], 0.02, metal, gloss=0.9, root=p.body_root, outline=0.004, seg=3)
     p.ball((lx - 0.12, ly - 0.14, lz - 1.8), (0.13, 0.1, 0.1), skin, root=p.body_root)
 
     # The wind she's calling, curling round her and through the strings.
     gust, gust2 = rgb(226, 250, 240), rgb(170, 232, 214)
     p.sweep([(-2.2, -1.5, -1.7), (-1.1, -1.55, -2.2), (0.3, -1.6, -2.05), (0.95, -1.6, -1.55), (0.6, -1.6, -1.2)], [0.008, 0.05, 0.06, 0.04, 0.006], gust, depth=0.3, root=p.body_root, outline=0.0)
-    p.sweep([(2.2, -1.2, -0.3), (1.5, -1.25, -0.9), (1.75, -1.3, -1.3), (2.15, -1.3, -1.05)], [0.006, 0.04, 0.04, 0.006], gust2, depth=0.3, root=p.body_root, outline=0.0)
     p.sweep([(-2.1, -0.9, 0.8), (-1.45, -0.95, 0.3), (-1.6, -1.0, -0.15), (-1.95, -1.0, 0.0)], [0.006, 0.035, 0.035, 0.005], gust2, depth=0.3, root=p.body_root, outline=0.0)
 
 
@@ -565,69 +575,98 @@ def rook(p):
 
 
 def sable(p):
-    """Assassin. A hard woman you only see from the brow to the bridge of the nose: hood and mask, a scarred
-    brow, one eye blind-white from an old charge and one that's poison green. A knife in her hand with poison
-    on its edge, a bow and poison arrows at her back, vials across her chest and a bottle at the ready."""
-    skin, shade = rgb(170, 152, 150), rgb(70, 58, 84)
-    p.skull()
-    p.paint.blob(0, 0.0, 0.92, 0.36, rgb(40, 32, 54), 0.65)
-    brow = rgb(18, 14, 22)
-    p.eye(-1, rgb(110, 232, 96), up=0.088, low=0.036, tilt=0.07, gaze=(0.035, 0.0), lash=0.024, lid=0.16)
-    p.eye(1, rgb(214, 218, 224), up=0.088, low=0.036, tilt=0.07, gaze=(0.035, 0.0), lash=0.024, lid=0.16)
-    p.brow(-1, brow, inner=0.08, outer=0.16, thick=0.022, arch=0.03)
-    p.brow(1, brow, inner=0.08, outer=0.16, thick=0.022, arch=0.03)
-    p.paint.line([(0.4, 0.42), (0.34, 0.1), (0.42, -0.2), (0.36, -0.38)], [0.004, 0.014, 0.014, 0.003], rgb(210, 190, 186))
-    p.finish_skull()
-    cloth, deep = rgb(32, 30, 42), rgb(16, 14, 24)
-    steel, poison = rgb(176, 186, 200), rgb(110, 232, 96)
-    p.neck(deep, width=0.34, depth=0.34)
-    # Mask to the bridge of the nose, with a sharp fold.
-    p.cap(cloth, lambda x, y, z: (z < -0.18 + 0.06 * np.abs(x)) & (y < 0.3), inflate=0.16)
-    p.sweep([(-0.7, -0.72, -0.22), (0, -1.1, -0.17), (0.7, -0.72, -0.22)], 0.028, rgb(70, 66, 84), seg=8, outline=0.006)
-    # Hood: a big soft point that falls forward and casts the eyes into shadow.
-    def hood(x, y, z):
-        return ~((y < -0.1) & (np.abs(x) < 0.63 - 0.3 * np.abs(z - 0.08) ** 2) & (z > -0.3) & (z < 0.5))
-    p.cap(cloth, hood, inflate=0.14)
-    p.sweep([(0, 0.0, 0.92), (0, -0.62, 1.04), (0, -1.08, 0.74)], [0.52, 0.36, 0.03], cloth, depth=0.5)
-    for sign in (-1, 1):
-        p.sweep([(sign * 0.74, 0.1, 0.5), (sign * 0.9, 0.1, -0.5), (sign * 0.92, 0.1, -1.45)], [0.2, 0.28, 0.48], deep, depth=0.8)
-    # A bow across her back and a quiver of poison arrows behind the other shoulder.
-    bowwood, sinew = rgb(70, 48, 40), rgb(190, 186, 170)
-    p.sweep([(-1.4, 0.45, 1.25), (-2.02, 0.45, 0.2), (-2.05, 0.45, -0.9), (-1.5, 0.45, -2.3)], [0.03, 0.075, 0.075, 0.03], bowwood, depth=0.6)
-    p.sweep([(-1.4, 0.42, 1.25), (-1.5, 0.42, -2.3)], 0.012, sinew, outline=0.0, seg=4)
-    p.sweep([(0.92, 0.4, -1.5), (1.14, 0.4, -0.15)], [0.17, 0.2], rgb(62, 44, 40), depth=0.7)
-    for k, (dx, h) in enumerate(((0.0, 0.55), (0.11, 0.42), (-0.1, 0.36))):
+    """Assassin, crouched in the moonlit rigging. Lean and angular, pale weathered skin, light eyes in heavy black
+    kohl, a jagged crimson scar on her left cheekbone, and a cold unblinking stare. Salt-matted hair and thin
+    beaded braids escape a frayed grey cowl worn over a black bandana. A dark grey double-breasted coat with
+    pewter buttons, brown leather bandoliers and a bone-handled dagger across her chest. A blood-tipped
+    stiletto in one hand, a venom-soaked rag and an uncorked bottle of glowing green poison in the other, and
+    a steel-bracketed recurve bow and green-fletched arrows on her back."""
+    skin, shade, blush = rgb(214, 204, 198), rgb(150, 136, 140), rgb(196, 168, 168)
+    kohl, hair, scar = rgb(14, 10, 16), rgb(30, 26, 32), rgb(176, 28, 40)
+    grey, grey2, vest = rgb(70, 72, 80), rgb(46, 48, 56), rgb(26, 24, 30)
+    leather, pewter, bone, steel = rgb(100, 66, 42), rgb(150, 154, 160), rgb(226, 216, 190), rgb(176, 186, 200)
+    poison, glow = rgb(96, 230, 90), rgb(190, 255, 150)
+
+    # Bow and quiver behind her shoulders, drawn first.
+    wood = rgb(120, 84, 54)
+    p.sweep([(-1.5, 0.45, 1.3), (-1.78, 0.45, 1.0), (-2.05, 0.45, 0.2), (-2.05, 0.45, -0.9), (-1.6, 0.45, -2.2), (-1.36, 0.45, -2.45)], [0.025, 0.06, 0.08, 0.08, 0.06, 0.025], wood, depth=0.6)
+    p.sweep([(-1.5, 0.42, 1.3), (-1.36, 0.42, -2.45)], 0.012, rgb(196, 190, 172), outline=0.0, seg=4)
+    for z in (0.6, -0.4):
+        p.sweep([(-2.08, 0.4, z), (-2.08, 0.4, z - 0.16)], 0.1, steel, gloss=0.9, depth=0.3, outline=0.005, seg=3)
+    p.sweep([(-1.66, 0.4, 1.12), (-1.62, 0.4, 0.98), (-1.6, 0.4, 0.9)], [0.015, 0.04, 0.01], poison, outline=0.004)
+    p.sweep([(0.92, 0.4, -1.5), (1.14, 0.4, -0.15)], [0.17, 0.2], leather, depth=0.7)
+    for dx, h in ((0.0, 0.5), (0.11, 0.4), (-0.1, 0.34)):
         x0, z0 = 1.14 + dx, -0.15
         p.sweep([(x0, 0.38, z0), (x0 + 0.04, 0.38, z0 + h)], 0.016, rgb(150, 132, 108), outline=0.005, seg=4)
-        p.sweep([(x0 + 0.04, 0.36, z0 + h), (x0 + 0.05, 0.36, z0 + h + 0.13)], [0.04, 0.004], poison, depth=0.5, outline=0.005)
-    coat(p, 1.3, cloth, deep, rgb(52, 50, 66), gap=0.2, neck=0.42, depth=0.72)
-    # Studded leather harness, and the poison: five green vials in a strap across the chest.
-    p.sweep([(1.08, -0.62, -1.6), (0.2, -0.86, -2.05), (-0.75, -0.78, -2.75)], 0.11, rgb(62, 44, 40), depth=0.3, root=p.body_root)
-    for k in np.linspace(0.12, 0.72, 4):
-        x, z = 1.08 - 1.83 * k, -1.6 - 1.15 * k
-        p.ball((x, -0.96 + 0.1 * abs(k - 0.5), z), (0.05, 0.04, 0.1), poison, gloss=0.9, root=p.body_root, outline=0.008)
-        p.ball((x, -0.97 + 0.1 * abs(k - 0.5), z + 0.12), (0.028, 0.028, 0.028), steel, gloss=0.9, root=p.body_root, outline=0.005)
-    # Her poison bottle, big enough to matter, and a throwing knife's hilt at the strap.
-    p.ball((-0.62, -1.0, -2.1), (0.2, 0.16, 0.25), rgb(70, 190, 86), gloss=0.9, root=p.body_root)
-    p.sweep([(-0.62, -1.0, -1.86), (-0.62, -1.0, -1.66)], 0.06, rgb(46, 110, 62), gloss=0.7, root=p.body_root)
-    p.sweep([(-0.62, -1.0, -1.66), (-0.62, -1.0, -1.58)], 0.075, rgb(112, 84, 56), root=p.body_root)
-    p.ball((-0.68, -1.15, -2.02), (0.04, 0.02, 0.07), rgb(220, 250, 220), root=p.body_root, outline=0.0)
-    p.sweep([(0.44, -0.84, -1.72), (0.56, -0.92, -1.42)], 0.03, rgb(50, 36, 34), root=p.body_root)
-    p.ball((0.57, -0.93, -1.38), (0.045, 0.04, 0.045), steel, gloss=0.9, root=p.body_root, outline=0.005)
-    # A steel pauldron on the blade arm.
-    p.ball((-1.08, -0.3, -1.62), (0.34, 0.42, 0.17), rgb(112, 122, 140), gloss=0.7, root=p.body_root, rot=(0, -0.42, 0))
-    for k in (-1, 0, 1):
-        p.ball((-1.08 + k * 0.16, -0.68, -1.65 - k * 0.07), (0.025, 0.018, 0.025), rgb(190, 198, 210), gloss=0.9, root=p.body_root, outline=0.004)
-    # A lock of dark hair has come out of the hood.
-    p.sweep([(0.42, -0.72, 0.1), (0.54, -0.86, -0.36), (0.42, -0.92, -0.8)], [0.05, 0.075, 0.012], rgb(30, 24, 34), depth=0.5)
-    # A long dagger held up by the face, poison running down the edge to a hanging drop.
-    bx, by = 1.42, -1.55
-    p.plate([(bx - 0.08, by, -1.4), (bx + 0.08, by, -1.4), (bx + 0.02, by, 0.18), (bx - 0.02, by, 0.18)], 0.02, steel, gloss=1.0, root=p.body_root)
-    p.sweep([(bx - 0.045, by - 0.03, -0.3), (bx - 0.05, by - 0.03, -0.75), (bx - 0.06, by - 0.03, -1.3)], [0.006, 0.02, 0.012], poison, depth=0.3, root=p.body_root, outline=0.0)
-    p.ball((bx - 0.09, by - 0.03, -1.0), (0.035, 0.03, 0.055), poison, root=p.body_root, outline=0.005)
-    p.sweep([(bx - 0.26, by, -1.42), (bx + 0.26, by, -1.42)], 0.05, rgb(90, 96, 110), gloss=0.8, root=p.body_root)
-    p.sweep([(bx, by, -1.45), (bx, by, -1.95)], 0.065, rgb(50, 36, 34), root=p.body_root)
-    p.ball((bx, by - 0.03, -1.86), (0.2, 0.15, 0.17), cloth, root=p.body_root)
+        p.plate([(x0 + 0.02, 0.36, z0 + h - 0.18), (x0 + 0.1, 0.36, z0 + h - 0.24), (x0 + 0.06, 0.36, z0 + h)], 0.01, poison, outline=0.004)
+
+    p.skull()
+    p.base_skin(shade, blush)
+    # Heavy kohl round light eyes, and a cold, level stare.
+    for sign in (-1, 1):
+        p.paint.blob(sign * 0.31, 0.02, 0.22, 0.12, kohl, 0.85, soft=0.35)
+    iris = rgb(196, 224, 232)
+    p.eye(-1, iris, up=0.08, low=0.04, tilt=0.08, gaze=(0.0, 0.0), lash=0.03, lid=0.18, iris_r=0.062)
+    p.eye(1, iris, up=0.08, low=0.04, tilt=0.08, gaze=(0.0, 0.0), lash=0.03, lid=0.18, iris_r=0.062)
+    p.brow(-1, hair, inner=0.06, outer=0.15, thick=0.026, arch=0.02)
+    p.brow(1, hair, inner=0.06, outer=0.15, thick=0.026, arch=0.02)
+    p.nostrils(rgb(110, 90, 96))
+    p.mouth(INK, lip=rgb(150, 110, 118), lip_alpha=0.6, line=0.009)
+    p.under_lip(shade)
+    for sign in (-1, 1):
+        p.paint.line([(sign * 0.36, -0.32), (sign * 0.48, -0.5)], [0.003, 0.008], shade)
+    # A jagged crimson scar across her left cheekbone.
+    p.paint.line([(0.3, -0.06), (0.4, -0.16), (0.36, -0.22), (0.5, -0.36)], [0.006, 0.014, 0.012, 0.004], scar)
+    p.finish_skull()
+    p.ear(-1, skin, shade)
+    p.neck(skin, width=0.27, depth=0.27)
+    # A tight black bandana, then the cowl over it: frayed dark grey, pulled low.
+    p.cap(vest, lambda x, y, z: (z > 0.42 - 0.2 * x * x) & (y < 0.2), inflate=0.05)
+    def hood(x, y, z):
+        return ~((y < -0.1) & (np.abs(x) < 0.66 - 0.24 * np.abs(z + 0.1) ** 2) & (z > -1.2) & (z < 0.52))
+    p.cap(grey2, hood, inflate=0.15)
+    p.sweep([(0, 0.0, 0.92), (0, -0.62, 1.04), (0, -1.06, 0.68)], [0.5, 0.34, 0.03], grey2, depth=0.5)
+    for x, z in ((-0.7, 0.3), (0.74, -0.1), (-0.62, -0.6), (0.2, 0.98)):
+        p.ball((x, -0.6, z), (0.04, 0.02, 0.035), rgb(16, 16, 22), outline=0.0)
+    for sign in (-1, 1):
+        p.sweep([(sign * 0.7, -0.6, 0.52), (sign * 0.8, -0.56, -0.4), (sign * 0.64, -0.54, -1.25)], [0.02, 0.05, 0.02], rgb(60, 62, 70), depth=0.4, seg=8)
+        # Salt-matted strands and thin beaded braids along her jaw.
+        p.sweep([(sign * 0.6, -0.66, 0.4), (sign * 0.68, -0.72, -0.2), (sign * 0.6, -0.74, -0.8)], [0.035, 0.05, 0.01], hair, depth=0.5)
+        p.sweep([(sign * 0.58, -0.74, -0.25), (sign * 0.6, -0.78, -0.7), (sign * 0.55, -0.8, -1.05)], 0.022, hair, outline=0.006, seg=6)
+        for bz in (-0.75, -0.98):
+            p.ball((sign * 0.58, -0.82, bz), (0.035, 0.03, 0.04), bone if bz < -0.9 else pewter, gloss=0.6, outline=0.005)
+
+    # Dark grey double-breasted coat with dull pewter buttons, over a dark vest.
+    coat(p, 1.3, grey, grey2, vest, gap=0.24, neck=0.42, depth=0.72)
+    for sign in (-1, 1):
+        for k in range(3):
+            p.ball((sign * 0.4, -0.86, -1.85 - k * 0.3), (0.045, 0.025, 0.045), pewter, gloss=0.6, root=p.body_root, outline=0.005)
+    # Brown bandoliers across her chest, and a bone-handled dagger sheathed diagonally across them.
+    p.sweep([(1.08, -0.62, -1.6), (0.2, -0.88, -2.05), (-0.75, -0.8, -2.75)], 0.11, leather, depth=0.3, root=p.body_root)
+    p.sweep([(-1.02, -0.6, -1.66), (-0.1, -0.9, -2.2), (0.8, -0.82, -2.85)], 0.09, rgb(82, 54, 36), depth=0.3, root=p.body_root)
+    p.sweep([(-0.75, -0.92, -1.95), (0.25, -0.98, -2.55)], [0.07, 0.05], rgb(40, 32, 30), depth=0.4, root=p.body_root)
+    p.sweep([(-0.98, -0.9, -1.8), (-0.75, -0.94, -1.95)], 0.065, bone, root=p.body_root)
+    p.sweep([(-0.82, -0.95, -1.8), (-0.68, -0.97, -2.08)], 0.04, steel, gloss=0.9, root=p.body_root)
+
+    # A blood-tipped stiletto held up in her left hand.
+    sx, sy = 1.55, -1.15
+    p.plate([(sx - 0.04, sy, -1.38), (sx + 0.04, sy, -1.38), (sx, sy, 0.02)], 0.016, steel, gloss=1.0, root=p.body_root)
+    p.plate([(sx - 0.014, sy - 0.012, -0.22), (sx + 0.014, sy - 0.012, -0.22), (sx, sy - 0.012, 0.02)], 0.01, scar, root=p.body_root, outline=0.0)
+    p.sweep([(sx - 0.2, sy, -1.4), (sx + 0.2, sy, -1.4)], 0.04, pewter, gloss=0.8, root=p.body_root)
+    p.sweep([(sx, sy, -1.42), (sx, sy, -1.9)], 0.06, rgb(40, 30, 28), root=p.body_root)
+    p.ball((sx, sy - 0.03, -1.82), (0.15, 0.11, 0.14), rgb(36, 34, 40), root=p.body_root)
+    for k in range(3):
+        p.ball((sx - 0.1, sy - 0.12, -1.74 - 0.07 * k), (0.045, 0.04, 0.035), skin, root=p.body_root, outline=0.004)
+    # In the other hand, a rag drawing glowing green poison from an uncorked bottle.
+    bx, by = -1.28, -1.5
+    p.ball((bx, by, -2.35), (0.24, 0.18, 0.3), rgb(70, 190, 86), gloss=0.9, root=p.body_root)
+    p.ball((bx - 0.06, by - 0.12, -2.25), (0.05, 0.02, 0.09), glow, root=p.body_root, outline=0.0)
+    p.sweep([(bx, by, -2.06), (bx, by, -1.86)], 0.07, rgb(46, 110, 62), gloss=0.7, root=p.body_root)
+    p.sweep([(bx, by - 0.05, -1.84), (bx + 0.14, by - 0.12, -1.62), (bx + 0.2, by - 0.1, -1.38)], [0.06, 0.09, 0.05], rgb(150, 160, 120), depth=0.4, root=p.body_root)
+    p.sweep([(bx + 0.05, by - 0.14, -1.7), (bx + 0.1, by - 0.16, -1.48)], [0.03, 0.01], glow, depth=0.3, root=p.body_root, outline=0.0)
+    p.ball((bx + 0.24, by - 0.08, -1.32), (0.14, 0.1, 0.12), rgb(36, 34, 40), root=p.body_root)
+    for k in range(3):
+        p.ball((bx + 0.16 + 0.06 * k, by - 0.17, -1.38), (0.035, 0.04, 0.045), skin, root=p.body_root, outline=0.004)
 
 
 def morrow(p):
@@ -1120,25 +1159,109 @@ def hask(p):
 
 
 def brill(p):
-    """Bosun, shaped like a barrel. Bulbous nose, thick neck, whistle on a cord, knitted cap and an
-    anchor tattooed on the cheek, in case the job slips anyone's mind."""
-    skin, shade, blush = rgb(226, 170, 128), rgb(150, 92, 84), rgb(232, 96, 76)
-    p.s["smile"] = 0.06
-    face(p, skin, shade, blush, rgb(70, 118, 170), rgb(146, 96, 54), inner=0.1, outer=0.13, thick=0.05, up=0.05, low=0.03, gaze=0.028, iris_r=0.05)
-    p.paint.blob(0, -0.33, 0.17, 0.11, rgb(222, 72, 60), 0.5)
-    tat = rgb(40, 64, 110)
+    """Bosun Brill, a barrel of a man, inspecting a rigging block on deck. A weathered, ruddy face with a
+    bulbous sea-worn nose, a rugged squint, and a faded indigo anchor on his right cheek. A bushy grizzled
+    beard with beaded braids down his chest, a tarnished gold hoop, and a charcoal watch cap stuck with pins.
+    A brass bosun's call on a hemp cord over an indigo-and-cream striped shirt, an open tar-stained navy
+    waistcoat, and a coil of Manila rope over his right shoulder."""
+    skin, shade, blush = rgb(222, 160, 122), rgb(150, 92, 84), rgb(226, 92, 72)
+    p.s["smile"] = 0.05
+    face(p, skin, shade, blush, rgb(70, 118, 170), rgb(120, 104, 90), inner=0.1, outer=0.14, thick=0.055, up=0.04, low=0.024, gaze=0.028, iris_r=0.048, lid=0.4, bags=0.8, skin_shade=shade)
+    # Ruddy cheeks and nose, crow's feet from squinting into the wind, and the faded anchor tattoo.
+    p.paint.blob(0, -0.33, 0.2, 0.13, rgb(214, 70, 58), 0.55)
+    for sign in (-1, 1):
+        p.paint.blob(sign * 0.42, -0.3, 0.16, 0.1, rgb(214, 96, 76), 0.35)
+        for k in range(3):
+            p.paint.line([(sign * 0.48, 0.02 + 0.03 * (k - 1)), (sign * 0.6, 0.04 + 0.07 * (k - 1))], [0.006, 0.002], shade)
+    for x, z in ((0.06, -0.26), (-0.05, -0.31), (0.03, -0.36)):
+        p.paint.blob(x, z, 0.035, 0.03, rgb(196, 64, 56), 0.5)
+    tat = rgb(70, 90, 136)
     p.paint.line([(-0.5, -0.1), (-0.5, -0.36)], 0.009, tat)
     p.paint.line([(-0.56, -0.15), (-0.44, -0.15)], 0.008, tat)
     p.paint.line([(-0.6, -0.27), (-0.56, -0.36), (-0.5, -0.38), (-0.44, -0.36), (-0.4, -0.27)], 0.008, tat)
-    finish(p, skin, shade, neck=0.5)
-    knit = rgb(66, 86, 130)
-    rings = [_ellipse(0.82, 0.96, 0.4), _ellipse(0.86, 1.0, 0.68), _ellipse(0.78, 0.9, 0.98), _ellipse(0.36, 0.44, 1.14)]
+    p.paint.blob(-0.5, -0.09, 0.025, 0.025, tat, 0.8)
+    finish(p, skin, shade, neck=0.56)
+    gold_dark = rgb(178, 140, 64)
+    p.ring((0.97, -0.12, -0.34), 0.085, 0.022, gold_dark, gloss=0.7, normal=(1, 0, 0))
+
+    # A charcoal knitted watch cap with a turned-up cuff, ribbed, with a few rusted pins stuck in it.
+    knit, cuff = rgb(62, 62, 70), rgb(44, 44, 52)
+    rings = [_ellipse(0.84, 0.98, 0.42), _ellipse(0.86, 1.0, 0.7), _ellipse(0.76, 0.88, 0.98), _ellipse(0.4, 0.48, 1.12)]
     p.loft(_resample(rings, 4), knit)
-    p.loft([_ellipse(0.88, 1.03, 0.36), _ellipse(0.88, 1.03, 0.62)], rgb(44, 60, 96), cap=False)
-    p.ball((0.08, 0.05, 1.24), 0.14, rgb(232, 224, 206))
-    coat(p, 1.72, rgb(212, 204, 182), rgb(182, 172, 146), rgb(80, 60, 48), gap=0.25, neck=0.62, depth=0.88)
-    p.sweep([(-0.48, -0.74, -1.36), (-0.1, -0.92, -2.05), (0.48, -0.74, -1.36)], 0.014, rgb(40, 34, 40), root=p.body_root, outline=0.0)
-    p.sweep([(-0.1, -0.94, -2.05), (-0.1, -0.96, -2.36)], 0.05, rgb(228, 232, 238), gloss=0.9, root=p.body_root)
+    p.loft([_ellipse(0.89, 1.04, 0.36), _ellipse(0.89, 1.04, 0.64)], cuff, cap=False)
+    for x in np.linspace(-0.7, 0.7, 11):
+        p.sweep([(x, -0.97 * math.sqrt(max(0.05, 1 - (x / 0.9) ** 2)) - 0.02, 0.38), (x, -0.97 * math.sqrt(max(0.05, 1 - (x / 0.9) ** 2)) - 0.02, 0.62)], 0.01, rgb(34, 34, 40), outline=0.0, seg=3)
+    rust_pin = rgb(150, 90, 58)
+    for x, z, lean in ((0.5, 0.86, 0.12), (0.62, 0.74, 0.18), (-0.56, 0.8, -0.14)):
+        p.sweep([(x, -0.72, z), (x + lean, -0.86, z + 0.22)], 0.012, rust_pin, outline=0.004, seg=3)
+        p.ball((x + lean, -0.86, z + 0.22), 0.03, rgb(196, 188, 170), outline=0.004)
+
+    # The bust: an open navy waistcoat over the striped shirt.
+    navy, navy2, cream, indigo = rgb(40, 50, 84), rgb(28, 36, 62), rgb(232, 224, 202), rgb(58, 70, 128)
+    shoulders(p, 1.92, navy, neck=0.66, depth=0.92)
+    # The striped shirt in the open front, laid in front of the bust so it shows either side of the beard.
+    p.plate([(-1.0, -0.8, -1.3), (1.0, -0.8, -1.3), (0.85, -0.98, -2.95), (-0.85, -0.98, -2.95)], 0.04, cream, root=p.body_root)
+    for z in np.arange(-1.42, -2.95, -0.19):
+        t = (-1.3 - z) / 1.65
+        hw, y = 1.0 - 0.15 * t, -0.8 - 0.18 * t
+        p.sweep([(-hw, y - 0.035, z), (hw, y - 0.035, z)], 0.055, indigo, root=p.body_root, outline=0.0, seg=4)
+    # The waistcoat's open fronts, worn and stained.
+    for sign in (-1, 1):
+        p.plate([(sign * 0.95, -0.86, -1.26), (sign * 1.5, -0.72, -1.3), (sign * 1.55, -0.86, -2.95), (sign * 0.78, -1.06, -2.95)], 0.06, navy2, root=p.body_root)
+    for k, (x, z) in enumerate(((0.98, -2.0), (0.93, -2.35), (0.88, -2.7))):
+        p.ball((x, -1.06, z), (0.06, 0.03, 0.06), rgb(190, 150, 70) if k != 1 else rgb(160, 164, 170), gloss=0.7, root=p.body_root, outline=0.005)
+    for x, z, r in ((-1.0, -2.3, 0.12), (1.2, -1.9, 0.09), (-0.84, -2.7, 0.08)):
+        p.ball((x * 1.25, -1.02, z), (r, 0.02, r * 0.7), rgb(20, 22, 30), root=p.body_root, outline=0.0)  # Tar stains.
+
+    # A coil of Manila rope over his right shoulder.
+    rope, rope2 = rgb(200, 164, 104), rgb(160, 126, 76)
+    for k in range(5):
+        p.ring((-1.25 - 0.04 * k, -0.3 - 0.07 * k, -1.66 + 0.035 * k), 0.46, 0.055, rope if k % 2 else rope2, normal=(0.3, -0.85, 0.42), root=p.body_root, outline=0.006)
+
+    # The bosun's call on a knotted hemp cord, left of the beard.
+    cord = rgb(176, 150, 104)
+    for sign in (-1, 1):
+        p.sweep([(sign * 0.42, -0.62, -1.3), (0.62 if sign > 0 else 0.2, -0.86, -2.0), (0.62, -0.94, -2.3)], 0.016, cord, root=p.body_root, outline=0.004)
+    brass = rgb(200, 158, 70)
+    p.sweep([(0.62, -0.96, -2.3), (0.98, -1.0, -2.2)], [0.05, 0.035], brass, gloss=0.9, root=p.body_root)
+    p.ball((1.02, -1.0, -2.24), 0.09, brass, gloss=0.9, root=p.body_root)
+
+    # A bushy grizzled beard cascading down his chest, with beaded braids.
+    grey, grey2, brown = rgb(172, 168, 160), rgb(136, 130, 124), rgb(112, 84, 62)
+    # Many wavy locks of different lengths, grey with brown through it, so it reads bushy rather than striped.
+    locks = []
+    for k in range(13):
+        x0 = -0.7 + 1.4 * k / 12
+        drop = 1.9 + 0.45 * math.sin(k * 1.7) - 0.5 * abs(x0)
+        locks.append((x0, drop, (grey, grey2, brown, grey, grey2, grey, brown, grey, grey2, grey, brown, grey2, grey)[k]))
+    for k, (x0, drop, color) in enumerate(sorted(locks, key=lambda l: -abs(l[0]))):
+        wave = 0.08 * math.sin(k * 2.3)
+        p.sweep([(x0 * 1.05, -0.84, -0.42), (x0 * 1.1 + wave, -1.0, -0.42 - drop * 0.35), (x0 * 0.9 - wave, -1.1, -0.42 - drop * 0.7), (x0 * 0.7 + wave, -1.08, -0.42 - drop)],
+                [0.14, 0.2, 0.15, 0.02], color, depth=0.55, outline=0.008)
+    p.sweep([(-0.46, -1.04, -0.52), (-0.12, -1.1, -0.56), (0.0, -1.08, -0.6), (0.12, -1.1, -0.56), (0.46, -1.04, -0.52)], [0.04, 0.09, 0.07, 0.09, 0.04], brown, depth=0.5)
+    # The bulbous, bumpy sea-worn nose.
+    nose = rgb(222, 146, 116)
+    p.ball((0, -0.98, -0.32), (0.15, 0.11, 0.13), nose)
+    for x, z in ((0.08, -0.27), (-0.07, -0.36), (0.04, -0.39)):
+        p.ball((x, -1.07, z), 0.045, rgb(214, 128, 102), outline=0.0)
+    for x in (-0.18, 0.2):
+        p.sweep([(x, -1.08, -1.7), (x * 1.1, -1.1, -2.2), (x * 1.2, -1.1, -2.55)], 0.04, grey2, outline=0.006, seg=6)
+        p.ball((x * 1.1, -1.13, -2.25), 0.05, rgb(130, 136, 140), gloss=0.5, outline=0.005)
+        p.sweep([(x * 1.2 - 0.05, -1.14, -2.42), (x * 1.2 + 0.05, -1.14, -2.44)], 0.018, cord, outline=0.0, seg=3)
+
+    # In his huge hands, a heavy weathered rigging block he's turning over to inspect.
+    wood, wood2, iron = rgb(128, 92, 60), rgb(92, 64, 44), rgb(96, 98, 104)
+    bx, by, bz = -0.95, -1.55, -2.55
+    p.ball((bx, by, bz), (0.3, 0.18, 0.4), wood, root=p.body_root)
+    p.ball((bx, by - 0.12, bz - 0.02), (0.07, 0.05, 0.26), wood2, root=p.body_root, outline=0.0)
+    p.ring((bx, by, bz + 0.44), 0.1, 0.03, iron, gloss=0.6, normal=(1, 0, 0), root=p.body_root)
+    p.sweep([(bx - 0.06, by - 0.16, bz + 0.2), (bx - 0.4, by - 0.1, bz + 0.6), (bx - 0.9, by + 0.2, bz + 0.5)], 0.035, rope2, root=p.body_root, outline=0.005)
+    for sign in (-1, 1):
+        hx = bx + sign * 0.3
+        p.ball((hx, by - 0.08, bz - 0.12), (0.2, 0.17, 0.2), skin, root=p.body_root)
+        for k in range(3):
+            p.ball((hx - sign * 0.08, by - 0.24, bz - 0.04 - 0.08 * k), (0.06, 0.05, 0.045), skin, root=p.body_root, outline=0.004)
+        p.sweep([(hx + sign * 0.06, by - 0.24, bz - 0.22), (hx + sign * 0.02, by - 0.25, bz - 0.12)], 0.012, rgb(80, 100, 140), root=p.body_root, outline=0.0, seg=3)
 
 
 def wren(p):
@@ -1232,12 +1355,13 @@ CAST.update({
                     crown=0.68, temple=0.7, cheek=0.68, jaw=0.56, chin=0.3, depth=0.84, nose_len=0.36, nose_bridge=0.14, nose_tip=0.1, nose_width=0.09, mouth_w=0.19, mouth_z=-0.58, eye_x=0.31),
     "Hask": _spec(hask, rgb(110, 26, 34), rgb(180, 120, 100), rgb(230, 170, 150), motif="flak", turn=0.16, tilt=0.0, pitch=0.08, span=4.4, target=-0.42,
                   crown=0.72, temple=0.74, cheek=0.74, jaw=0.72, chin=0.44, depth=0.9, brow_ridge=0.09, socket=0.07, nose_len=0.38, nose_bridge=0.13, nose_tip=0.14, nose_width=0.12, nose_skew=-0.05, mouth_w=0.24, mouth_z=-0.61, eye_x=0.32),
-    "Brill": _spec(brill, rgb(40, 56, 94), rgb(200, 184, 130), rgb(236, 220, 160), motif="clouds", turn=0.2, tilt=-0.05, span=4.8, target=-0.44,
-                   crown=0.72, temple=0.8, cheek=0.92, jaw=0.94, chin=0.52, depth=0.96, cheekbone=0.03, nose_len=0.38, nose_bridge=0.1, nose_tip=0.28, nose_width=0.2, mouth_w=0.27, mouth_z=-0.61, eye_x=0.33),
+    "Brill": _spec(brill, rgb(40, 56, 94), rgb(200, 184, 130), rgb(236, 220, 160), motif="deck", turn=0.2, tilt=-0.05, span=6.2, target=-1.15,
+                   crown=0.72, temple=0.8, cheek=0.92, jaw=0.94, chin=0.52, depth=0.96, cheekbone=0.03, nose_len=0.4, nose_bridge=0.1, nose_tip=0.36, nose_width=0.25, mouth_w=0.27, mouth_z=-0.61, eye_x=0.33),
     "Wren": _spec(wren, rgb(32, 72, 58), rgb(150, 216, 170), rgb(190, 255, 210), motif="gears", turn=0.28, tilt=0.08, pitch=-0.03, span=4.5, target=-0.36,
                   crown=0.66, temple=0.68, cheek=0.66, jaw=0.48, chin=0.26, chin_z=-1.14, depth=0.84, hollow=0.08, cheekbone=0.1, nose_len=0.42, nose_bridge=0.18, nose_tip=0.1, nose_width=0.08, mouth_w=0.2, mouth_z=-0.66, eye_x=0.3),
     "Ivo": _spec(ivo, rgb(24, 66, 136), rgb(170, 216, 255), rgb(214, 240, 255), motif="storm", turn=0.2, tilt=-0.06, pitch=-0.05, span=5.2, target=-0.2,
                  crown=0.7, temple=0.72, cheek=0.68, jaw=0.54, chin=0.3, chin_z=-1.02, depth=0.84, nose_len=0.3, nose_bridge=0.08, nose_tip=0.1, nose_width=0.09, nose_snub=0.02, mouth_w=0.15, mouth_z=-0.57, eye_x=0.32),
 })
 
-CAST["Sable"]["skin"] = (0.52, 0.47, 0.47)
+CAST["Sable"]["skin"] = (0.66, 0.62, 0.6)
+CAST["Lyra"]["skin"] = (0.7, 0.47, 0.32)

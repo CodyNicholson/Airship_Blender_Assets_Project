@@ -102,6 +102,12 @@ FACTIONS = {
     "Warden": {"faction_a": (70, 74, 82), "faction_b": (190, 160, 60), "faction_c": (30, 30, 36)},
     # Dr. Thorne alone: purple clothes, a vivid green for his eyes and staff, and near-black trim.
     "Sorcerer": {"faction_a": (92, 40, 148), "faction_b": (70, 255, 120), "faction_c": (18, 14, 26)},
+    # Lyra: olive trousers and cloak patches, emerald waistcoat and scarf, turquoise beads.
+    "Nomad": {"faction_a": (112, 116, 56), "faction_b": (28, 124, 80), "faction_c": (64, 200, 190)},
+    # Bosun Brill: indigo shirt stripes and tattoos, cream stripes and sleeves, and a charcoal knit cap.
+    "Bosun": {"faction_a": (52, 62, 118), "faction_b": (232, 226, 206), "faction_c": (58, 58, 64)},
+    # Sable: a dark grey coat, pewter buttons and beads, and crimson for her scar and the blood on her blade.
+    "Shadow": {"faction_a": (66, 68, 78), "faction_b": (150, 154, 162), "faction_c": (172, 30, 40)},
 }
 
 SWATCH_INDEX = {name: i for i, (name, _, _) in enumerate(SWATCHES)}

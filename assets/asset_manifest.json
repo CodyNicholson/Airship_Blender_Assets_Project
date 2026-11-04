@@ -178,6 +178,18 @@
     "Sorcerer": {
       "HQ": "T_Palette_Sorcerer_HQ.png",
       "LQ": "T_Palette_Sorcerer_LQ.png"
+    },
+    "Nomad": {
+      "HQ": "T_Palette_Nomad_HQ.png",
+      "LQ": "T_Palette_Nomad_LQ.png"
+    },
+    "Bosun": {
+      "HQ": "T_Palette_Bosun_HQ.png",
+      "LQ": "T_Palette_Bosun_LQ.png"
+    },
+    "Shadow": {
+      "HQ": "T_Palette_Shadow_HQ.png",
+      "LQ": "T_Palette_Shadow_LQ.png"
     }
   },
   "emissive_atlas": {
@@ -8038,7 +8050,7 @@
       "variants": {
         "HQ": {
           "tier": "prop",
-          "tris": 100
+          "tris": 108
         },
         "LQ": {
           "tier": "prop_low",
@@ -8070,7 +8082,8 @@
             -0.0
           ]
         }
-      }
+      },
+      "default_faction": "Shadow"
     },
     "SM_Prop_Spyglass": {
       "variants": {
@@ -8181,11 +8194,11 @@
       "variants": {
         "HQ": {
           "tier": "prop",
-          "tris": 188
+          "tris": 268
         },
         "LQ": {
           "tier": "prop_low",
-          "tris": 116
+          "tris": 156
         }
       },
       "sockets": {
@@ -10238,11 +10251,11 @@
       "variants": {
         "HQ": {
           "tier": "hero",
-          "tris": 2410
+          "tris": 2490
         },
         "LQ": {
           "tier": "hero_low",
-          "tris": 994
+          "tris": 1030
         }
       },
       "sockets": {
@@ -10250,34 +10263,34 @@
           "chest_centre": [
             0.0,
             1.26,
-            -0.0509
+            -0.0268
           ],
           "head_top": [
             0.0,
             1.9425,
-            -0.0509
+            -0.0268
           ],
           "portrait_look_at": [
             0.0,
             1.638,
-            -0.0509
+            -0.0268
           ]
         },
         "LQ": {
           "chest_centre": [
             0.0,
             1.26,
-            -0.0876
+            -0.0394
           ],
           "head_top": [
             0.0,
             1.9425,
-            -0.0876
+            -0.0394
           ],
           "portrait_look_at": [
             0.0,
             1.638,
-            -0.0876
+            -0.0394
           ]
         }
       },
@@ -10335,11 +10348,11 @@
       "variants": {
         "HQ": {
           "tier": "hero",
-          "tris": 2316
+          "tris": 2570
         },
         "LQ": {
           "tier": "hero_low",
-          "tris": 860
+          "tris": 1002
         }
       },
       "sockets": {
@@ -10347,47 +10360,48 @@
           "chest_centre": [
             0.0,
             1.2,
-            0.0411
+            0.0913
           ],
           "head_top": [
             0.0,
             1.85,
-            0.0411
+            0.0913
           ],
           "portrait_look_at": [
             0.0,
             1.56,
-            0.0411
+            0.0913
           ]
         },
         "LQ": {
           "chest_centre": [
             0.0,
             1.2,
-            0.0528
+            0.0988
           ],
           "head_top": [
             0.0,
             1.85,
-            0.0528
+            0.0988
           ],
           "portrait_look_at": [
             0.0,
             1.56,
-            0.0528
+            0.0988
           ]
         }
-      }
+      },
+      "default_faction": "Nomad"
     },
     "SK_Sable": {
       "variants": {
         "HQ": {
           "tier": "hero",
-          "tris": 2452
+          "tris": 2836
         },
         "LQ": {
           "tier": "hero_low",
-          "tris": 1008
+          "tris": 1212
         }
       },
       "sockets": {
@@ -10412,20 +10426,70 @@
           "chest_centre": [
             0.0,
             1.164,
-            0.0424
+            0.0383
           ],
           "head_top": [
             0.0,
             1.7945,
-            0.0424
+            0.0383
           ],
           "portrait_look_at": [
             0.0,
             1.5132,
-            0.0424
+            0.0383
           ]
         }
-      }
+      },
+      "default_faction": "Shadow"
+    },
+    "SK_Brill": {
+      "variants": {
+        "HQ": {
+          "tier": "hero",
+          "tris": 3854
+        },
+        "LQ": {
+          "tier": "hero_low",
+          "tris": 1386
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "chest_centre": [
+            0.0,
+            1.14,
+            -0.0052
+          ],
+          "head_top": [
+            0.0,
+            1.7575,
+            -0.0052
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.482,
+            -0.0052
+          ]
+        },
+        "LQ": {
+          "chest_centre": [
+            0.0,
+            1.14,
+            -0.0327
+          ],
+          "head_top": [
+            0.0,
+            1.7575,
+            -0.0327
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.482,
+            -0.0327
+          ]
+        }
+      },
+      "default_faction": "Bosun"
     },
     "SK_Thorne": {
       "variants": {
