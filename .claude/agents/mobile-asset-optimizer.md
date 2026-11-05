@@ -24,62 +24,44 @@ Asset names follow `SM_<Category>_<Name>` for static meshes and `SK_<Name>` for 
 
 ## 2. Mandatory Execution Workflow
 
-Whenever invoked, execute these exact steps in order:
+### Catalog assets (everything built by `tools/blender/`): one command
+Every asset registered in `tools/blender/catalog.py` (all `SM_*` and `SK_*` in this repo) goes through the
+headless gate. It performs Steps 1 to 3 below for every HQ and LQ variant in one Blender run and renders
+ONE review sheet per asset of what it exported:
 
-### Step 1: Scene Inspection
-Call `mcp__blender__get_scene_info` with `fields: ["details", "materials", "modifiers", "hidden"]` to inventory the current objects, materials, and polycounts in the active Blender session. Every visible mesh is joined into the asset, so if the scene holds visible meshes that are not part of it, stop and report that instead of continuing.
-
-### Step 2: Run the Deterministic Budget Enforcer
-Do NOT write ad-hoc decimation math from scratch. Get the repo root with `git rev-parse --show-toplevel`, then load the script by absolute path inside Blender via `mcp__blender__execute_blender_code`, because Blender's working directory is not the repo:
-
-```python
-import json, importlib.util
-spec = importlib.util.spec_from_file_location(
-    "enforce_mobile_budget",
-    "<REPO_ROOT>/.claude/skills/mobile-blender-pipeline/scripts/enforce_mobile_budget.py",
-)
-emb = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(emb)
-
-report = emb.optimize_and_validate_asset(
-    asset_name="<SM_Category_Name or SK_Name>",
-    tier="<hero|environment|prop>",
-    export_dir="assets/models/production"
-)
-print(json.dumps(report, indent=2))
+```bash
+python3 tools/gate.py <SK_or_SM_Name> [<more names>...]
 ```
 
-### Step 3: Repair Material / Atlas Violations (If Flagged)
+It prints only the gate blocks and a `Sheet:` path per asset. Then do Step 4 on each sheet and Step 5.
+Batch every asset you were given into one `tools/gate.py` call.
 
-If `report["violations"]` reports a material budget violation, load the module the same way, run this, then re-run `optimize_and_validate_asset`:
+### Interactive assets (built by hand in the live Blender session): Blender MCP
+Only when the asset exists in the open Blender scene and not in the catalog:
 
-```python
-print(json.dumps(emb.bake_materials_to_atlas("<ASSET_NAME>", tier="<TIER>")))
-```
+1. **Scene inspection:** `mcp__blender__get_scene_info` with `fields: ["details", "materials", "modifiers", "hidden"]`.
+   Every visible mesh is joined into the asset, so if anything else is visible, stop and report that.
+2. **Enforcer:** load `.claude/skills/mobile-blender-pipeline/scripts/enforce_mobile_budget.py` by absolute path
+   with `importlib.util.spec_from_file_location` inside `mcp__blender__execute_blender_code`, then call
+   `optimize_and_validate_asset(asset_name=..., tier=..., export_dir="assets/models/production")`.
+3. **Material violation only:** run `bake_materials_to_atlas(name, tier=...)`, then the enforcer again. Any other
+   violation: report FAIL, don't loop.
+4. Render one sheet with `mcp__blender__look` (`mode: "angles"`, `shading: "material"`).
 
-For any other violation, do not loop on it: report FAIL with the violation text.
+### Step 4: Visual verification (one image per asset)
+Open each asset's single sheet (HQ row over LQ row: front, three-quarter, back, and a mid-walk pose for
+rigged assets). Look for inverted normals or missing faces, collapsed silhouettes or pinched limbs, unintended
+floating geometry, and on the pose, pieces that don't follow the body. Don't open individual view renders.
+A defect fails the gate even though the enforcer passed: delete that `.glb` and report FAIL with the defect.
 
-### Step 4: Multimodal Visual Verification
-
-Call `mcp__blender__look` with `mode: "angles"`, `target: ["<ASSET_NAME>"]`, and `shading: "material"` to see the asset from front, right, top, and three-quarter. Inspect the image for:
-
-* Inverted normals or missing faces caused by aggressive decimation
-* Collapsed silhouettes (e.g., character limbs or weapon blades pinched off)
-* Unintended floating geometry
-
-The enforcer has already exported by this point. If visual artifacts exist, the gate is FAIL even though the script passed: delete the `.glb` it wrote, then undo the decimation step, switch `DECIMATE` to `DISSOLVE` (Planar) for hard-surface props (`angle_limit=0.12`) or `Quadriflow Remesh` for organic shapes, re-run Step 2, and re-verify.
-
-### Step 5: Return Structured Gate Report
-
-Return a concise report to the main agent in this exact format:
+### Step 5: Report (terse)
+Return only one block per variant, and nothing else: no socket tables, file lists, bone/clip inventories,
+command transcripts or summaries of earlier jobs. Add a line only for a defect or a violation.
 
 ```text
 [MOBILE ASSET GATE: PASS | FAIL]
 - Asset: <asset_name>.glb (Tier: <tier>)
-- Triangles: <initial_tris> -> <final_tris> / <max_tris>
-- Materials: <materials_count> / <max_materials>
-- UV Map: <uv_layers> layer(s), <"0.02 bleed margin" or "kept existing UVs">
-- Pivot & Scale: Bottom-Center Z=0, Transforms Applied
-- Visual Check: <1-sentence visual confirmation from the look image>
+- Triangles: <initial> -> <final> / <max>
+- Visual Check: <one sentence>
 - Output Path: <export_path or "BLOCKED - reason">
 ```
