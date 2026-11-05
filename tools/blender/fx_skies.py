@@ -190,7 +190,7 @@ def maelstrom(image, x, y, z, sun, w, h):
     _sea(image, x, y, z, 501, [(-3, (10, 8, 20)), (-0.3, (22, 18, 40)), (0.36, (48, 38, 86))], 0.6, (30, 26, 52), sun)
 
 
-def quarterdeck_dusk(image, x, y, z, sun, w, h):
+def hangar_dusk(image, x, y, z, sun, w, h):
     cos_sun = x * sun[0] + y * sun[1] + z * sun[2]
     image[...] = _gradient(y, [(-1, (84, 44, 88)), (0.0, (250, 150, 96)), (0.09, (246, 132, 104)), (0.28, (172, 92, 140)), (0.62, (72, 62, 130)), (1, (30, 32, 90))])
     _stars(image, y, w, h, 604, 0.0005, 0.45)
@@ -215,7 +215,7 @@ def free_dawn(image, x, y, z, sun, w, h):
 
 PAINTERS = {
     "CloudBreak": cloud_break, "ScrapWinds": scrap_winds, "Jetstream": jetstream, "CirrusCitadel": cirrus_citadel,
-    "Maelstrom": maelstrom, "QuarterdeckDusk": quarterdeck_dusk, "FreeDawn": free_dawn,
+    "Maelstrom": maelstrom, "HangarDusk": hangar_dusk, "FreeDawn": free_dawn,
 }
 
 
