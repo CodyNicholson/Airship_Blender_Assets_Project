@@ -112,6 +112,18 @@ STATIC = {
     "SM_Prop_Spyglass": (_PROP, story_props.spyglass),
     "SM_Prop_BigWrench": (_PROP, story_props.big_wrench),
     "SM_Prop_ShadowStaff": (_PROP, story_props.shadow_staff),
+    "SM_Prop_LightningStaff": (_PROP, story_props.lightning_staff),
+    "SM_Prop_Linstock": (_PROP, story_props.linstock),
+    "SM_Prop_BoneSaw": (_PROP, story_props.bone_saw),
+    "SM_Prop_ScrapCutlass": (_PROP, story_props.scrap_cutlass),
+    "SM_Prop_CaptainCutlass": (_PROP, story_props.captain_cutlass),
+    "SM_Prop_KingCutlass": (_PROP, story_props.king_cutlass),
+    "SM_Prop_SwordCane": (_PROP, story_props.sword_cane),
+    "SM_Prop_GildedRapier": (_PROP, story_props.gilded_rapier),
+    "SM_Prop_FleetCutlass": (_PROP, story_props.fleet_cutlass),
+    "SM_Prop_Blunderbuss": (_PROP, story_props.blunderbuss),
+    "SM_Prop_RegulatorKey": (_PROP, story_props.regulator_key),
+    "SM_Prop_WeatherStaff": (_PROP, story_props.weather_staff),
     "SM_Prop_DriftwoodLyre": (_PROP, story_props.driftwood_lyre),
     "SM_Prop_ArmadaHalberd": (_PROP, story_props.armada_halberd),
     "SM_Prop_ArmadaMusket": (_PROP, story_props.armada_musket),
@@ -153,9 +165,34 @@ DEFAULT_FACTIONS = {
     "SK_Thorne": "Sorcerer",
     "SK_Lyra": "Nomad",
     "SK_Brill": "Bosun",
+    "SK_Ivo": "Azure",
+    "SK_Hask": "Crimson",
+    "SK_Wren": "Emerald",
+    "SK_Vane": "Crimson",
+    "SK_VaneCaptain": "Crimson",
+    "SK_VaneKing": "Crimson",
+    "SK_Gorse": "Scrap",
+    "SK_Ashgrave": "Syndicate",
+    "SK_Thrace": "Emerald",
+    "SK_Ria": "Crimson",
+    "SK_Mirren": "Crimson",
+    "SK_Odessa": "Emerald",
+    "SK_Tobin": "Azure",
     "SK_Sable": "Shadow",
     "SM_Prop_SableDagger": "Shadow",
     "SM_Prop_ShadowStaff": "Sorcerer",
+    "SM_Prop_LightningStaff": "Azure",
+    "SM_Prop_Linstock": "Crimson",
+    "SM_Prop_BoneSaw": "Emerald",
+    "SM_Prop_ScrapCutlass": "Crimson",
+    "SM_Prop_CaptainCutlass": "Crimson",
+    "SM_Prop_KingCutlass": "Crimson",
+    "SM_Prop_SwordCane": "Syndicate",
+    "SM_Prop_GildedRapier": "Emerald",
+    "SM_Prop_FleetCutlass": "Crimson",
+    "SM_Prop_Blunderbuss": "Crimson",
+    "SM_Prop_RegulatorKey": "Emerald",
+    "SM_Prop_WeatherStaff": "Azure",
     "SM_Ship_RustWing": "Scrap",
     "SM_Ship_IronMaw": "Scrap",
     "SM_Ship_ScrapRaider": "Scrap",
@@ -190,8 +227,8 @@ DEFAULT_FACTIONS = {
 }
 
 
-HELD_MELEE = ["SM_Prop_Cutlass", "SM_Prop_BoardingAxe", "SM_Prop_HookSabre", "SM_Prop_RoyalSabre", "SM_Prop_AnchorHammer", "SM_Prop_TwinScimitar", "SM_Prop_WardenFlail", "SM_Prop_SableDagger", "SM_Prop_Spyglass", "SM_Prop_BigWrench", "SM_Prop_ArmadaHalberd", "SM_Prop_ShadowStaff", "SM_Prop_DriftwoodLyre"]
-HELD_GUNS = ["SM_Prop_Flintlock", "SM_Prop_DuelPistol", "SM_Prop_HandMortar", "SM_Prop_ArmadaMusket"]
+HELD_MELEE = ["SM_Prop_Cutlass", "SM_Prop_BoardingAxe", "SM_Prop_HookSabre", "SM_Prop_RoyalSabre", "SM_Prop_AnchorHammer", "SM_Prop_TwinScimitar", "SM_Prop_WardenFlail", "SM_Prop_SableDagger", "SM_Prop_Spyglass", "SM_Prop_BigWrench", "SM_Prop_ArmadaHalberd", "SM_Prop_ShadowStaff", "SM_Prop_DriftwoodLyre", "SM_Prop_LightningStaff", "SM_Prop_Linstock", "SM_Prop_BoneSaw", "SM_Prop_ScrapCutlass", "SM_Prop_CaptainCutlass", "SM_Prop_KingCutlass", "SM_Prop_SwordCane", "SM_Prop_GildedRapier", "SM_Prop_FleetCutlass", "SM_Prop_RegulatorKey", "SM_Prop_WeatherStaff"]
+HELD_GUNS = ["SM_Prop_Flintlock", "SM_Prop_DuelPistol", "SM_Prop_HandMortar", "SM_Prop_ArmadaMusket", "SM_Prop_Blunderbuss"]
 
 
 def all_variants():

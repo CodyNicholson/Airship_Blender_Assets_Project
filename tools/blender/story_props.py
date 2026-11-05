@@ -640,6 +640,289 @@ def shadow_staff(mb, hq):
     mb.socket("trail_tip", (0, 0, h + 0.08))
 
 
+def lightning_staff(mb, hq):
+    """Ivo's lightning catcher: a makeshift staff of storm-worn wood bound in copper, a copper wire spiralling
+    up it, and three brass lightning-rod tines at the top cradling a glass orb of caught, crackling light."""
+    h = 1.62
+    sides = _q(hq, 6, 4)
+    mb.tube((0, 0, 0), (0, 0, h), 0.022, 0.026, sides=sides, color="wood_mid")
+    mb.tube((0, 0, -0.03), (0, 0, 0.06), 0.03, sides=sides, color="iron")  # A grounding ferrule.
+    mb.tube((0, 0, 1.0), (0, 0, 1.28), 0.032, sides=sides, color="leather")  # The grip, wrapped in leather.
+    for z in ((0.3, 0.62, 0.9, 1.38, 1.5) if hq else (0.6, 1.4)):
+        mb.tube((0, 0, z - 0.02), (0, 0, z + 0.02), 0.034, sides=sides, color="rust")
+    if hq:
+        # A copper wire wound loosely up the shaft.
+        coil = [(0.03 * math.cos(k * 1.3), 0.03 * math.sin(k * 1.3), 0.08 + k * 0.075) for k in range(12)]
+        mb.path(coil, [0.006] * len(coil), 3, "rust")
+    # The head: a brass collar, three tines flaring out, and the orb they hold.
+    mb.tube((0, 0, h - 0.02), (0, 0, h + 0.05), 0.03, 0.04, sides=sides, color="brass")
+    for k in range(3):
+        a = k * 2 * math.pi / 3
+        x, y = math.cos(a), math.sin(a)
+        mb.path([(0.035 * x, 0.035 * y, h + 0.04), (0.08 * x, 0.08 * y, h + 0.12), (0.06 * x, 0.06 * y, h + 0.24)], [0.011, 0.009, 0.004], _q(hq, 4, 3), "brass")
+    mb.sphere((0, 0, h + 0.13), 0.052, _q(hq, 8, 4), _q(hq, 4, 3), "lightning", smooth=hq)
+    if hq:
+        # Sparks jumping from tine to tine.
+        for k in range(3):
+            a0, a1 = k * 2 * math.pi / 3 + 0.35, (k + 1) * 2 * math.pi / 3 - 0.35
+            p0 = (0.075 * math.cos(a0), 0.075 * math.sin(a0), h + 0.18)
+            mid = (0.1 * math.cos((a0 + a1) / 2), 0.1 * math.sin((a0 + a1) / 2), h + 0.2)
+            p1 = (0.075 * math.cos(a1), 0.075 * math.sin(a1), h + 0.17)
+            mb.path([p0, mid, p1], [0.006, 0.008, 0.005], 3, "lightning")
+    mb.socket("grip", (0, 0, 1.14))
+    mb.socket("trail_tip", (0, 0, h + 0.13))
+
+
+def linstock(mb, hq):
+    """Hask's linstock: a plain wooden staff with an iron butt spike, a forked iron head with a short spear
+    point between the prongs, and hemp slow-match wound round the shaft, clamped in the prongs, its end
+    smouldering a hot orange. Shots go off from the glowing match."""
+    h = 1.02
+    sides = _q(hq, 6, 4)
+    mb.tube((0, 0, 0.05), (0, 0, h), 0.02, 0.017, sides=sides, color="wood_mid")
+    mb.tube((0, 0, -0.06), (0, 0, 0.06), 0.004, 0.024, sides=sides, color="iron")  # Butt spike, for planting on deck.
+    mb.tube((0, 0, 0.42), (0, 0, 0.62), 0.025, sides=sides, color="leather")  # Grip, worn smooth.
+    # The iron head: a socket, two prongs curling out like a serpent's jaws, and a spear point between them.
+    mb.tube((0, 0, h - 0.05), (0, 0, h + 0.02), 0.024, 0.02, sides=sides, color="iron")
+    mb.tube((0, 0, h + 0.02), (0, 0, h + 0.17), 0.012, 0.001, sides=_q(hq, 4, 3), color="iron_light")  # A true point leaves degenerate tris.
+    tips = []
+    for sign in (1, -1):
+        prong = [(0, 0, h + 0.01), (sign * 0.05, 0, h + 0.04), (sign * 0.075, 0, h + 0.1), (sign * 0.06, 0, h + 0.14)]
+        if not hq:
+            prong = [prong[0], prong[2], prong[3]]
+        mb.path(prong, [0.011, 0.01, 0.008, 0.006][-len(prong):], _q(hq, 4, 3), "iron")
+        tips.append(prong[-1])
+    # The slow-match: wound down the shaft, up to each prong, ends glowing.
+    if hq:
+        coil = [(0.026 * math.cos(k * 1.4), 0.026 * math.sin(k * 1.4), h - 0.08 - k * 0.022) for k in range(10)]
+        mb.path(coil, [0.008] * len(coil), 3, "rope")
+        for x, _, z in tips:
+            mb.path([coil[0], (x * 0.6, -0.01, z - 0.07), (x * 1.05, -0.006, z + 0.02)], [0.008, 0.008, 0.007], 3, "rope")
+    else:
+        mb.tube((0, 0, h - 0.2), (0, 0, h - 0.06), 0.026, sides=sides, color="rope")
+    glow = (tips[0][0] * 1.05, -0.006, tips[0][2] + 0.02)
+    mb.sphere(glow, 0.02, _q(hq, 6, 4), 3, "ember", smooth=False)
+    if hq:
+        mb.sphere((tips[1][0] * 1.05, -0.006, tips[1][2] + 0.03), 0.012, 4, 3, "ember", smooth=False)
+    mb.socket("grip", (0, 0, 0.52))
+    mb.socket("trail_tip", (0, 0, h + 0.17))
+    mb.socket("muzzle", glow)
+
+
+def bone_saw(mb, hq):
+    """Wren's bone saw: a turned wooden handle with a brass ferrule, and a curved steel blade, toothed along
+    its inner edge and spotted with old blood."""
+    sides = _q(hq, 8, 4)
+    mb.lathe([(0.018, 0.0), (0.024, 0.02), (0.019, 0.045), (0.025, 0.075), (0.02, 0.11), (0.024, 0.13)] if hq else [(0.02, 0.0), (0.024, 0.07), (0.022, 0.13)], sides, "wood_mid", smooth=False)
+    mb.tube((0, 0, 0.13), (0, 0, 0.155), 0.022, 0.018, sides=sides, color="brass")
+    # The blade sweeps up and curves forward, in the XZ plane.
+    spine = [(0.0, 0.15), (0.012, 0.26), (0.032, 0.36), (0.065, 0.45), (0.11, 0.51)]
+    edge = [(-0.038, 0.16), (-0.03, 0.26), (-0.01, 0.35), (0.025, 0.43), (0.11, 0.51)]
+    outline = [(x, 0.0, z) for x, z in spine] + [(x, 0.0, z) for x, z in edge[-2::-1]]
+    mb.plate(outline, 0.004, "silver")
+    if hq:
+        for (x0, z0), (x1, z1) in zip(edge[:-1], edge[1:]):
+            for k in range(3):
+                a, b = k / 3, (k + 0.5) / 3
+                p0 = (x0 + (x1 - x0) * a, 0.0, z0 + (z1 - z0) * a)
+                p1 = (x0 + (x1 - x0) * b - 0.008, 0.0, z0 + (z1 - z0) * b)
+                mb.tube(p0, p1, 0.003, 0.001, sides=3, color="steel")
+        for x, z in ((0.005, 0.3), (0.04, 0.42)):
+            mb.box((x, -0.003, z), (0.02, 0.002, 0.014), "velvet")
+    mb.socket("grip", (0, 0, 0.07))
+    mb.socket("trail_tip", (0.11, 0, 0.51))
+
+
+def scrap_cutlass(mb, hq):
+    """Vane's Act 1 blade: a notched, rust-pitted boarding cutlass with a plain iron cross-guard and a grip
+    bound in tarred cord. No scabbard; it lives shoved through a belt loop. Edge faces -X, like every cutlass."""
+    sides = _q(hq, 6, 4)
+    mb.tube((0, 0, 0.0), (0, 0, 0.035), 0.016, 0.024, sides=sides, color="iron")
+    mb.tube((0, 0, 0.035), (0, 0, 0.17), 0.02, sides=sides, color="rope")
+    if hq:
+        for z in (0.06, 0.1, 0.14):
+            mb.tube((0, 0, z - 0.008), (0, 0, z + 0.008), 0.023, sides=sides, color="leather_dark")
+    mb.box((0, 0, 0.18), (0.13, 0.03, 0.02), "iron")
+    if hq:
+        outline = [(-0.024, 0.19), (0.024, 0.19), (0.05, 0.5), (0.09, 0.74), (0.11, 0.86), (0.075, 0.85), (0.04, 0.8), (0.03, 0.77),
+                   (0.012, 0.72), (0.0, 0.66), (0.012, 0.64), (-0.012, 0.6), (-0.016, 0.52), (-0.002, 0.5), (-0.024, 0.45),
+                   (-0.024, 0.34), (-0.01, 0.32), (-0.024, 0.3)]
+        mb.plate([(x, 0, z) for x, z in outline], 0.008, "rust")
+        for x, z in ((0.03, 0.4), (0.06, 0.62), (0.015, 0.28)):
+            mb.box((x, -0.004, z), (0.022, 0.002, 0.018), "rust_dark")
+    else:
+        mb.plate([(-0.025, 0, 0.19), (0.025, 0, 0.19), (0.11, 0, 0.86), (0.05, 0, 0.83)], 0.012, "rust")
+    mb.socket("grip", (0, 0, 0.1))
+    mb.socket("trail_tip", (0.1, 0, 0.86))
+
+
+def captain_cutlass(mb, hq):
+    """Vane's Act 2 blade: a masterwork cutlass, polished steel with a steel basket hilt, a black leather grip
+    and a brass pommel. Edge faces -X."""
+    sides = _q(hq, 6, 4)
+    mb.sphere((0, 0, 0.02), 0.028, sides, 3, "brass", smooth=False)
+    mb.tube((0, 0, 0.04), (0, 0, 0.18), 0.018, 0.02, sides=sides, color="leather_dark")
+    mb.box((0, 0, 0.19), (0.14, 0.035, 0.02), "silver")
+    # The basket: bars sweeping from the guard round the knuckles to the pommel.
+    for dy in ((-0.035, 0.0, 0.035) if hq else (0.0,)):
+        mb.path([(0.07, dy, 0.19), (0.115, dy * 1.3, 0.12), (0.09, dy, 0.05), (0.03, dy * 0.5, 0.02)], [0.008, 0.008, 0.008, 0.007], _q(hq, 4, 3), "silver")
+    if hq:
+        mb.plate([(-0.024, 0, 0.2), (0.024, 0, 0.2), (0.05, 0, 0.5), (0.09, 0, 0.76), (0.11, 0, 0.9), (0.075, 0, 0.9), (0.012, 0, 0.74), (-0.024, 0, 0.46)], 0.008, "silver")
+        mb.plate([(0.0, -0.005, 0.24), (0.012, -0.005, 0.24), (0.04, -0.005, 0.5), (0.03, -0.005, 0.5)], 0.002, "steel")
+    else:
+        mb.plate([(-0.025, 0, 0.2), (0.025, 0, 0.2), (0.11, 0, 0.9), (0.05, 0, 0.86)], 0.012, "silver")
+    mb.socket("grip", (0, 0, 0.11))
+    mb.socket("trail_tip", (0.1, 0, 0.9))
+
+
+def king_cutlass(mb, hq):
+    """Vane's Act 3 blade: a legendary cutlass with a swept golden guard, a crimson grip, and gold runes etched
+    down a long polished blade. Edge faces -X."""
+    sides = _q(hq, 6, 4)
+    mb.sphere((0, 0, 0.02), 0.032, sides, 3, "gold", smooth=False)
+    mb.tube((0, 0, 0.04), (0, 0, 0.19), 0.019, 0.021, sides=sides, color="gem_red")
+    if hq:
+        for z in (0.08, 0.15):
+            mb.tube((0, 0, z - 0.006), (0, 0, z + 0.006), 0.024, sides=sides, color="gold")
+    mb.box((0, 0, 0.2), (0.16, 0.035, 0.022), "gold")
+    for sign in ((1, -1) if hq else (1,)):
+        mb.path([(sign * 0.08, 0, 0.2), (sign * 0.125, 0, 0.13), (sign * 0.095, 0, 0.05), (sign * 0.03, 0, 0.02)] if sign > 0 else [(-0.08, 0, 0.2), (-0.11, 0, 0.25), (-0.09, 0, 0.29)],
+                [0.01, 0.011, 0.01, 0.008] if sign > 0 else [0.01, 0.008, 0.004], _q(hq, 4, 3), "gold")
+    if hq:
+        mb.plate([(-0.026, 0, 0.21), (0.026, 0, 0.21), (0.055, 0, 0.55), (0.1, 0, 0.82), (0.12, 0, 0.98), (0.08, 0, 0.97), (0.012, 0, 0.8), (-0.026, 0, 0.5)], 0.008, "silver")
+        for k in range(5):
+            z = 0.28 + 0.11 * k
+            x = 0.008 + 0.04 * (z - 0.21) / 0.6
+            mb.box((x, -0.005, z), (0.014, 0.002, 0.03 if k % 2 else 0.018), "gold")
+    else:
+        mb.plate([(-0.026, 0, 0.21), (0.026, 0, 0.21), (0.12, 0, 0.98), (0.05, 0, 0.92)], 0.012, "silver")
+    mb.socket("grip", (0, 0, 0.11))
+    mb.socket("trail_tip", (0.11, 0, 0.98))
+
+
+def sword_cane(mb, hq):
+    """Ashgrave's sword-cane, half-drawn: a silver skull pommel on a black grip, a slender blade showing, and the
+    black lacquered cane that sheathes the rest, tipped in silver. Stands on the pommel, like every blade."""
+    sides = _q(hq, 6, 4)
+    mb.sphere((0, 0, 0.03), (0.028, 0.03, 0.032), sides, _q(hq, 4, 3), "silver", smooth=hq)
+    if hq:
+        for x in (-0.011, 0.011):
+            mb.sphere((x, -0.026, 0.035), 0.007, 4, 3, "eye_dark", smooth=False)
+        mb.box((0, -0.02, 0.012), (0.024, 0.012, 0.008), "silver")
+    mb.tube((0, 0, 0.055), (0, 0, 0.15), 0.015, 0.016, sides=sides, color="cloth_black")
+    mb.tube((0, 0, 0.15), (0, 0, 0.165), 0.02, sides=sides, color="silver")
+    mb.plate([(-0.008, 0, 0.165), (0.008, 0, 0.165), (0.007, 0, 0.42), (-0.007, 0, 0.42)], 0.004, "silver")
+    mb.tube((0, 0, 0.42), (0, 0, 0.44), 0.019, sides=sides, color="silver")
+    mb.tube((0, 0, 0.44), (0, 0, 0.92), 0.017, 0.014, sides=sides, color="cloth_black")
+    mb.tube((0, 0, 0.918), (0, 0, 0.95), 0.0155, 0.009, sides=sides, color="silver")  # Not sharing the sheath's end ring.
+    mb.socket("grip", (0, 0, 0.1))
+    mb.socket("trail_tip", (0, 0, 0.95))
+
+
+def gilded_rapier(mb, hq):
+    """Thrace's rapier: a long, slender blade under a gilded swept hilt, bars curling round the hand, long
+    straight quillons, a black wire-bound grip and a gold pommel. Stands on the pommel, like every blade."""
+    sides = _q(hq, 6, 4)
+    mb.sphere((0, 0, 0.022), 0.024, sides, 3, "gold", smooth=False)
+    mb.tube((0, 0, 0.04), (0, 0, 0.15), 0.014, 0.016, sides=sides, color="cloth_black")
+    if hq:
+        for z in (0.07, 0.1, 0.13):
+            mb.tube((0, 0, z - 0.004), (0, 0, z + 0.004), 0.018, sides=sides, color="gold")
+    mb.tube((-0.11, 0, 0.165), (0.11, 0, 0.165), 0.008, 0.006, sides=_q(hq, 4, 3), color="gold")
+    for dy, lean in ((-0.03, 0.0), (0.0, 0.02), (0.03, 0.0)) if hq else ((0.0, 0.02),):
+        mb.path([(0.03, dy, 0.17), (0.075 + lean, dy * 1.4, 0.13), (0.07, dy * 1.2, 0.07), (0.025, dy * 0.5, 0.025)], [0.006, 0.006, 0.006, 0.005], _q(hq, 4, 3), "gold")
+    if hq:
+        mb.path([(-0.03, 0, 0.17), (-0.06, 0, 0.21), (-0.04, 0, 0.24)], [0.006, 0.005, 0.003], 4, "gold")
+    mb.plate([(-0.009, 0, 0.17), (0.009, 0, 0.17), (0.005, 0, 1.0), (0.0, 0, 1.06), (-0.005, 0, 1.0)], 0.005, "silver")
+    mb.socket("grip", (0, 0, 0.09))
+    mb.socket("trail_tip", (0, 0, 1.06))
+
+
+def fleet_cutlass(mb, hq):
+    """Ria's cutlass: bright and well kept, a polished blade under a brass guard and knuckle-bow, the grip wrapped
+    in red cord. Edge faces -X, like every cutlass."""
+    sides = _q(hq, 6, 4)
+    mb.sphere((0, 0, 0.025), 0.027, sides, 3, "brass", smooth=False)
+    mb.tube((0, 0, 0.045), (0, 0, 0.17), 0.018, 0.02, sides=sides, color="gem_red")
+    if hq:
+        for z in (0.07, 0.11, 0.15):
+            mb.tube((0, 0, z - 0.005), (0, 0, z + 0.005), 0.022, sides=sides, color="faction_c")
+    mb.box((0, 0, 0.18), (0.14, 0.03, 0.022), "brass")
+    mb.path([(0.07, 0, 0.18), (0.11, 0, 0.1), (0.028, 0, 0.026)], [0.009, 0.009, 0.008], _q(hq, 4, 3), "brass")  # Meets the pommel.
+    if hq:
+        mb.plate([(-0.024, 0, 0.19), (0.024, 0, 0.19), (0.05, 0, 0.5), (0.09, 0, 0.74), (0.11, 0, 0.87), (0.075, 0, 0.87), (0.012, 0, 0.72), (-0.024, 0, 0.45)], 0.008, "silver")
+    else:
+        mb.plate([(-0.025, 0, 0.19), (0.025, 0, 0.19), (0.11, 0, 0.87), (0.05, 0, 0.84)], 0.012, "silver")
+    mb.socket("grip", (0, 0, 0.1))
+    mb.socket("trail_tip", (0.1, 0, 0.87))
+
+
+def blunderbuss(mb, hq):
+    """Mirren's blunderbuss: a short, fat brass barrel flaring into a wide bell mouth, a walnut stock and an iron
+    lock. Muzzle towards +Z and top towards +X, like every gun, so it aims along the arm on the gun.R bone."""
+    upright = Matrix(((0, 0, 1, 0), (-1, 0, 0, 0), (0, -1, 0, 0), (0, 0, 0, 1)))
+    with mb.xf(upright):
+        z = 0.21
+        sides = _q(hq, 8, 5)
+        mb.tube((0, 0.1, z), (0, -0.3, z), 0.026, 0.03, sides=sides, color="brass")
+        with mb.xf(Matrix.Translation((0, -0.3, z)) @ Matrix.Rotation(math.pi / 2, 4, "X")):
+            # The bell starts just inside the barrel: sharing the barrel's end ring would weld into a doubled cap.
+            mb.lathe([(0.027, -0.012), (0.042, 0.06), (0.072, 0.11)] if hq else [(0.027, -0.012), (0.07, 0.11)], sides, "brass", smooth=False, caps=(False, False))
+            if hq:
+                mb.lathe([(0.062, 0.108), (0.05, 0.1)], sides, "eye_dark", smooth=False, caps=(False, True))
+        if hq:
+            for y in (0.05, -0.12):
+                mb.tube((0, y + 0.01, z), (0, y - 0.01, z), 0.034, sides=sides, color="brass")
+            mb.box((0.03, 0.06, z + 0.012), (0.014, 0.09, 0.034), "iron")
+            mb.tube((0.03, 0.085, z + 0.02), (0.03, 0.05, z + 0.065), 0.007, sides=3, color="iron_light")
+        mb.path([(0, 0.08, z - 0.02), (0, 0.15, z - 0.07), (0, 0.22, z - 0.17), (0, 0.23, z - 0.22)], [0.026, 0.028, 0.034, 0.036], sides, "wood_mid")
+        mb.socket("grip", (0, 0.16, z - 0.12))
+        mb.socket("muzzle", (0, -0.42, z))
+
+
+def regulator_key(mb, hq):
+    """Odessa's Lift-Core regulator key, half wrench and half sceptre: a long brass shaft with a leather grip and a
+    T-handle at the foot, an open wrench jaw at the head cradling a crystal that glows faint blue from the core."""
+    sides = _q(hq, 6, 4)
+    mb.tube((-0.07, 0, 0.02), (0.07, 0, 0.02), 0.014, sides=sides, color="brass")
+    mb.tube((0, 0, 0.0), (0, 0, 0.98), 0.016, 0.014, sides=sides, color="brass")
+    mb.tube((0, 0, 0.3), (0, 0, 0.5), 0.022, sides=sides, color="leather_dark")
+    if hq:
+        for z in (0.6, 0.75, 0.88):
+            mb.tube((0, 0, z - 0.01), (0, 0, z + 0.01), 0.022, sides=sides, color="gold_dark")
+    mb.tube((0, 0, 0.97), (0, 0, 1.02), 0.028, 0.032, sides=sides, color="brass")
+    for sign in (1, -1):
+        jaw = [(sign * 0.025, 0, 1.01), (sign * 0.06, 0, 1.06), (sign * 0.055, 0, 1.13), (sign * 0.03, 0, 1.15)]
+        mb.path(jaw if hq else jaw[::3], [0.014, 0.013, 0.011, 0.008][: 4 if hq else 2], _q(hq, 4, 3), "brass")
+    mb.sphere((0, 0, 1.09), (0.03, 0.03, 0.045), _q(hq, 6, 4), 3, "liftstone", smooth=False)
+    mb.socket("grip", (0, 0, 0.4))
+    mb.socket("trail_tip", (0, 0, 1.12))
+
+
+def weather_staff(mb, hq):
+    """Tobin's stormcaller weather-staff: a tall, weathered wooden staff topped with a brass spindle, three
+    anemometer cups on arms that spin in the wind, and a brass wind vane above them."""
+    h = 1.66
+    sides = _q(hq, 6, 4)
+    mb.tube((0, 0, 0), (0, 0, h), 0.024, 0.02, sides=sides, color="wood_mid")
+    mb.tube((0, 0, -0.03), (0, 0, 0.04), 0.028, sides=sides, color="iron")
+    mb.tube((0, 0, 1.0), (0, 0, 1.24), 0.03, sides=sides, color="rope")
+    mb.tube((0, 0, h - 0.02), (0, 0, h + 0.2), 0.008, sides=_q(hq, 4, 3), color="brass")
+    mb.sphere((0, 0, h + 0.04), 0.026, sides, 3, "brass", smooth=False)
+    for k in range(3):
+        a = 2 * math.pi * k / 3
+        arm_end = (0.11 * math.cos(a), 0.11 * math.sin(a), h + 0.06)
+        mb.tube((0, 0, h + 0.06), arm_end, 0.005, sides=3, color="brass")
+        with mb.xf(Matrix.Translation(arm_end) @ Matrix.Rotation(a + math.pi / 2, 4, "Z") @ Matrix.Rotation(math.pi / 2, 4, "X")):
+            mb.lathe([(0.004, -0.022), (0.026, 0.0)] if not hq else [(0.004, -0.024), (0.022, -0.012), (0.028, 0.004)], sides, "brass", smooth=False, caps=(True, False))
+    # The wind vane: an arrow with a broad tail fin.
+    mb.tube((-0.13, 0, h + 0.17), (0.12, 0, h + 0.17), 0.006, sides=_q(hq, 4, 3), color="brass")
+    mb.plate([(0.12, 0, h + 0.17), (0.07, 0, h + 0.2), (0.07, 0, h + 0.14)], 0.005, "brass")
+    mb.plate([(-0.08, 0, h + 0.17), (-0.15, 0, h + 0.24), (-0.16, 0, h + 0.11)], 0.004, "brass")
+    mb.socket("grip", (0, 0, 1.12))
+    mb.socket("trail_tip", (0, 0, h + 0.2))
+
+
 def driftwood_lyre(mb, hq):
     """Lyra's lyre: two curved driftwood arms, a pale bone crossbar and horn tips, gold strings, and feathers
     and wind chimes hanging from the crossbar."""
