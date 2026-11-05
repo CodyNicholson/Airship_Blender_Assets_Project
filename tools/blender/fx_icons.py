@@ -50,6 +50,36 @@ MEDALS = {
 }
 CHOICE_MEDAL = {"Choice_SeizeHelm": (0.1, 0.24, 0.4), "Choice_ScuttlePlunder": (0.3, 0.13, 0.08)}
 
+# Deck battle skill buttons. The medal says what kind of skill it is, so a glance tells hit from heal.
+BROWN = (0.55, 0.34, 0.17)
+BROWN_DARK = (0.38, 0.22, 0.11)
+IRON = (0.42, 0.44, 0.5)
+IRON_DARK = (0.24, 0.25, 0.3)
+BRASS = (0.88, 0.66, 0.28)
+EMBER = (1.0, 0.42, 0.1)
+FLAME = (1.0, 0.84, 0.32)
+MINT = (0.52, 0.92, 0.68)
+PALE = (0.98, 0.9, 0.64)
+SMOKE = (0.72, 0.74, 0.78)
+SPARK = (1.0, 0.9, 0.36)
+GLASS = (0.62, 0.84, 0.9)
+BORE = (0.08, 0.06, 0.08)
+SKILL_PHYSICAL = (0.46, 0.13, 0.12)
+SKILL_MAGIC = (0.2, 0.16, 0.46)
+SKILL_HEAL = (0.09, 0.38, 0.3)
+SKILL_COMPANION = (0.5, 0.22, 0.07)
+SKILL_MEDALS = {
+    "Skill_Cleave": SKILL_PHYSICAL, "Skill_CrushingBlow": SKILL_PHYSICAL, "Skill_HookSwing": SKILL_PHYSICAL,
+    "Skill_AimedShot": SKILL_PHYSICAL, "Skill_CinderFlame": SKILL_COMPANION, "Skill_HeavyFlak": SKILL_PHYSICAL,
+    "Skill_LightningBolt": SKILL_MAGIC, "Skill_Squall": SKILL_MAGIC, "Skill_Tailwind": SKILL_HEAL,
+    "Skill_Backstab": SKILL_PHYSICAL, "Skill_SmokeBomb": SKILL_MAGIC, "Skill_SetCharge": SKILL_PHYSICAL,
+    "Skill_DarkMending": SKILL_HEAL, "Skill_VeilOfLife": SKILL_HEAL, "Skill_RaiseTheFallen": SKILL_HEAL,
+    "Skill_Scattershot": SKILL_PHYSICAL, "Skill_MarkWeakPoint": SKILL_PHYSICAL, "Skill_BelayingPin": SKILL_PHYSICAL,
+    "Skill_QuickDraw": SKILL_PHYSICAL, "Skill_PatchUp": SKILL_HEAL, "Skill_Rally": SKILL_HEAL,
+    "Skill_SmellingSalts": SKILL_HEAL, "Skill_StaticSnare": SKILL_MAGIC,
+}
+MEDALS.update(SKILL_MEDALS)
+
 
 class G:
     """Signed-distance shapes on a pixel grid, in units where the icon spans -1..1, y up."""
@@ -197,8 +227,129 @@ def _crystal(g, s=1.0, cy=0.0):
     return g.poly((0, 0.86 * s + cy), (0.42 * s, 0.32 * s + cy), (0.3 * s, -0.5 * s + cy), (0, -0.84 * s + cy), (-0.3 * s, -0.5 * s + cy), (-0.42 * s, 0.32 * s + cy))
 
 
+def _skill_layers(name, g):
+    """The deck battle's skill buttons, one picture per skill. None for anything else."""
+    if name == "Hud_Attack":
+        return [(union(_sword(g, -0.72, -0.72, 0.84, 0.84), g.circle(-0.76, -0.76, 0.11)), WHITE)]
+    if name == "Skill_Cleave":
+        trail = clip(cut(g.circle(0.05, -0.15, 0.86), g.circle(0.24, -0.34, 0.78)), g.box(0, 0.35, 1.0, 0.62))
+        return [(trail, PALE), (_sword(g, -0.62, -0.72, 0.62, 0.6), WHITE)]
+    if name == "Skill_CrushingBlow":
+        return [(g.star(-0.4, -0.44, 0.52, 0.2, 8, 0.2), ORANGE), (g.star(-0.4, -0.44, 0.26, 0.1, 8, 0.2), FLAME),
+                (g.line(-0.05, 0.0, 0.7, 0.75, 0.08), BROWN),
+                (g.box(-0.12, -0.07, 0.46, 0.24, rot=-0.785, rnd=0.06), STEEL),
+                (g.box(-0.12, -0.07, 0.08, 0.26, rot=-0.785), IRON_DARK)]
+    if name == "Skill_HookSwing":
+        hook = union(g.line(0.15, 0.52, 0.15, -0.32, 0.075), clip(g.ring(0.15, -0.2, 0.36, 0.075), g.box(0.15, -0.5, 0.5, 0.3)),
+                     g.poly((-0.21, -0.18), (-0.34, 0.08), (-0.1, -0.06)), g.poly((0.51, -0.18), (0.64, 0.08), (0.4, -0.06)),
+                     g.ring(0.15, 0.62, 0.11, 0.045))
+        motion = union(g.line(-0.82, 0.08, -0.4, 0.08, 0.04), g.line(-0.76, -0.18, -0.46, -0.18, 0.04))
+        return [(motion, PALE), (g.line(-0.86, 0.86, 0.06, 0.68, 0.045), BROWN), (hook, WHITE)]
+    if name == "Skill_AimedShot":
+        trails = union(g.line(-0.82, -0.82, 0.05, 0.05, 0.05), g.line(-0.86, -0.42, -0.26, 0.18, 0.035), g.line(-0.42, -0.86, 0.18, -0.26, 0.035))
+        bullet = g.line(0.18, 0.18, 0.46, 0.46, 0.15)
+        return [(trails, PALE), (g.ring(0.42, 0.42, 0.4, 0.06), RED), (bullet, BRASS), (clip(bullet, g.circle(0.52, 0.52, 0.16)), STEEL)]
+    if name == "Skill_CinderFlame":
+        # Rook's hound Cinder, face on: an iron head, blade ears, ember eyes and a brass barrel for a snout.
+        ears = union(g.poly((-0.5, 0.3), (-0.8, 0.94), (-0.16, 0.5)), g.poly((0.5, 0.3), (0.8, 0.94), (0.16, 0.5)))
+        flames = g.poly((-0.42, -0.5), (-0.32, -0.96), (-0.02, -0.72), (0.14, -1.0), (0.38, -0.7), (0.48, -0.48))
+        core = g.poly((-0.22, -0.56), (-0.14, -0.86), (0.04, -0.7), (0.15, -0.9), (0.3, -0.58))
+        eyes = union(g.circle(-0.25, 0.14, 0.1), g.circle(0.25, 0.14, 0.1))
+        glints = union(g.circle(-0.22, 0.17, 0.035), g.circle(0.28, 0.17, 0.035))
+        return [(ears, IRON_DARK), (g.box(0, 0.08, 0.56, 0.46, rnd=0.32), IRON), (g.box(0, 0.3, 0.5, 0.08, rnd=0.04), IRON_DARK),
+                (flames, ORANGE), (core, FLAME), (g.circle(0, -0.3, 0.3), BRASS), (g.circle(0, -0.3, 0.18), BORE),
+                (g.circle(0, -0.3, 0.08), EMBER), (eyes, EMBER), (glints, FLAME)]
+    if name == "Skill_HeavyFlak":
+        puffs = union(g.circle(-0.38, 0.3, 0.36), g.circle(-0.6, 0.12, 0.2), g.circle(0.38, 0.42, 0.3), g.circle(0.6, 0.28, 0.17),
+                      g.circle(0.05, -0.38, 0.4), g.circle(-0.26, -0.56, 0.22), g.circle(0.36, -0.56, 0.22))
+        stars = union(g.star(-0.38, 0.3, 0.3, 0.12, 8), g.star(0.38, 0.42, 0.24, 0.1, 8, 0.3), g.star(0.05, -0.38, 0.34, 0.14, 9, 0.1))
+        cores = union(g.circle(-0.38, 0.3, 0.09), g.circle(0.38, 0.42, 0.07), g.circle(0.05, -0.38, 0.11))
+        return [(puffs, IRON_DARK), (stars, ORANGE), (cores, FLAME)]
+    if name == "Skill_LightningBolt":
+        sparks = union(g.star(-0.21, -0.87, 0.24, 0.07, 4), g.star(0.62, 0.62, 0.18, 0.05, 4), g.star(-0.62, 0.38, 0.14, 0.04, 4))
+        return [(_bolt(g, 0.95), SPARK), (sparks, WHITE)]
+    if name == "Skill_Squall":
+        rain = union(g.line(-0.45, -0.08, -0.6, -0.5, 0.055), g.line(-0.12, -0.12, -0.27, -0.54, 0.055), g.line(0.42, -0.08, 0.27, -0.5, 0.055))
+        bolt = g.poly((0.14, -0.02), (-0.08, -0.46), (0.06, -0.46), (-0.04, -0.9), (0.28, -0.34), (0.12, -0.34), (0.26, -0.02))
+        return [(rain, CYAN), (bolt, SPARK), (_cloud(g, 0.32), SMOKE)]
+    if name == "Skill_Tailwind":
+        lines = union(g.line(-0.86, 0.36, -0.22, 0.36, 0.06), g.line(-0.92, 0.0, -0.32, 0.0, 0.06), g.line(-0.86, -0.36, -0.22, -0.36, 0.06))
+        chevrons = union(_side_chevron(g, 0.06, 0, 0.46, True, t=0.11), _side_chevron(g, 0.52, 0, 0.46, True, t=0.11))
+        return [(lines, CYAN), (chevrons, WHITE)]
+    if name == "Skill_Backstab":
+        drop = union(g.circle(-0.56, -0.7, 0.12), g.poly((-0.56, -0.42), (-0.675, -0.66), (-0.445, -0.66)))
+        moon = cut(g.circle(-0.5, 0.5, 0.28), g.circle(-0.38, 0.6, 0.24))
+        return [(moon, PALE), (_sword(g, 0.64, 0.72, -0.38, -0.36), WHITE), (drop, RED)]
+    if name == "Skill_SmokeBomb":
+        puffs = union(g.circle(-0.52, -0.42, 0.3), g.circle(-0.12, -0.56, 0.32), g.circle(0.34, -0.44, 0.32), g.circle(-0.66, -0.12, 0.2), g.circle(0.62, -0.14, 0.2))
+        stars = union(g.star(-0.52, 0.56, 0.18, 0.07, 5), g.star(0.56, 0.52, 0.18, 0.07, 5))
+        return [(g.line(0.1, 0.12, 0.28, 0.4, 0.04), STEEL), (g.circle(-0.04, -0.06, 0.38), IRON_DARK), (g.circle(-0.16, 0.06, 0.08), STEEL),
+                (puffs, SMOKE), (g.star(0.32, 0.48, 0.22, 0.08, 6), ORANGE), (stars, GOLD)]
+    if name == "Skill_SetCharge":
+        sticks = union(g.box(-0.3, -0.16, 0.14, 0.5, rnd=0.07), g.box(0.0, -0.16, 0.14, 0.5, rnd=0.07), g.box(0.3, -0.16, 0.14, 0.5, rnd=0.07))
+        return [(sticks, RED), (g.box(0, -0.06, 0.5, 0.08), IRON_DARK), (g.line(0.0, 0.34, 0.24, 0.6, 0.035), STEEL),
+                (g.star(0.32, 0.68, 0.26, 0.09, 6), ORANGE), (g.circle(0.32, 0.68, 0.08), FLAME)]
+    if name == "Skill_DarkMending":
+        ring = g.ring(0, 0, 0.74, 0.06)
+        motes = union(*(g.circle(0.74 * np.sin(a), 0.74 * np.cos(a), 0.09) for a in (0.4, 2.0, 3.6, 5.2)))
+        cross = union(g.box(0, 0, 0.2, 0.56, rnd=0.06), g.box(0, 0, 0.56, 0.2, rnd=0.06))
+        core = union(g.box(0, 0, 0.08, 0.42), g.box(0, 0, 0.42, 0.08))
+        return [(ring, VIOLET), (motes, WHITE), (cross, WHITE), (core, VIOLET)]
+    if name == "Skill_VeilOfLife":
+        veil = clip(g.ring(0, -0.24, 0.86, 0.07), g.box(0, 0.4, 1.0, 0.64))
+        plus = union(g.box(0, 0.78, 0.05, 0.15), g.box(0, 0.78, 0.15, 0.05))
+        return [(veil, MINT), (plus, MINT), (_bust(g, -0.42, 0.6), STEEL), (_bust(g, 0.42, 0.6), STEEL), (_bust(g, 0, 0.78), WHITE)]
+    if name == "Skill_RaiseTheFallen":
+        arrow = union(g.line(0, -0.48, 0, 0.42, 0.09), _chevron(g, 0, 0.52, 0.34, t=0.1))
+        sparkles = union(g.star(-0.5, 0.3, 0.18, 0.06, 4), g.star(0.5, 0.0, 0.14, 0.05, 4), g.star(0.42, 0.62, 0.11, 0.04, 4))
+        return [(g.box(0, -0.62, 0.72, 0.07, rnd=0.03), STEEL), (_skull(g, -0.46, -0.36, 0.34), STEEL), (arrow, WHITE), (sparkles, MINT)]
+    if name == "Skill_Scattershot":
+        trails = union(g.line(-0.62, -0.62, 0.6, 0.06, 0.035), g.line(-0.62, -0.62, 0.42, 0.42, 0.035), g.line(-0.62, -0.62, 0.06, 0.6, 0.035))
+        pellets = union(g.circle(0.62, 0.06, 0.14), g.circle(0.44, 0.44, 0.14), g.circle(0.06, 0.62, 0.14))
+        return [(trails, PALE), (g.star(-0.62, -0.62, 0.34, 0.13, 7), ORANGE), (pellets, BRASS)]
+    if name == "Skill_MarkWeakPoint":
+        # A red reticle on a cracked shield: the armour's weak spot, found and marked.
+        shield = g.poly((-0.2, 0.62), (0.34, 0.44), (0.3, -0.18), (-0.2, -0.8), (-0.7, -0.18), (-0.74, 0.44))
+        crack = union(g.line(-0.2, 0.62, -0.3, 0.2, 0.04), g.line(-0.3, 0.2, -0.12, -0.04, 0.04), g.line(-0.12, -0.04, -0.28, -0.4, 0.04))
+        ticks = union(g.line(0.3, 0.86, 0.3, 0.6, 0.05), g.line(0.3, -0.06, 0.3, 0.2, 0.05), g.line(0.64, 0.4, 0.88, 0.4, 0.05), g.line(-0.04, 0.4, -0.28, 0.4, 0.05))
+        return [(shield, STEEL), (crack, IRON_DARK), (union(g.ring(0.3, 0.4, 0.28, 0.06), ticks), RED), (g.circle(0.3, 0.4, 0.07), RED)]
+    if name == "Skill_BelayingPin":
+        body = union(g.line(-0.3, -0.3, 0.34, 0.34, 0.17), g.circle(0.38, 0.38, 0.2))
+        stars = union(g.star(-0.42, 0.52, 0.2, 0.08, 5), g.star(0.1, 0.74, 0.15, 0.06, 5), g.star(0.62, -0.26, 0.17, 0.07, 5))
+        return [(stars, GOLD), (g.line(-0.78, -0.78, -0.32, -0.32, 0.08), BROWN_DARK), (g.circle(-0.36, -0.36, 0.13), BROWN_DARK), (body, BROWN)]
+    if name == "Skill_QuickDraw":
+        speed = union(g.line(-0.92, 0.5, -0.46, 0.5, 0.04), g.line(-0.86, 0.26, -0.52, 0.26, 0.04))
+        grip = g.box(-0.32, -0.2, 0.15, 0.34, rot=-0.35, rnd=0.07)
+        guard = clip(g.ring(-0.06, -0.06, 0.16, 0.04), g.box(-0.06, -0.24, 0.24, 0.18))
+        return [(speed, PALE), (g.star(0.7, 0.24, 0.3, 0.11, 7), ORANGE), (grip, BROWN), (guard, IRON), (g.box(0.12, 0.24, 0.52, 0.12, rnd=0.04), IRON)]
+    if name == "Skill_PatchUp":
+        pad = g.box(0, 0, 0.2, 0.16, rot=0.6, rnd=0.04)
+        cross = union(g.box(0, 0, 0.06, 0.15), g.box(0, 0, 0.15, 0.06))
+        return [(g.box(0, 0, 0.7, 0.28, rot=0.6, rnd=0.13), PALE), (pad, WHITE), (cross, RED)]
+    if name == "Skill_Rally":
+        bugle = union(g.poly((0.22, 0.28), (0.7, 0.62), (0.7, -0.32), (0.22, 0.0)), g.line(-0.7, 0.14, 0.28, 0.14, 0.08), g.circle(-0.72, 0.14, 0.09))
+        loop = clip(g.ring(-0.18, -0.12, 0.24, 0.06), g.box(-0.18, -0.3, 0.4, 0.2))
+        arcs = union(clip(g.ring(0.66, 0.15, 0.24, 0.035), g.box(0.98, 0.15, 0.2, 0.6)), clip(g.ring(0.66, 0.15, 0.36, 0.035), g.box(1.06, 0.15, 0.24, 0.6)))
+        plus = union(g.box(-0.4, 0.62, 0.05, 0.16), g.box(-0.4, 0.62, 0.16, 0.05))
+        return [(arcs, WHITE), (plus, MINT), (loop, BRASS), (bugle, BRASS)]
+    if name == "Skill_SmellingSalts":
+        bottle = union(g.box(0, -0.28, 0.36, 0.4, rnd=0.14), g.box(0, 0.22, 0.13, 0.16))
+        liquid = clip(g.box(0, -0.28, 0.28, 0.32, rnd=0.1), g.box(0, -0.48, 0.4, 0.22))
+        wisps = union(g.line(0.06, 0.56, 0.3, 0.84, 0.045), g.line(-0.08, 0.56, -0.34, 0.86, 0.045), g.line(0.0, 0.6, 0.02, 0.92, 0.04))
+        return [(wisps, PALE), (bottle, GLASS), (liquid, MINT), (g.box(0, 0.42, 0.16, 0.08, rnd=0.03), BROWN), (g.circle(-0.14, -0.08, 0.06), WHITE)]
+    if name == "Skill_StaticSnare":
+        points = [(0.66 * np.sin(a), 0.66 * np.cos(a)) for a in np.arange(6) * np.pi / 3]
+        web = union(g.ring(0, 0, 0.66, 0.04), g.ring(0, 0, 0.36, 0.035), *(g.line(0, 0, x, y, 0.035) for x, y in points))
+        nodes = union(*(g.circle(x, y, 0.08) for x, y in points))
+        return [(web, CYAN), (nodes, WHITE), (_bolt(g, 0.42), SPARK)]
+    return None
+
+
 def glyph_layers(name, g):
     """Painter's order list of (sdf, colour)."""
+    skill = _skill_layers(name, g)
+    if skill is not None:
+        return skill
     if name == "Hud_FireBroadside":
         barrel = g.poly((-0.72, -0.06), (-0.6, -0.28), (0.5, 0.24), (0.42, 0.42))
         return [(g.star(0.68, 0.46, 0.34, 0.14, 7, 0.2), ORANGE), (union(barrel, g.line(0.52, 0.18, 0.4, 0.46, 0.05)), WHITE), (g.circle(-0.34, -0.5, 0.27), STEEL), (g.circle(-0.34, -0.5, 0.09), INK)]

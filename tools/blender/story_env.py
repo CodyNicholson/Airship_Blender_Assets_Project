@@ -431,9 +431,9 @@ def scrap_deck(mb, hq):
     mb.socket("krag_start", (3.2, 0, floor))
 
 
-def quarterdeck_hub(mb, hq):
-    """Main menu: your deck at dusk, framed for a phone in portrait or landscape. Each crew member
-    has a tappable station. Swap the faction atlas to match the ship you currently command."""
+def gale_quarterdeck(mb, hq):
+    """The Gale's quarterdeck at dusk: the set for the prologue cutscenes aboard Cassian's ship. It was
+    the main menu before SM_Env_HangarHub, which kept its footprint, stations and sockets."""
     half_l, half_w, floor = 9.0, 5.0, 0.6
     _planks(mb, half_l, half_w, floor, _q(hq, 10, 4), hq)
     mb.box((0, 0, floor / 2 - 0.05), (2 * half_l, 2 * half_w, floor - 0.1), "wood_dark")
@@ -492,6 +492,122 @@ def quarterdeck_hub(mb, hq):
     mb.socket("lantern_0", (-7.5, 4.42, floor + 2.05))
     mb.socket("lantern_1", (7.5, 4.42, floor + 2.05))
     _combat_slots(mb, floor, spread=4.0)
+
+
+# The ship you fly sits in the berth beyond the hangar's bay, broadside to the camera. The game scales
+# each ship to fit this length, so a sloop and a galleon both fill the berth.
+HANGAR_BERTH = (0.0, 11.5, 5.2)
+HANGAR_BERTH_LENGTH = 13.0
+
+
+def hangar_hub(mb, hq):
+    """Main menu: the crew's hangar, with the ship you're flying moored in the berth through the bay
+    behind them. Each crew member has a tappable station. The camera side (-Y) stays open; the bay
+    (+Y) frames the ship. Swap the faction atlas to match the ship you currently command."""
+    half_l, half_w, floor = 9.0, 5.0, 0.6
+    # Floor: workshop planks on a heavy sub-floor, with a painted line where the dock begins.
+    _planks(mb, half_l, half_w, floor, _q(hq, 10, 4), hq, swatches=("wood_deck", "iron_light", "wood_deck", "wood_mid"))
+    mb.box((0, 0, floor / 2 - 0.05), (2 * half_l, 2 * half_w, floor - 0.1), "wood_dark")
+    mb.box((0, 0, -0.6), (2 * half_l, 2 * half_w, 1.0), "wood_dark")
+    mb.box((0, half_w - 0.35, floor + 0.01), (12.6, 0.3, 0.03), "faction_a")
+
+    # Timber frame walls down each side: posts, a top beam, and a half-height plank wall.
+    wall_top = 9.0
+    for side in (1, -1):
+        x = side * (half_l - 0.25)
+        for y in _q(hq, (-4.5, 0.0, 4.5), (-4.5, 4.5)):
+            mb.box((x, y, (floor + wall_top) / 2), (0.5, 0.5, wall_top - floor), "wood_mid")
+        mb.box((x, 0, wall_top), (0.55, 2 * half_w, 0.5), "wood_dark")
+        mb.box((x, 0, floor + 1.4), (0.3, 2 * half_w, 2.8), "wood_red")
+        if hq:
+            for y0, y1 in ((-4.5, 0.0), (0.0, 4.5)):
+                mb.tube((x, y0, floor + 2.8), (x, y1, wall_top - 0.3), 0.09, sides=3, color="wood_dark")
+
+    # Roof trusses, open to the sky so the dusk light still reaches the crew.
+    for y in _q(hq, (-3.2, 0.8, 4.6), (-2.0, 4.6)):
+        mb.box((0, y, wall_top + 0.2), (2 * half_l, 0.4, 0.45), "wood_dark")
+        if hq:
+            for side in (1, -1):
+                mb.tube((side * 8.6, y, wall_top + 0.2), (0, y, wall_top + 1.9), 0.08, sides=3, color="wood_mid")
+
+    # The back wall, with a tall bay opening onto the berth.
+    bay_half, bay_top = 6.6, 11.0
+    for side in (1, -1):
+        mb.box((side * bay_half, half_w, (floor + bay_top) / 2), (1.0, 1.0, bay_top - floor), "wood_mid")
+        mb.box((side * (bay_half + half_l) / 2, half_w + 0.15, (floor + wall_top) / 2), (half_l - bay_half, 0.3, wall_top - floor), "wood_red")
+        mb.plate([(side * (bay_half - 0.55), half_w - 0.52, bay_top - 0.6), (side * (bay_half - 1.75), half_w - 0.52, bay_top - 0.6),
+                  (side * (bay_half - 1.75), half_w - 0.52, bay_top - 3.4), (side * (bay_half - 1.15), half_w - 0.52, bay_top - 2.9),
+                  (side * (bay_half - 0.55), half_w - 0.52, bay_top - 3.4)], 0.04, "faction_a")
+    mb.box((0, half_w, bay_top + 0.35), (2 * bay_half + 1.2, 1.1, 0.8), "wood_dark")
+    # The bay door, rolled up under the lintel.
+    mb.tube((-bay_half + 0.5, half_w - 0.1, bay_top - 0.45), (bay_half - 0.5, half_w - 0.1, bay_top - 0.45), 0.38, sides=_q(hq, 8, 4), color="canvas_dark")
+
+    # Raised overlook at the back, where Vane keeps watch over the ship: the hub's "throne".
+    px, py = 0.0, 3.3
+    mb.box((px, py, floor + 0.4), (7.2, 3.0, 0.8), "wood_mid")
+    mb.box((px, py, floor + 0.84), (7.4, 3.2, 0.08), "wood_deck")
+    for sign in (1, -1):
+        for i in range(_q(hq, 3, 1)):
+            mb.box((sign * 4.2, py - 0.1 - i * 0.3, floor + 0.13 + (2 - i) * 0.26), (0.9, 0.38, 0.26), "wood_light")
+    mb.box((0, py + 1.45, floor + 1.35), (7.2, 0.12, 0.08), "iron")
+    for x in (-3.5, 3.5):
+        mb.box((x, py + 1.45, floor + 1.1), (0.12, 0.12, 0.6), "iron")
+
+    # The berth: a dock reaching out from the bay, with two cradles under the ship's keel.
+    bx, by, bz = HANGAR_BERTH
+    mb.box((0, (half_w + 17.0) / 2, floor - 0.2), (2 * bay_half - 0.4, 17.0 - half_w, 0.4), "wood_deck")
+    for x in (-5.5, 5.5):
+        mb.tube((x, by + 4.0, floor - 0.4), (x, by + 4.0, -6.0), 0.3, sides=_q(hq, 6, 4), color="wood_dark")
+    for x in (-3.6, 3.6):
+        mb.box((x, by, floor + 0.9), (0.5, 0.6, 1.8), "iron")
+        mb.box((x, by, floor + 1.9), (0.6, 3.2, 0.3), "wood_mid")
+        if hq:
+            for side in (1, -1):
+                mb.box((x, by + side * 1.45, floor + 2.35), (0.5, 0.3, 0.7), "leather_dark")
+
+    # A gantry crane over the berth, its hook hanging just above the deck of the ship.
+    crane_y, crane_top = 16.4, 12.6
+    for x in (-6.0, 6.0):
+        mb.box((x, crane_y, (floor - 0.4 + crane_top) / 2), (0.6, 0.6, crane_top - floor + 0.4), "iron")
+    mb.box((0, crane_y, crane_top), (12.6, 0.7, 0.6), "iron_light")
+    mb.box((2.2, (crane_y + by) / 2, crane_top - 0.5), (1.0, crane_y - by + 0.6, 0.4), "iron")
+    if hq:
+        mb.tube((2.2, by, crane_top - 0.7), (2.2, by, bz + 3.6), 0.05, sides=3, color="rope")
+        mb.box((2.2, by, bz + 3.4), (0.4, 0.4, 0.5), "iron")
+
+    # Workshop: Rook's gun rack, crates, a barrel and Thorne's bench.
+    for i in range(_q(hq, 3, 1)):
+        x = 7.4
+        y = 3.3 - i * 2.2
+        mb.box((x, y, floor + 0.21), (0.9, 1.1, 0.42), "wood_mid")
+        mb.tube((x + 0.05, y, floor + 0.6), (x - 1.6, y, floor + 0.73), 0.13, 0.1, sides=_q(hq, 8, 4), color="iron")
+    if hq:
+        mb.box((-8.0, 0.8, floor + 0.4), (0.8, 0.8, 0.8), "wood_light")
+        mb.box((-8.0, -0.2, floor + 0.3), (0.6, 0.6, 0.6), "wood_mid")
+        with mb.xf(Matrix.Translation((-7.8, -1.2, floor))):
+            mb.lathe([(0.25, 0.0), (0.33, 0.45), (0.25, 0.9)], 8, "wood_mid", smooth=False)
+        mb.box((6.0, -2.6, floor + 0.45), (2.0, 0.9, 0.9), "wood_mid")
+        mb.box((6.0, -2.6, floor + 0.95), (2.2, 1.0, 0.1), "wood_light")
+        mb.plate([(-8.7, -3.6, floor + 1.4), (-8.7, -1.6, floor + 1.4), (-8.7, -1.6, floor + 2.6), (-8.7, -3.6, floor + 2.6)], 0.05, "parchment")
+        # Lanterns on posts by the bay, for warmth.
+        for x in (-7.5, 7.5):
+            mb.tube((x, 4.72, floor), (x, 4.72, floor + 2.3), 0.05, sides=3, color="iron")
+            mb.tube((x, 4.72, floor + 2.3), (x, 4.42, floor + 2.3), 0.025, sides=3, color="iron")
+            mb.sphere((x, 4.42, floor + 2.05), 0.16, 6, 3, "lamp", smooth=False)
+
+    mb.socket("station_helm", (0, 2.4, floor + 0.88))
+    mb.socket("station_rook", (6.1, 3.3, floor))
+    mb.socket("station_lyra", (-2.6, 1.0, floor))
+    mb.socket("station_lyra_table", (-2.6, 1.85, floor))
+    mb.socket("station_sable", (-7.0, 3.6, floor))
+    mb.socket("station_thorne", (5.0, -1.0, floor))
+    mb.socket("station_morrow", (-5.0, -2.0, floor))
+    mb.socket("station_bounty_board", (-7.9, 4.3, floor))
+    mb.socket("lantern_0", (-7.5, 4.42, floor + 2.05))
+    mb.socket("lantern_1", (7.5, 4.42, floor + 2.05))
+    mb.socket("ship_berth", (bx, by, bz))
+    _combat_slots(mb, floor, spread=4.0)
+    mb.socket("camera_look_at", (0, 0.5, floor + 1.6))
 
 
 def dreadnought_deck(mb, hq):

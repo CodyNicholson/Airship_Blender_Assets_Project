@@ -73,7 +73,7 @@ SKIES = {
     "Jetstream": {"used_for": "Act II: fast, bright, high-altitude intrigue", "sun_dir": [0.3, 0.82, -0.48], "sun_color": [1.0, 0.98, 0.9], "sun_intensity": 2.8, "ambient_color": [0.6, 0.76, 0.96], "fog_color": [0.62, 0.83, 0.96], "fog_start_m": 220, "fog_end_m": 900},
     "CirrusCitadel": {"used_for": "Act III: cold moonlit approach to Tartarus Aloft", "sun_dir": [-0.5, 0.62, 0.6], "sun_color": [0.72, 0.8, 1.0], "sun_intensity": 1.3, "ambient_color": [0.3, 0.32, 0.52], "fog_color": [0.2, 0.2, 0.38], "fog_start_m": 130, "fog_end_m": 560},
     "Maelstrom": {"used_for": "Act IV: inside the hyper-storm's eye", "sun_dir": [0.0, 1.0, 0.0], "sun_color": [0.66, 0.68, 0.96], "sun_intensity": 1.1, "ambient_color": [0.27, 0.25, 0.4], "fog_color": [0.11, 0.1, 0.2], "fog_start_m": 90, "fog_end_m": 420},
-    "QuarterdeckDusk": {"used_for": "Hub: warm, safe evening on your own deck", "sun_dir": [-0.72, 0.16, 0.67], "sun_color": [1.0, 0.66, 0.42], "sun_intensity": 2.1, "ambient_color": [0.62, 0.46, 0.6], "fog_color": [0.86, 0.48, 0.42], "fog_start_m": 150, "fog_end_m": 620},
+    "HangarDusk": {"used_for": "Hub: warm, safe evening in the crew's hangar", "sun_dir": [-0.72, 0.16, 0.67], "sun_color": [1.0, 0.66, 0.42], "sun_intensity": 2.1, "ambient_color": [0.62, 0.46, 0.6], "fog_color": [0.86, 0.48, 0.42], "fog_start_m": 150, "fog_end_m": 620},
     "FreeDawn": {"used_for": "Ending: the storm breaks after Cassian's defeat", "sun_dir": [0.6, 0.24, -0.76], "sun_color": [1.0, 0.92, 0.78], "sun_intensity": 2.5, "ambient_color": [0.68, 0.72, 0.86], "fog_color": [1.0, 0.86, 0.74], "fog_start_m": 240, "fog_end_m": 1000},
 }
 
@@ -143,4 +143,10 @@ GLYPH_ICONS = (
     "Story_Surrender", "Story_Bounty", "Story_Nemesis", "Story_Loyalty",
     "Choice_PressGang",
     "Ability_RookPrecision", "Ability_LyraWinds", "Ability_LyraCloudStealth", "Ability_SableSabotage", "Ability_ThorneOverdrive", "Ability_ThornePatch", "Ability_MorrowRadar",
+    # The deck battle's round attack button and one button per crew skill.
+    "Hud_Attack",
+    "Skill_Cleave", "Skill_CrushingBlow", "Skill_HookSwing", "Skill_AimedShot", "Skill_CinderFlame", "Skill_HeavyFlak",
+    "Skill_LightningBolt", "Skill_Squall", "Skill_Tailwind", "Skill_Backstab", "Skill_SmokeBomb", "Skill_SetCharge",
+    "Skill_DarkMending", "Skill_VeilOfLife", "Skill_RaiseTheFallen", "Skill_Scattershot", "Skill_MarkWeakPoint",
+    "Skill_BelayingPin", "Skill_QuickDraw", "Skill_PatchUp", "Skill_Rally", "Skill_SmellingSalts", "Skill_StaticSnare",
 )
