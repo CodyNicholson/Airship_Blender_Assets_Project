@@ -37,6 +37,7 @@ class Hero:
     singed_brow: int = 0  # 1 or -1: that side's brow is half burnt away. 1 is the character's left.
     blind_eye: int = 0  # 1 or -1: that side's eye is milky and blind, no pupil. 1 is the character's left.
     brow_color: str = None  # Brows darker than the hair. None uses the hair colour.
+    body: str = "human"  # "skeleton" draws bare bones in the skin colour in place of the body, head and hands.
     features: list = field(default_factory=list)
 
 
@@ -3071,13 +3072,324 @@ def old_helmsman(ctx):
             mb.path([_at(ctx, sign * 0.2, 0.0, 0.1), _at(ctx, sign * 0.19, -0.06, -0.1), _at(ctx, sign * 0.06, -0.12, -0.23)], [0.005 * s] * 3, 3, "rope")
 
 
+def _skeleton_body(ctx):
+    """Bare bones on the shared rig, in the hero's skin colour: a grinning skull with glowing eyes deep in
+    its sockets, a ribcage on a spine, bony arms, hands, legs and feet. Clothes go on as features."""
+    mb, q, s, w, hq = ctx.mb, ctx.q, ctx.s, ctx.w, ctx.hq
+    hero = ctx.hero
+    bone, dark, glow = hero.skin, "eye_dark", hero.iris or "faction_b"
+    sides = 5 if hq else 3
+    knob = (6, 4) if hq else (4, 3)
+
+    def joint(name, end):
+        return Vector(ctx.joints[name][end])
+
+    # ---- skull: cranium, cheekbones and upper jaw, a jaw hanging a little open, teeth, a nose hole.
+    with mb.bound_to("head"):
+        mb.sphere(_at(ctx, 0, 0.015, 0.035), (0.16 * s, 0.175 * s, 0.165 * s), q["head_s"], q["head_r"], bone, smooth=hq)
+        mb.box(tuple(_at(ctx, 0, -0.055, -0.085)), (0.2 * s, 0.17 * s, 0.09 * s), bone, top_scale=1.12)
+        mb.box(tuple(_at(ctx, 0, -0.07, -0.15)), (0.12 * s, 0.12 * s, 0.04 * s), dark)
+        mb.box(tuple(_at(ctx, 0, -0.06, -0.185)), (0.15 * s, 0.15 * s, 0.045 * s), bone, top_scale=1.15)
+        for sign in (1, -1):
+            mb.tube(_at(ctx, sign * 0.09, 0.0, -0.06), _at(ctx, sign * 0.07, -0.04, -0.18), 0.018 * s, sides=sides, color=bone)
+            mb.sphere(_at(ctx, sign * 0.062, -0.128, 0.005), (0.05 * s, 0.032 * s, 0.047 * s), *knob, dark, smooth=False)
+            mb.sphere(_at(ctx, sign * 0.062, -0.158, 0.005), (0.018 * s, 0.01 * s, 0.018 * s), *knob, glow, smooth=False)
+        mb.plate([_at(ctx, 0, -0.157, -0.03), _at(ctx, 0.026, -0.157, -0.085), _at(ctx, -0.026, -0.157, -0.085)], 0.01 * s, dark)
+        if hq:
+            for k in range(6):
+                x = (k - 2.5) * 0.024
+                mb.box(tuple(_at(ctx, x, -0.137, -0.142)), (0.018 * s, 0.012 * s, 0.03 * s), "enamel")
+                mb.box(tuple(_at(ctx, x, -0.14, -0.178)), (0.018 * s, 0.012 * s, 0.026 * s), "enamel")
+        else:
+            mb.box(tuple(_at(ctx, 0, -0.137, -0.15)), (0.13 * s, 0.012 * s, 0.05 * s), "enamel")
+
+    # ---- neck and spine, near the back as a real spine is.
+    with mb.bound_to("neck"):
+        mb.tube((0, 0.02 * s, 1.3 * s), (0, 0.02 * s, 1.46 * s), 0.028 * s, sides=sides, color=bone)
+        if hq:
+            for z in (1.35, 1.41):
+                mb.tube((0, 0.02 * s, (z - 0.01) * s), (0, 0.02 * s, (z + 0.01) * s), 0.042 * s, sides=sides, color=bone)
+    with mb.bound_to("spine"):
+        mb.tube((0, 0.06 * s, 0.84 * s), (0, 0.07 * s, 1.1 * s), 0.026 * s, sides=sides, color=bone)
+        if hq:
+            for z in (0.9, 0.97, 1.04):
+                mb.tube((0, 0.065 * s, (z - 0.012) * s), (0, 0.065 * s, (z + 0.012) * s), 0.042 * s, sides=sides, color=bone)
+    with mb.bound_to("chest"):
+        mb.tube((0, 0.07 * s, 1.08 * s), (0, 0.04 * s, 1.32 * s), 0.026 * s, sides=sides, color=bone)
+
+        # Ribs curve from the spine round each side and droop towards the breastbone.
+        rows = [(1.12, 0.175), (1.16, 0.195), (1.2, 0.2), (1.24, 0.195), (1.28, 0.165)] if hq else [(1.13, 0.185), (1.2, 0.2), (1.27, 0.17)]
+        arc = (90, 45, 5, -40, -78) if hq else (90, 5, -70)
+        for z, rx in rows:
+            for sign in (1, -1):
+                points = []
+                for k, degrees in enumerate(arc):
+                    a = math.radians(degrees)
+                    t = k / (len(arc) - 1)
+                    points.append((sign * rx * w * s * math.cos(a), (-0.02 + 0.115 * math.sin(a)) * s, (z - 0.05 * t) * s))
+                mb.path(points, [(0.014 if hq else 0.018) * s] * len(points), 4 if hq else 3, bone)
+        mb.box((0, -0.125 * s, 1.19 * s), (0.045 * s, 0.025 * s, 0.17 * s), bone, top_scale=0.8)
+        for sign in (1, -1):
+            mb.tube((sign * 0.03 * s, -0.1 * s, 1.33 * s), (sign * 0.24 * w * s, 0.0, 1.3 * s), 0.016 * s, sides=sides, color=bone)
+
+    # ---- pelvis, under whatever is worn over it.
+    with mb.bound_to("hips"):
+        with mb.xf(Matrix.Diagonal((w, 0.7, 1.0, 1.0))):
+            mb.lathe([(0.05 * s, 0.8 * s), (0.15 * s, 0.84 * s), (0.18 * s, 0.93 * s)], 8 if hq else 4, bone, smooth=hq)
+
+    # ---- arms and legs.
+    for side in ("L", "R"):
+        shoulder, elbow = joint(f"upper_arm.{side}", 0), joint(f"upper_arm.{side}", 1)
+        wrist, tip = joint(f"lower_arm.{side}", 1), joint(f"hand.{side}", 1)
+        with mb.bound_to(f"upper_arm.{side}"):
+            mb.tube(shoulder, elbow, 0.026 * s, 0.022 * s, sides=4 if hq else 3, color=bone)
+            if hq:
+                mb.sphere(shoulder, 0.036 * s, *knob, bone, smooth=False)
+        with mb.bound_to(f"lower_arm.{side}"):
+            if hq:
+                mb.sphere(elbow, 0.03 * s, *knob, bone, smooth=False)
+                across = (wrist - elbow).cross(Vector((0, 1, 0))).normalized() * 0.014 * s
+                mb.tube(elbow + across, wrist + across, 0.014 * s, 0.012 * s, sides=4, color=bone)
+                mb.tube(elbow - across, wrist - across, 0.012 * s, 0.014 * s, sides=4, color=bone)
+            else:
+                mb.tube(elbow, wrist, 0.02 * s, sides=3, color=bone)
+        with mb.bound_to(f"hand.{side}"):
+            along = tip - wrist
+            palm = wrist + along * 0.35
+            mb.box(tuple(palm), (0.05 * s, 0.035 * s, 0.07 * s), bone)
+            if hq:
+                # Fingers curl forward round whatever the hand holds.
+                for k in (-1, 0, 1):
+                    base_point = wrist + along * 0.62 + Vector((k * 0.016, 0, 0)) * s
+                    middle = base_point + along * 0.3 + Vector((0, -0.025, 0)) * s
+                    end = middle + Vector((0, -0.03, 0.02)) * s
+                    mb.path([base_point, middle, end], [0.009 * s, 0.008 * s, 0.007 * s], 3, bone)
+        hip, knee = joint(f"thigh.{side}", 0), joint(f"thigh.{side}", 1)
+        ankle, toe = joint(f"shin.{side}", 1), joint(f"foot.{side}", 1)
+        with mb.bound_to(f"thigh.{side}"):
+            mb.tube(hip, knee, 0.03 * s, 0.026 * s, sides=4 if hq else 3, color=bone)
+        with mb.bound_to(f"shin.{side}"):
+            mb.sphere(knee + Vector((0, -0.02, 0)) * s, 0.038 * s, *knob, bone, smooth=False)
+            mb.tube(knee, ankle - Vector((0, 0, 0.04)) * s, 0.026 * s, 0.02 * s, sides=4 if hq else 3, color=bone)
+            if hq:
+                out = Vector((0.025 if side == "L" else -0.025, 0.01, 0)) * s
+                mb.tube(knee + out, ankle + out, 0.011 * s, sides=3, color=bone)
+        with mb.bound_to(f"foot.{side}"):
+            mb.sphere(ankle - Vector((0, 0, 0.03)) * s, 0.034 * s, *knob, bone, smooth=False)
+            mb.box((ankle.x, -0.045 * s, 0.04 * s), (0.08 * s, 0.2 * s, 0.08 * s), bone, top_scale=0.7)
+            if hq:
+                for k in (-1, 0, 1):
+                    x = ankle.x + k * 0.025 * s
+                    mb.tube((x, -0.15 * s, 0.025 * s), (x, -0.2 * s, 0.015 * s), 0.011 * s, 0.008 * s, sides=3, color=bone)
+
+
+def cocked_tricorn(ctx, color="faction_c", trim="gold_dark"):
+    """A tricorn with its brim cocked up into three walls between three low corners, one over the nose,
+    so it reads as a tricorn from the front and not as a round hat."""
+    mb, s, hq = ctx.mb, ctx.s, ctx.hq
+    sides = 18 if hq else 9
+    z = ctx.centre.z + 0.12 * s
+    inner_low, outer_low, outer_high, inner_high = [], [], [], []
+    for j in range(sides):
+        a = 2 * math.pi * j / sides - math.pi / 2
+        lobe = 1.0 + 0.3 * math.cos(3 * (a + math.pi / 2))
+        rise = (0.12 - 0.1 * (lobe - 0.7) / 0.6) * s
+        r_out = 0.31 * s * lobe
+        c, d = math.cos(a), math.sin(a)
+        inner_low.append((0.19 * s * c, 0.19 * s * d, z - 0.01 * s))
+        outer_low.append((r_out * c, r_out * d, z + rise - 0.012 * s))
+        outer_high.append((r_out * c, r_out * d, z + rise + 0.012 * s))
+        inner_high.append((0.19 * s * c, 0.19 * s * d, z + 0.02 * s))
+    with mb.bound_to("head"):
+        mb.loft([inner_low, outer_low, outer_high, inner_high], color, smooth=False)
+        with mb.xf(Matrix.Translation((0, 0, z))):
+            mb.lathe([(0.2 * s, -0.01 * s), (0.19 * s, 0.11 * s), (0.11 * s, 0.18 * s)], 12 if hq else 6, color, smooth=hq)
+        if hq:
+            edge = [(x, y, zz + 0.012 * s) for x, y, zz in outer_high]
+            mb.path(edge + edge[:1], [0.01 * s] * (len(edge) + 1), 3, trim)
+        mb.box((0, -0.23 * s, z + 0.06 * s), (0.06 * s, 0.02 * s, 0.06 * s), "parchment")
+
+
+def skeleton_pirate(ctx, coat="velvet", trim="gold_dark", sash_color="canvas_dark"):
+    """A dead pirate's rags on a skeleton: a long coat, cut open down the front so the ribs show, with a
+    turned-up collar, gilt edging and buttons, and tails torn ragged at the hem. Sleeves end at the elbow
+    in wide cuffs over bare forearm bones. Ragged black breeches, a faded sash, bare shins and feet."""
+    mb, q, s, w, g, hq = ctx.mb, ctx.q, ctx.s, ctx.w, ctx.g, ctx.hq
+    hero = ctx.hero
+    n = 10 if hq else 4
+
+    def arc_ring(rx, ry, z, a0, a1, zig=0.0, thick=0.88):
+        outer, inner = [], []
+        for k in range(n + 1):
+            a = math.radians(a0 + (a1 - a0) * k / n)
+            dz = (zig if k % 2 else -zig) * s
+            outer.append((rx * s * w * math.cos(a), ry * s * g * math.sin(a), z * s + dz))
+            inner.append((rx * thick * s * w * math.cos(a), ry * thick * s * g * math.sin(a), z * s + dz))
+        return outer + list(reversed(inner))
+
+    # ---- breeches and sash.
+    with mb.bound_to("hips"):
+        mb.loft([_body_ring(ctx, 0.19, 0.13, z, q["torso"]) for z in (0.74, 0.94)], hero.legs, smooth=False)
+    for side in ("L", "R"):
+        hip, knee = Vector(ctx.joints[f"thigh.{side}"][0]), Vector(ctx.joints[f"thigh.{side}"][1])
+        hem = hip + (knee - hip) * 0.82
+        with mb.bound_to(f"thigh.{side}"):
+            mb.tube(hip + Vector((0, 0, 0.04)) * s, hem, 0.095 * s, 0.085 * s, sides=q["limb"], color=hero.legs)
+            if hq:
+                for k in range(3):
+                    a = math.radians(-60 + k * 120)
+                    x, y = 0.08 * s * math.cos(a), 0.08 * s * math.sin(a)
+                    mb.plate([hem + Vector((x - 0.02 * s, y, 0)), hem + Vector((x + 0.02 * s, y, 0)), hem + Vector((x, y, -0.06 * s))], 0.01 * s, hero.legs)
+    sash(ctx, sash_color)
+
+    # ---- the coat: open arcs round the back and sides, tails to the knee.
+    front_open = (-48, 228)
+    with mb.bound_to("chest"):
+        mb.loft([arc_ring(rx, ry, z, *front_open) for rx, ry, z in [(0.25, 0.175, 1.06), (0.315, 0.19, 1.28), (0.17, 0.125, 1.39)]], coat)
+        # A collar turned up behind the skull.
+        mb.loft([arc_ring(0.17, 0.125, 1.38, 0, 180), arc_ring(0.21, 0.16, 1.52, -10, 190)], coat)
+    with mb.bound_to("spine"):
+        mb.loft([arc_ring(rx, ry, z, *front_open) for rx, ry, z in [(0.225, 0.165, 0.9), (0.25, 0.175, 1.08)]], coat)
+    with mb.bound_to("hips"):
+        mb.loft([arc_ring(0.235, 0.17, 0.95, -20, 200), arc_ring(0.27, 0.2, 0.72, -20, 200), arc_ring(0.3, 0.23, 0.44, -20, 200, zig=0.035 if hq else 0.0)], coat)
+
+    # Gilt edging down each side of the opening, and brass buttons.
+    edge_rows = [(0.225, 0.165, 0.9), (0.25, 0.175, 1.06), (0.315, 0.19, 1.28), (0.17, 0.125, 1.39)]
+    with mb.bound_to("chest"):
+        for degrees in front_open:
+            a = math.radians(degrees)
+            points = [(rx * s * w * math.cos(a), ry * s * g * math.sin(a) - 0.005, z * s) for rx, ry, z in edge_rows]
+            mb.path(points, [0.013 * s] * len(points), 4 if hq else 3, trim)
+            if hq:
+                for z, rx, ry in ((1.0, 0.24, 0.17), (1.1, 0.255, 0.178), (1.2, 0.29, 0.185)):
+                    mb.sphere((rx * 0.92 * s * w * math.cos(a), ry * 0.92 * s * g * math.sin(a) - 0.012 * s, z * s), 0.017 * s, 5, 3, "brass", smooth=False)
+
+    # ---- sleeves to the elbow with wide cuffs; the forearm bones show below.
+    for side in ("L", "R"):
+        shoulder, elbow = Vector(ctx.joints[f"upper_arm.{side}"][0]), Vector(ctx.joints[f"upper_arm.{side}"][1])
+        wrist = Vector(ctx.joints[f"lower_arm.{side}"][1])
+        down = (elbow - shoulder).normalized()
+        with mb.bound_to(f"upper_arm.{side}"):
+            mb.tube(shoulder - down * 0.03 * s, elbow, 0.08 * s, 0.072 * s, sides=q["limb"], color=coat)
+        with mb.bound_to(f"lower_arm.{side}"):
+            cuff = elbow + (wrist - elbow) * 0.4
+            mb.tube(elbow, cuff, 0.072 * s, 0.088 * s, sides=q["limb"], color=coat)
+            mb.tube(elbow + (wrist - elbow) * 0.3, cuff + (wrist - elbow) * 0.04, 0.09 * s, 0.094 * s, sides=q["limb"], color=trim)
+
+
+def bomb_suit(ctx):
+    """Rook's fireproof bomb suit, pulled on over everything for his Bomb Charge: silver aluminised cloth padded
+    thick at the shoulders and arms, quilted bands at the elbows, wrists, waist and knees, a domed silver hood
+    with a broad gold visor and a skirt over the shoulders, twin air tanks on his back, silver gauntlets and
+    heavy silver boots."""
+    mb, q, s, g, w, hq = ctx.mb, ctx.q, ctx.s, ctx.g, ctx.w, ctx.hq
+    suit, band = "silver", "iron_light"
+    sides = q["torso"]
+    detail = (8, 5) if hq else (6, 3)
+    limb = q["limb"]
+    for side in ("L", "R"):
+        shoulder, elbow = (Vector(p) for p in ctx.joints[f"upper_arm.{side}"][:2])
+        wrist = Vector(ctx.joints[f"lower_arm.{side}"][1])
+        along = (wrist - elbow).normalized()
+        with mb.bound_to(f"upper_arm.{side}"):
+            mb.sphere(shoulder + (elbow - shoulder) * 0.1, 0.185 * s, detail[0], detail[1], suit, smooth=hq)
+            mb.sphere(shoulder + (elbow - shoulder) * 0.55, 0.14 * s, detail[0], detail[1], suit, smooth=hq)
+        with mb.bound_to(f"lower_arm.{side}"):
+            mb.tube(elbow - along * 0.03 * s, elbow + along * 0.06 * s, 0.1 * s, sides=limb, color=band)
+            mb.tube(wrist - along * 0.1 * s, wrist, 0.085 * s, 0.09 * s, sides=limb, color=band)
+        hip, knee = (Vector(p) for p in ctx.joints[f"thigh.{side}"][:2])
+        down = (knee - hip).normalized()
+        with mb.bound_to(f"shin.{side}"):
+            mb.tube(knee - down * 0.04 * s, knee + down * 0.05 * s, 0.11 * s * ctx.hero.leg_bulk, sides=limb, color=band)
+    with mb.bound_to("chest"):
+        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.27, 0.2, 1.06), (0.34, 0.22, 1.28), (0.18, 0.14, 1.4))], suit, smooth=hq)
+        # The hood's skirt over the shoulders.
+        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.2, 0.16, 1.43), (0.3, 0.22, 1.36), (0.37, 0.25, 1.27))], suit, smooth=hq)
+        mb.box((0, -0.222 * g * s, 1.16 * s), (0.05 * s, 0.02 * s, 0.3 * s), band)
+        for sign in (1, -1):
+            mb.tube((sign * 0.1 * s, 0.24 * g * s, 0.98 * s), (sign * 0.1 * s, 0.24 * g * s, 1.34 * s), 0.075 * s, sides=_q8(hq), color=band)
+            mb.sphere((sign * 0.1 * s, 0.24 * g * s, 1.34 * s), 0.075 * s, _q8(hq), 3, band, smooth=hq)
+        mb.box((0, 0.2 * g * s, 1.12 * s), (0.3 * s, 0.05 * s, 0.06 * s), "leather_dark")
+    with mb.bound_to("spine"):
+        mb.loft([_body_ring(ctx, rx, ry, z, sides) for rx, ry, z in ((0.245, 0.185, 0.9), (0.275, 0.2, 1.1))], suit, smooth=hq)
+    with mb.bound_to("hips"):
+        mb.lathe([(0.25 * w * s, 0.86 * s), (0.25 * w * s, 0.94 * s)], sides, band, smooth=False)
+        mb.box((0, -0.255 * g * s, 0.9 * s), (0.1 * s, 0.03 * s, 0.07 * s), "brass")
+    with mb.bound_to("head"):
+        mb.sphere(_at(ctx, 0, 0.0, 0.03), (0.265 * s, 0.255 * s, 0.285 * s), q["head_s"], q["head_r"], suit, smooth=hq)
+        mb.box(tuple(_at(ctx, 0, -0.232, 0.04)), (0.36 * s, 0.05 * s, 0.21 * s), band)
+        mb.box(tuple(_at(ctx, 0, -0.25, 0.04)), (0.31 * s, 0.04 * s, 0.165 * s), "gold", top_scale=0.92)
+        if hq:
+            mb.box(tuple(_at(ctx, -0.07, -0.272, 0.08)), (0.06 * s, 0.006 * s, 0.03 * s), "cloud")
+    _boot_cuffs(ctx, suit)
+
+
+def _q8(hq):
+    return 8 if hq else 5
+
+
+def hood_drawn(ctx, color="cloth_black"):
+    """Sable with her hood pulled forward over her face for the Dagger Dance: a pointed peak hanging over her
+    brow and the sides of the cowl brought in, so her face sits in shadow."""
+    mb, s = ctx.mb, ctx.s
+    with mb.bound_to("head"):
+        mb.plate([_at(ctx, -0.17, -0.2, 0.2), _at(ctx, 0.17, -0.2, 0.2), _at(ctx, 0.0, -0.31, 0.06)], 0.03 * s, color)
+        mb.plate([_at(ctx, -0.16, -0.18, 0.27), _at(ctx, 0.16, -0.18, 0.27), _at(ctx, 0.0, -0.3, 0.14)], 0.03 * s, color)
+        for sign in (1, -1):
+            mb.plate([_at(ctx, sign * 0.2, -0.1, 0.22), _at(ctx, sign * 0.15, -0.24, 0.1), _at(ctx, sign * 0.17, -0.2, -0.16), _at(ctx, sign * 0.22, -0.06, -0.2)], 0.025 * s, color)
+
+
+def drill_commodore(ctx):
+    """Commodore Hale, who wrote the Armada's gun drills and signed Rook's court-martial: tall, rake-thin and
+    rigid as a ramrod, an old man who has never once been wrong in his own opinion. Grey mutton-chop sideburns,
+    a clipped moustache and a cap-badge polished to a mirror. A long gilded-navy greatcoat with gold epaulettes,
+    a gold commodore's sash and a white cross-belt carrying a powder-cartridge box (he runs powder through the
+    Scrap-Winds). Clamped under his left arm, always, the red leather drill book with page forty marked."""
+    mb, s, g, w, hq = ctx.mb, ctx.s, ctx.g, ctx.w, ctx.hq
+    hero = ctx.hero
+
+    hair_cap(ctx)
+    moustache(ctx)
+    # Mutton chops: thick grey sideburns down each cheek to the jaw, stopping short of the chin.
+    with mb.bound_to("head"):
+        for sign in (1, -1):
+            mb.plate([_at(ctx, sign * 0.175, -0.07, 0.03), _at(ctx, sign * 0.165, -0.13, -0.02), _at(ctx, sign * 0.12, -0.17, -0.12),
+                      _at(ctx, sign * 0.08, -0.18, -0.15), _at(ctx, sign * 0.15, -0.09, -0.09)], 0.022 * s, hero.hair)
+
+    long_coat(ctx, "faction_a", "enamel", tail_len=0.52)
+    epaulettes(ctx, "gold")
+    sash(ctx, "gold_dark")
+    cross_belt(ctx, "enamel")
+    gold_buttons(ctx)
+    medals(ctx)
+    _boot_cuffs(ctx, "leather_dark", flare=1.08)
+
+    # The powder-cartridge box on the cross-belt at the right hip.
+    with mb.bound_to("hips"):
+        box = Vector((-0.24 * w * s, -0.1 * g * s, 0.86 * s))
+        mb.box(tuple(box), (0.13 * s, 0.06 * s, 0.09 * s), "leather_dark")
+        mb.box(tuple(box + Vector((0, -0.032, 0.0)) * s), (0.06 * s, 0.006 * s, 0.05 * s), "gold")
+
+    # The drill book, clamped under the left arm against the ribs: red leather, parchment edges, a brass clasp,
+    # and one ribbon marking page forty.
+    with mb.bound_to("chest"):
+        book = Vector((0.3 * w * s, -0.02 * s, 1.1 * s))
+        mb.box(tuple(book), (0.05 * s, 0.24 * s, 0.3 * s), "gem_red")
+        mb.box(tuple(book + Vector((0.0, -0.004, 0.0)) * s), (0.042 * s, 0.236 * s, 0.284 * s), "parchment")
+        mb.box(tuple(book + Vector((0.0, -0.122, 0.0)) * s), (0.054 * s, 0.012 * s, 0.05 * s), "brass")
+        if hq:
+            mb.path([book + Vector((0.0, 0.04, -0.14)) * s, book + Vector((0.0, 0.05, -0.22)) * s], [0.008 * s, 0.006 * s], 3, "gold_dark")
+
+    hat_officer(ctx, "faction_a")
+
+
 FEATURES = {f.__name__: f for f in (
-    old_helmsman, core_keeper, gale_gunner, free_fleet_flyer, sky_duelist, syndicate_lord, scrap_captain, vane_deckhand, vane_captain, vane_king, ship_surgeon, master_gunner, stormcaller_trainee, big_guns, bosun_build, morrow_finery, nomad_layers, nomad_hair, nomad_scarf, assassin_gear, sorcerer_amulet, sorcerer_hood, sorcerer_robe, sorcerer_sleeves, hair_cap, hair_wild, hair_long, hair_braid, hair_ponytail, hair_slick, hair_side_shave, hair_gray_sides,
+    drill_commodore, old_helmsman, core_keeper, gale_gunner, free_fleet_flyer, sky_duelist, syndicate_lord, scrap_captain, vane_deckhand, vane_captain, vane_king, ship_surgeon, master_gunner, stormcaller_trainee, big_guns, bosun_build, morrow_finery, nomad_layers, nomad_hair, nomad_scarf, assassin_gear, sorcerer_amulet, sorcerer_hood, sorcerer_robe, sorcerer_sleeves, hair_cap, hair_wild, hair_long, hair_braid, hair_ponytail, hair_slick, hair_side_shave, hair_gray_sides,
     beard_full, goatee, moustache, eyepatch, scar, spectacles, goggles_up, face_mask, hood, bandana, tricorn,
     bicorne, shako, morion, warden_helm, hat_officer, long_coat, short_jacket, cuirass, pauldrons, epaulettes,
     cape, sash, cross_belt, bandolier, apron, tool_belt, tabard, keyring, medals, gold_buttons, high_collar,
     scarf, grapple_gauntlet, iron_arm, chain_wrap, dagger_sheaths, navigator_case, tool_harness, ear_guards,
-    torn_shoulder,
+    torn_shoulder, skeleton_pirate, cocked_tricorn, bomb_suit, hood_drawn,
 )}
 
 
@@ -3112,6 +3424,10 @@ CAST = {
     ]),
     "Sable": Hero(mouth=False, skin="skin_light", hair="hair_black", top="faction_a", legs="cloth_black", boots="cloth_black", belt="leather", sleeve="faction_a", forearm="faction_a", glove="cloth_black", scale=0.97, width=0.76, girth=0.8, arm_bulk=0.82, leg_bulk=0.88, brow=0, iris="silver", features=[
         ("sorcerer_hood", "cloth_black", "faction_a"), ("assassin_gear",),
+    ]),
+    # Sable for her Dagger Dance: the hood drawn down over her face, the face gone dark, the eyes burning red.
+    "SableHooded": Hero(mouth=False, skin="abyss", hair="hair_black", brow_color="abyss", top="faction_a", legs="cloth_black", boots="cloth_black", belt="leather", sleeve="faction_a", forearm="faction_a", glove="cloth_black", scale=0.97, width=0.76, girth=0.8, arm_bulk=0.82, leg_bulk=0.88, brow=2, iris="ember", sclera="abyss", eye_scale=1.15, features=[
+        ("sorcerer_hood", "cloth_black", "cloth_black"), ("assassin_gear",), ("hood_drawn",),
     ]),
     "Brill": Hero(mouth=False, skin="skin_light", hair="hair_gray", top="faction_b", legs="cloth_black", boots="leather_dark", belt="leather", sleeve="faction_a", forearm="skin_light", scale=0.95, width=1.3, girth=1.38, arm_bulk=1.25, leg_bulk=1.25, brow=1, iris="eye_dark", features=[
         ("hair_cap",), ("bosun_build",),
@@ -3163,6 +3479,15 @@ CAST = {
     "Thorne": Hero(skin="enamel", hair="hair_black", top="faction_a", legs="faction_a", boots="cloth_black", belt="faction_c", sleeve="cloth_black", scale=1.06, brow=2, iris="faction_b", sclera="abyss", features=[
         ("sorcerer_robe",), ("sorcerer_hood",), ("sorcerer_sleeves",), ("sorcerer_amulet",),
     ]),
+    # Rook in his fireproof bomb suit, for his Bomb Charge. His own build, every inch of it silver.
+    "RookBombSuit": Hero(skin="skin_dark", hair="hair_black", top="silver", legs="silver", boots="silver", belt="iron_light", sleeve="silver", forearm="silver", glove="silver", scale=1.12, width=1.32, girth=1.28, arm_bulk=1.3, leg_bulk=1.2, iris="eye_dark", mouth=False, features=[
+        ("bomb_suit",),
+    ]),
+    # Dr. Thorne's Necromancy raises three of these: long-dead pirates in their old coats and tricorns,
+    # eyes lit green, cutlasses in hand.
+    "SkeletonPirate": Hero(body="skeleton", skin="parchment", hair="hair_black", iris="faction_b", top="velvet", legs="cloth_black", boots="parchment", belt="leather_dark", width=0.94, features=[
+        ("skeleton_pirate", "velvet", "gold_dark"), ("cocked_tricorn",),
+    ]),
     "Krag": Hero(skin="skin_mid", hair="hair_red", top="leather_dark", legs="cloth_black", boots="iron", sleeve="skin_mid", scale=1.2, width=1.42, girth=1.55, brow=2, features=[
         ("beard_full", 0.4), ("eyepatch",), ("bandana", "rust_dark", False), ("apron", "rust_dark"), ("pauldrons", "rust_dark", True), ("chain_wrap",), ("iron_arm", "L"), ("sash", "rust"),
     ]),
@@ -3180,6 +3505,11 @@ CAST = {
     ]),
     "ArmadaOfficer": Hero(skin="skin_light", hair="hair_blond", top="enamel", legs="enamel", sleeve="faction_a", glove="enamel", width=0.98, features=[
         ("hair_cap",), ("moustache",), ("long_coat", "faction_a", "enamel", 0.5), ("epaulettes", "gold"), ("sash", "gold_dark"), ("gold_buttons",), ("hat_officer", "faction_a"),
+    ]),
+    # Commodore Hale: the drill-book officer who court-martialled Rook. Tall, rake-thin and rigid, grey mutton chops,
+    # the red drill book always clamped under his arm.
+    "Hale": Hero(mouth=False, skin="skin_light", hair="hair_gray", brow_color="hair_gray", iris="steel", top="enamel", legs="enamel", boots="leather_dark", belt="leather_dark", sleeve="faction_a", forearm="faction_a", glove="enamel", scale=1.08, width=0.84, girth=0.8, arm_bulk=0.82, leg_bulk=0.88, brow=2, features=[
+        ("drill_commodore",),
     ]),
     "RoyalGuard": Hero(skin="skin_mid", hair="hair_black", top="silver", legs="faction_a", boots="faction_a", sleeve="silver", forearm="silver", glove="gold_dark", scale=1.08, width=1.14, girth=1.1, features=[
         ("morion", "silver", "faction_c"), ("cuirass", "silver", "gold"), ("pauldrons", "gold_dark"), ("tabard", "faction_a", "gold"), ("cape", "faction_a", 0.34),
@@ -3231,6 +3561,14 @@ def build(mb, name, hq):
     joints = base._joints(hero.scale, hero.width)
     s, g = hero.scale, hero.girth
     ctx = Ctx(mb, hero, joints, hq, q)
+    if hero.body == "skeleton":
+        _skeleton_body(ctx)
+        for entry in hero.features:
+            FEATURES[entry[0]](ctx, *entry[1:])
+        mb.socket("head_top", (0, 0, 1.85 * s))
+        mb.socket("chest_centre", (0, 0, 1.2 * s))
+        mb.socket("portrait_look_at", (0, 0, 1.56 * s))
+        return joints
     # The base head builder draws skin, eyes and nose. "bald" suppresses its one-size hair.
     look = base.Look(scale=s, width=hero.width, girth=g, skin=hero.skin, hair=hero.hair, shirt=hero.top, trousers=hero.legs, boots=hero.boots, belt=hero.belt, extras=["bald"])
     sleeve = hero.sleeve or hero.top
@@ -3285,3 +3623,126 @@ def _hands_without(mb, joints, look, q, hq, skip):
                     ring.append((x + rx * s * math.cos(a), -0.04 * s + ry * s * math.sin(a), z * s))
                 rings.append(ring)
             mb.loft(rings, look.boots, smooth=hq)
+
+
+# ---- Vane's own moves ---------------------------------------------------------------------------
+# On top of the shared clips, for his three deck battle skills. Every outfit he wears gets them.
+_p = base._pose
+_LUNGE = dict(thigh__L=(-34, -3, 0), shin__L=(26, 0, 0), thigh__R=(22, 3, 0))
+VANE_CLIPS = {
+    # Cutlass Fury: a forehand cut, a backhand cut, then an overhead smash. Blows land on frames 8, 17 and 28.
+    "SlashCombo": (False, {
+        0: _p(),
+        5: _p(upper_arm__R=(-150, 18, 0), lower_arm__R=(-55, 0, 0), chest=(-12, 0, -28), spine=(-5, 0, -10), head=(4, 0, 18), hips_loc=(0, 0.06, -0.03)),
+        8: _p(upper_arm__R=(-58, -8, 0), lower_arm__R=(-8, 0, 0), chest=(24, 0, 32), spine=(10, 0, 12), head=(-14, 0, -22), hips_loc=(0, -0.14, -0.08), **_LUNGE),
+        12: _p(upper_arm__R=(-95, -30, 0), lower_arm__R=(-75, 0, 0), chest=(10, 0, 38), spine=(4, 0, 14), head=(-6, 0, -26), hips_loc=(0, -0.1, -0.07), **_LUNGE),
+        17: _p(upper_arm__R=(-88, 44, 0), lower_arm__R=(-8, 0, 0), chest=(12, 0, -36), spine=(6, 0, -14), head=(-8, 0, 24), hips_loc=(0, -0.12, -0.07), **_LUNGE),
+        22: _p(upper_arm__R=(-172, 10, 0), lower_arm__R=(-45, 0, 0), upper_arm__L=(-150, -14, 0), lower_arm__L=(-50, 0, 0), chest=(-16, 0, 0), spine=(-6, 0, 0), head=(-8, 0, 0), hips_loc=(0, 0.02, 0.02)),
+        28: _p(upper_arm__R=(-38, 0, 0), lower_arm__R=(-4, 0, 0), upper_arm__L=(-30, -10, 0), lower_arm__L=(-30, 0, 0), chest=(32, 0, 4), spine=(12, 0, 0), head=(-16, 0, 0), thigh__L=(-44, -3, 0), shin__L=(40, 0, 0), thigh__R=(26, 3, 0), hips_loc=(0, -0.18, -0.13)),
+        34: _p(upper_arm__R=(-34, 0, 0), lower_arm__R=(-10, 0, 0), chest=(28, 0, 4), spine=(10, 0, 0), head=(-14, 0, 0), thigh__L=(-40, -3, 0), shin__L=(36, 0, 0), thigh__R=(24, 3, 0), hips_loc=(0, -0.16, -0.12)),
+        46: _p(),
+    }),
+    # Pirate's Wrath: a sidearm throw with the left hand, so the cutlass stays in his right. Lets go on frame 11.
+    "SwordThrow": (False, {
+        0: _p(),
+        7: _p(upper_arm__L=(-150, -28, 0), lower_arm__L=(-80, 0, 0), chest=(-8, 0, 30), spine=(-4, 0, 10), head=(0, 0, -24), thigh__R=(14, 3, 0), hips_loc=(0, 0.06, -0.03)),
+        11: _p(upper_arm__L=(-80, 6, 0), lower_arm__L=(-6, 0, 0), chest=(16, 0, -24), spine=(6, 0, -8), head=(-8, 0, 18), hips_loc=(0, -0.1, -0.06), **_LUNGE),
+        16: _p(upper_arm__L=(-40, 18, 0), lower_arm__L=(-10, 0, 0), chest=(18, 0, -28), spine=(6, 0, -10), head=(-8, 0, 20), hips_loc=(0, -0.1, -0.06), **_LUNGE),
+        26: _p(),
+    }),
+    # Pirate's Wrath's finish: up onto his toes with the blade raised high over his head and cocked behind it,
+    # then a huge chop straight down into a deep lunge. The blow lands on frame 14.
+    "OverheadSlash": (False, {
+        0: _p(),
+        7: _p(upper_arm__R=(-184, 8, 0), lower_arm__R=(-62, 0, 0), upper_arm__L=(-158, -16, 0), lower_arm__L=(-48, 0, 0), chest=(-22, 0, 0), spine=(-9, 0, 0), head=(-6, 0, 0), thigh__L=(-10, -3, 0), shin__L=(8, 0, 0), thigh__R=(10, 3, 0), foot__L=(18, 0, 0), foot__R=(18, 0, 0), hips_loc=(0, 0.05, 0.08)),
+        10: _p(upper_arm__R=(-188, 8, 0), lower_arm__R=(-66, 0, 0), upper_arm__L=(-162, -16, 0), lower_arm__L=(-50, 0, 0), chest=(-26, 0, 0), spine=(-10, 0, 0), head=(-8, 0, 0), thigh__L=(-12, -3, 0), shin__L=(10, 0, 0), thigh__R=(12, 3, 0), foot__L=(22, 0, 0), foot__R=(22, 0, 0), hips_loc=(0, 0.06, 0.1)),
+        14: _p(upper_arm__R=(-34, 0, 0), lower_arm__R=(-4, 0, 0), upper_arm__L=(-26, -12, 0), lower_arm__L=(-30, 0, 0), chest=(38, 0, 4), spine=(16, 0, 0), head=(-20, 0, 0), thigh__L=(-50, -3, 0), shin__L=(48, 0, 0), thigh__R=(30, 3, 0), hips_loc=(0, -0.22, -0.18)),
+        22: _p(upper_arm__R=(-30, 0, 0), lower_arm__R=(-8, 0, 0), upper_arm__L=(-24, -12, 0), lower_arm__L=(-32, 0, 0), chest=(34, 0, 4), spine=(14, 0, 0), head=(-18, 0, 0), thigh__L=(-46, -3, 0), shin__L=(44, 0, 0), thigh__R=(28, 3, 0), hips_loc=(0, -0.2, -0.16)),
+        36: _p(),
+    }),
+}
+# Who gets extra clips: CAST name -> clips.
+EXTRA_CLIPS = {"Vane": VANE_CLIPS, "VaneCaptain": VANE_CLIPS, "VaneKing": VANE_CLIPS}
+
+
+# ---- Rook's own move ----------------------------------------------------------------------------
+# Gatling Gun: braced wide and low, the gun held at the hip in his right hand and steadied by his left, the whole
+# body juddering with the recoil. Loops while he fires.
+_GATLING = dict(thigh__L=(-24, -8, 0), shin__L=(26, 0, 0), thigh__R=(14, 8, 0), shin__R=(20, 0, 0), foot__R=(-10, 0, 0),
+                upper_arm__R=(-74, 10, 0), lower_arm__R=(-18, 0, 0), upper_arm__L=(-64, -26, 0), lower_arm__L=(-62, 0, 0),
+                chest=(6, 0, 20), spine=(2, 0, 6), head=(-2, 0, -18), hips_loc=(0, 0, -0.08))
+ROOK_CLIPS = {
+    "GatlingFire": (True, {
+        0: _p(**_GATLING),
+        2: _p(**{**_GATLING, "chest": (1, 0, 22), "upper_arm__R": (-70, 10, 0), "upper_arm__L": (-60, -26, 0), "head": (-5, 0, -18), "hips_loc": (0, 0.025, -0.075)}),
+        4: _p(**_GATLING),
+    }),
+}
+EXTRA_CLIPS["Rook"] = ROOK_CLIPS
+
+
+# ---- Lyra's own move -----------------------------------------------------------------------------
+# PlayLyre: the lyre held upright before her chest in her right hand, her left hand sweeping the strings,
+# swaying with the music. Loops while she plays.
+_LYRE = dict(upper_arm__R=(-34, -22, 0), lower_arm__R=(-112, 0, 0), upper_arm__L=(-72, 0, -44), lower_arm__L=(-58, 0, 0),
+             chest=(-4, 0, -6), head=(8, 0, 8), thigh__L=(-8, -3, 0), shin__L=(12, 0, 0))
+LYRA_CLIPS = {
+    "PlayLyre": (True, {
+        0: _p(**_LYRE),
+        6: _p(**{**_LYRE, "upper_arm__L": (-64, 0, -30), "lower_arm__L": (-72, 0, 0), "chest": (-6, 0, -2), "head": (6, 0, 12), "hips_loc": (0, 0, -0.02)}),
+        12: _p(**{**_LYRE, "chest": (-4, 0, -10), "head": (10, 0, 4)}),
+        18: _p(**{**_LYRE, "upper_arm__L": (-64, 0, -30), "lower_arm__L": (-72, 0, 0), "chest": (-6, 0, -2), "head": (6, 0, 12), "hips_loc": (0, 0, -0.02)}),
+        24: _p(**_LYRE),
+    }),
+}
+EXTRA_CLIPS["Lyra"] = LYRA_CLIPS
+
+
+# ---- Sable's own move -----------------------------------------------------------------------------
+# Poison Arrows: tucked in mid-air, bow arm out at the target, drawing to the cheek and loosing. One loop is
+# one arrow.
+_BOW = dict(upper_arm__L=(-88, 4, 0), lower_arm__L=(-4, 0, 0), upper_arm__R=(-84, 0, 38), lower_arm__R=(-124, 0, 0),
+            chest=(0, 0, -30), spine=(0, 0, -8), head=(0, 0, 28), thigh__L=(-62, -4, 0), shin__L=(74, 0, 0), foot__L=(-10, 0, 0),
+            thigh__R=(-28, 4, 0), shin__R=(96, 0, 0), foot__R=(-20, 0, 0))
+SABLE_CLIPS = {
+    "BowShot": (True, {
+        0: _p(**_BOW),
+        3: _p(**{**_BOW, "upper_arm__R": (-82, 0, 18), "lower_arm__R": (-62, 0, 0), "chest": (2, 0, -26)}),
+        6: _p(**_BOW),
+    }),
+}
+EXTRA_CLIPS["Sable"] = SABLE_CLIPS
+
+
+# ---- Ivo's own move -------------------------------------------------------------------------------
+# ChannelStorm: staff and free hand thrown up at the sky, head back, trembling with the charge. Loops while his
+# storm cloud rains lightning.
+_CHANNEL = dict(upper_arm__R=(-122, 14, 0), lower_arm__R=(-16, 0, 0), upper_arm__L=(-156, -22, 0), lower_arm__L=(-24, 0, 0),
+                chest=(-12, 0, 0), spine=(-4, 0, 0), head=(-22, 0, 0), thigh__L=(-10, -6, 0), shin__L=(14, 0, 0), thigh__R=(4, 6, 0), shin__R=(10, 0, 0))
+IVO_CLIPS = {
+    "ChannelStorm": (True, {
+        0: _p(**_CHANNEL),
+        3: _p(**{**_CHANNEL, "upper_arm__R": (-118, 18, 0), "upper_arm__L": (-160, -18, 0), "chest": (-14, 0, 2), "head": (-24, 0, 3), "hips_loc": (0, 0, 0.015)}),
+        6: _p(**{**_CHANNEL, "upper_arm__R": (-126, 10, 0), "upper_arm__L": (-152, -26, 0), "chest": (-10, 0, -2), "head": (-20, 0, -3)}),
+        9: _p(**{**_CHANNEL, "upper_arm__R": (-118, 18, 0), "upper_arm__L": (-160, -18, 0), "chest": (-14, 0, 2), "head": (-24, 0, 3), "hips_loc": (0, 0, 0.015)}),
+        12: _p(**_CHANNEL),
+    }),
+}
+EXTRA_CLIPS["Ivo"] = IVO_CLIPS
+
+
+# ---- Morrow's own move ----------------------------------------------------------------------------
+# DualPistols: both pistols levelled at the target, firing right, left, right, left. One loop is two shots.
+_DUAL = dict(upper_arm__R=(-92, 4, 0), lower_arm__R=(-4, 0, 0), upper_arm__L=(-92, -4, 0), lower_arm__L=(-4, 0, 0),
+             chest=(2, 0, 0), head=(-2, 0, 0), thigh__L=(-14, -6, 0), shin__L=(16, 0, 0), thigh__R=(10, 6, 0), shin__R=(12, 0, 0),
+             hips_loc=(0, 0, -0.04))
+MORROW_CLIPS = {
+    "DualPistols": (True, {
+        0: _p(**_DUAL),
+        2: _p(**{**_DUAL, "upper_arm__R": (-100, 4, 0), "lower_arm__R": (-9, 0, 0), "chest": (-1, 0, -3)}),
+        4: _p(**_DUAL),
+        6: _p(**{**_DUAL, "upper_arm__L": (-100, -4, 0), "lower_arm__L": (-9, 0, 0), "chest": (-1, 0, 3)}),
+        8: _p(**_DUAL),
+    }),
+}
+EXTRA_CLIPS["Morrow"] = MORROW_CLIPS

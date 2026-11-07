@@ -123,7 +123,8 @@
       "SM_Prop_GildedRapier",
       "SM_Prop_FleetCutlass",
       "SM_Prop_RegulatorKey",
-      "SM_Prop_WeatherStaff"
+      "SM_Prop_WeatherStaff",
+      "SM_Prop_Bomb"
     ],
     "weapon.L": [
       "SM_Prop_Cutlass",
@@ -149,21 +150,24 @@
       "SM_Prop_GildedRapier",
       "SM_Prop_FleetCutlass",
       "SM_Prop_RegulatorKey",
-      "SM_Prop_WeatherStaff"
+      "SM_Prop_WeatherStaff",
+      "SM_Prop_Bomb"
     ],
     "gun.R": [
       "SM_Prop_Flintlock",
       "SM_Prop_DuelPistol",
       "SM_Prop_HandMortar",
       "SM_Prop_ArmadaMusket",
-      "SM_Prop_Blunderbuss"
+      "SM_Prop_Blunderbuss",
+      "SM_Prop_GatlingGun"
     ],
     "gun.L": [
       "SM_Prop_Flintlock",
       "SM_Prop_DuelPistol",
       "SM_Prop_HandMortar",
       "SM_Prop_ArmadaMusket",
-      "SM_Prop_Blunderbuss"
+      "SM_Prop_Blunderbuss",
+      "SM_Prop_GatlingGun"
     ]
   },
   "palette_atlases": {
@@ -2285,6 +2289,19 @@
         }
       }
     },
+    "Skill_AirSupport": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_AirSupport_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_AirSupport_LQ.png",
+          "size": 128
+        }
+      }
+    },
     "Skill_Backstab": {
       "source_model": null,
       "variants": {
@@ -2307,6 +2324,19 @@
         },
         "LQ": {
           "file": "T_Icon_Skill_BelayingPin_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_BombCharge": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_BombCharge_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_BombCharge_LQ.png",
           "size": 128
         }
       }
@@ -2350,6 +2380,32 @@
         }
       }
     },
+    "Skill_CutlassFury": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_CutlassFury_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_CutlassFury_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_DaggerDance": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_DaggerDance_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_DaggerDance_LQ.png",
+          "size": 128
+        }
+      }
+    },
     "Skill_DarkMending": {
       "source_model": null,
       "variants": {
@@ -2363,6 +2419,84 @@
         }
       }
     },
+    "Skill_ElectricCyclone": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_ElectricCyclone_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_ElectricCyclone_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_EnergySong": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_EnergySong_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_EnergySong_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_Fireball": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_Fireball_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_Fireball_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_GaleSlash": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_GaleSlash_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_GaleSlash_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_GatlingGun": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_GatlingGun_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_GatlingGun_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_Gunslinger": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_Gunslinger_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_Gunslinger_LQ.png",
+          "size": 128
+        }
+      }
+    },
     "Skill_HeavyFlak": {
       "source_model": null,
       "variants": {
@@ -2372,6 +2506,19 @@
         },
         "LQ": {
           "file": "T_Icon_Skill_HeavyFlak_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_HiddenCannon": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_HiddenCannon_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_HiddenCannon_LQ.png",
           "size": 128
         }
       }
@@ -2415,6 +2562,32 @@
         }
       }
     },
+    "Skill_Mutiny": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_Mutiny_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_Mutiny_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_Necromancy": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_Necromancy_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_Necromancy_LQ.png",
+          "size": 128
+        }
+      }
+    },
     "Skill_PatchUp": {
       "source_model": null,
       "variants": {
@@ -2424,6 +2597,32 @@
         },
         "LQ": {
           "file": "T_Icon_Skill_PatchUp_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_PiratesWrath": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_PiratesWrath_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_PiratesWrath_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_PoisonArrows": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_PoisonArrows_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_PoisonArrows_LQ.png",
           "size": 128
         }
       }
@@ -2493,6 +2692,19 @@
         }
       }
     },
+    "Skill_ShadowSpear": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_ShadowSpear_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_ShadowSpear_LQ.png",
+          "size": 128
+        }
+      }
+    },
     "Skill_SmellingSalts": {
       "source_model": null,
       "variants": {
@@ -2541,6 +2753,19 @@
         },
         "LQ": {
           "file": "T_Icon_Skill_StaticSnare_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_StormBallad": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_StormBallad_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_StormBallad_LQ.png",
           "size": 128
         }
       }
@@ -8682,6 +8907,414 @@
       },
       "default_faction": "Sorcerer"
     },
+    "SM_Prop_ShadowSpear": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 300
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 116
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "grip": [
+            0.0,
+            1.01,
+            -0.0
+          ],
+          "trail_tip": [
+            0.0,
+            2.38,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "grip": [
+            0.0,
+            1.01,
+            -0.0
+          ],
+          "trail_tip": [
+            0.0,
+            2.38,
+            -0.0
+          ]
+        }
+      },
+      "default_faction": "Sorcerer"
+    },
+    "SM_Prop_GatlingGun": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 300
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 150
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "barrel_hub": [
+            -0.0153,
+            0.3732,
+            -0.0435
+          ],
+          "grip": [
+            -0.2153,
+            0.0482,
+            -0.0435
+          ],
+          "muzzle": [
+            -0.0153,
+            1.1882,
+            -0.0435
+          ]
+        },
+        "LQ": {
+          "barrel_hub": [
+            -0.017,
+            0.368,
+            -0.0435
+          ],
+          "grip": [
+            -0.217,
+            0.043,
+            -0.0435
+          ],
+          "muzzle": [
+            -0.017,
+            1.183,
+            -0.0435
+          ]
+        }
+      },
+      "default_faction": "Crimson"
+    },
+    "SM_Prop_GatlingBarrels": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 284
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 64
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "muzzle": [
+            0.0,
+            0.8,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "muzzle": [
+            0.0,
+            0.8,
+            -0.001
+          ]
+        }
+      },
+      "default_faction": "Crimson"
+    },
+    "SM_Prop_Bomb": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 320
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 100
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "fuse": [
+            0.11,
+            0.4126,
+            -0.0
+          ],
+          "grip": [
+            0.0,
+            -0.0174,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "fuse": [
+            0.11,
+            0.4032,
+            -0.0
+          ],
+          "grip": [
+            0.0,
+            -0.0268,
+            -0.0
+          ]
+        }
+      },
+      "default_faction": "Crimson"
+    },
+    "SM_Prop_WindBlade": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 336
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 88
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "edge": [
+            0.0,
+            0.0225,
+            0.245
+          ]
+        },
+        "LQ": {
+          "edge": [
+            0.0,
+            0.0225,
+            0.1241
+          ]
+        }
+      },
+      "default_faction": "Nomad"
+    },
+    "SM_Prop_MusicNote": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 104
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 60
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "centre": [
+            -0.0086,
+            0.2012,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "centre": [
+            -0.0095,
+            0.2012,
+            -0.0
+          ]
+        }
+      },
+      "default_faction": "Nomad"
+    },
+    "SM_Prop_Tornado": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 710
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 148
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "crown": [
+            0.0,
+            4.2245,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "crown": [
+            0.0,
+            4.23,
+            -0.0
+          ]
+        }
+      },
+      "default_faction": "Nomad"
+    },
+    "SM_Prop_SableBow": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 172
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 72
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "grip": [
+            0.0,
+            0.705,
+            -0.024
+          ],
+          "nock": [
+            0.0,
+            0.705,
+            -0.039
+          ]
+        },
+        "LQ": {
+          "grip": [
+            0.0,
+            0.7046,
+            -0.021
+          ],
+          "nock": [
+            0.0,
+            0.7046,
+            -0.036
+          ]
+        }
+      },
+      "default_faction": "Shadow"
+    },
+    "SM_Prop_PoisonArrow": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 80
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 40
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "tip": [
+            -0.0104,
+            0.72,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "tip": [
+            0.0,
+            0.72,
+            -0.006
+          ]
+        }
+      },
+      "default_faction": "Shadow"
+    },
+    "SM_Prop_Fireball": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 414
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 144
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "centre": [
+            -0.0093,
+            0.7037,
+            0.0084
+          ]
+        },
+        "LQ": {
+          "centre": [
+            0.0007,
+            0.7033,
+            0.0225
+          ]
+        }
+      },
+      "default_faction": "Azure"
+    },
+    "SM_Prop_TrapDoor": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 108
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 60
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "centre": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "hinge": [
+            0.0,
+            0.04,
+            -0.53
+          ]
+        },
+        "LQ": {
+          "centre": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "hinge": [
+            0.0,
+            0.04,
+            -0.53
+          ]
+        }
+      },
+      "default_faction": "Emerald"
+    },
+    "SM_Prop_TrapDoorLid": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 112
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 76
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "hinge": [
+            0.0,
+            0.0,
+            -0.55
+          ]
+        },
+        "LQ": {
+          "hinge": [
+            0.0,
+            0.0,
+            -0.55
+          ]
+        }
+      },
+      "default_faction": "Emerald"
+    },
     "SM_Prop_LightningStaff": {
       "variants": {
         "HQ": {
@@ -11347,7 +11980,24 @@
           ]
         }
       },
-      "default_faction": "Crimson"
+      "default_faction": "Crimson",
+      "extra_clips": {
+        "SlashCombo": {
+          "loop": false,
+          "frames": 46,
+          "seconds": 1.917
+        },
+        "SwordThrow": {
+          "loop": false,
+          "frames": 26,
+          "seconds": 1.083
+        },
+        "OverheadSlash": {
+          "loop": false,
+          "frames": 36,
+          "seconds": 1.5
+        }
+      }
     },
     "SK_VaneCaptain": {
       "variants": {
@@ -11396,7 +12046,24 @@
           ]
         }
       },
-      "default_faction": "Crimson"
+      "default_faction": "Crimson",
+      "extra_clips": {
+        "SlashCombo": {
+          "loop": false,
+          "frames": 46,
+          "seconds": 1.917
+        },
+        "SwordThrow": {
+          "loop": false,
+          "frames": 26,
+          "seconds": 1.083
+        },
+        "OverheadSlash": {
+          "loop": false,
+          "frames": 36,
+          "seconds": 1.5
+        }
+      }
     },
     "SK_VaneKing": {
       "variants": {
@@ -11445,7 +12112,24 @@
           ]
         }
       },
-      "default_faction": "Crimson"
+      "default_faction": "Crimson",
+      "extra_clips": {
+        "SlashCombo": {
+          "loop": false,
+          "frames": 46,
+          "seconds": 1.917
+        },
+        "SwordThrow": {
+          "loop": false,
+          "frames": 26,
+          "seconds": 1.083
+        },
+        "OverheadSlash": {
+          "loop": false,
+          "frames": 36,
+          "seconds": 1.5
+        }
+      }
     },
     "SK_CassianPirate": {
       "variants": {
@@ -11591,7 +12275,14 @@
           ]
         }
       },
-      "default_faction": "Emerald"
+      "default_faction": "Emerald",
+      "extra_clips": {
+        "DualPistols": {
+          "loop": true,
+          "frames": 8,
+          "seconds": 0.333
+        }
+      }
     },
     "SK_Rook": {
       "variants": {
@@ -11638,6 +12329,13 @@
             1.7472,
             -0.0102
           ]
+        }
+      },
+      "extra_clips": {
+        "GatlingFire": {
+          "loop": true,
+          "frames": 4,
+          "seconds": 0.167
         }
       }
     },
@@ -11688,7 +12386,14 @@
           ]
         }
       },
-      "default_faction": "Nomad"
+      "default_faction": "Nomad",
+      "extra_clips": {
+        "PlayLyre": {
+          "loop": true,
+          "frames": 24,
+          "seconds": 1.0
+        }
+      }
     },
     "SK_Sable": {
       "variants": {
@@ -11734,6 +12439,62 @@
             0.0,
             1.5132,
             0.0383
+          ]
+        }
+      },
+      "default_faction": "Shadow",
+      "extra_clips": {
+        "BowShot": {
+          "loop": true,
+          "frames": 6,
+          "seconds": 0.25
+        }
+      }
+    },
+    "SK_SableHooded": {
+      "variants": {
+        "HQ": {
+          "tier": "hero",
+          "tris": 2940
+        },
+        "LQ": {
+          "tier": "hero_low",
+          "tris": 1252
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "chest_centre": [
+            0.0,
+            1.164,
+            -0.0106
+          ],
+          "head_top": [
+            0.0,
+            1.7945,
+            -0.0106
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.5132,
+            -0.0106
+          ]
+        },
+        "LQ": {
+          "chest_centre": [
+            0.0,
+            1.164,
+            -0.013
+          ],
+          "head_top": [
+            0.0,
+            1.7945,
+            -0.013
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.5132,
+            -0.013
           ]
         }
       },
@@ -11835,7 +12596,14 @@
           ]
         }
       },
-      "default_faction": "Azure"
+      "default_faction": "Azure",
+      "extra_clips": {
+        "ChannelStorm": {
+          "loop": true,
+          "frames": 12,
+          "seconds": 0.5
+        }
+      }
     },
     "SK_Hask": {
       "variants": {
@@ -12327,6 +13095,104 @@
       },
       "default_faction": "Sorcerer"
     },
+    "SK_RookBombSuit": {
+      "variants": {
+        "HQ": {
+          "tier": "hero",
+          "tris": 2328
+        },
+        "LQ": {
+          "tier": "hero_low",
+          "tris": 860
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "chest_centre": [
+            0.0,
+            1.344,
+            0.0228
+          ],
+          "head_top": [
+            0.0,
+            2.072,
+            0.0228
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.7472,
+            0.0228
+          ]
+        },
+        "LQ": {
+          "chest_centre": [
+            0.0,
+            1.344,
+            0.0208
+          ],
+          "head_top": [
+            0.0,
+            2.072,
+            0.0208
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.7472,
+            0.0208
+          ]
+        }
+      },
+      "default_faction": "Crimson"
+    },
+    "SK_SkeletonPirate": {
+      "variants": {
+        "HQ": {
+          "tier": "hero",
+          "tris": 3162
+        },
+        "LQ": {
+          "tier": "hero_low",
+          "tris": 1024
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "chest_centre": [
+            0.0,
+            1.2,
+            -0.0648
+          ],
+          "head_top": [
+            0.0,
+            1.85,
+            -0.0648
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.56,
+            -0.0648
+          ]
+        },
+        "LQ": {
+          "chest_centre": [
+            0.0,
+            1.2,
+            -0.0777
+          ],
+          "head_top": [
+            0.0,
+            1.85,
+            -0.0777
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.56,
+            -0.0777
+          ]
+        }
+      },
+      "default_faction": "Sorcerer"
+    },
     "SK_Krag": {
       "variants": {
         "HQ": {
@@ -12616,6 +13482,55 @@
             0.0,
             1.56,
             -0.0106
+          ]
+        }
+      },
+      "default_faction": "Gilded"
+    },
+    "SK_Hale": {
+      "variants": {
+        "HQ": {
+          "tier": "hero",
+          "tris": 2096
+        },
+        "LQ": {
+          "tier": "hero_low",
+          "tris": 784
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "chest_centre": [
+            0.0,
+            1.296,
+            -0.0
+          ],
+          "head_top": [
+            0.0,
+            1.998,
+            -0.0
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.6848,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "chest_centre": [
+            0.0,
+            1.296,
+            -0.0114
+          ],
+          "head_top": [
+            0.0,
+            1.998,
+            -0.0114
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.6848,
+            -0.0114
           ]
         }
       },

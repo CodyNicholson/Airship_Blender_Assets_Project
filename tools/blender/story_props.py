@@ -640,6 +640,34 @@ def shadow_staff(mb, hq):
     mb.socket("trail_tip", (0, 0, h + 0.08))
 
 
+def shadow_spear(mb, hq):
+    """Dr. Thorne's Shadow Spear, conjured out of nothing and thrown: a shaft of black shadow banded with
+    violet light and set with backward thorns, a long barbed head whose edge glows, and a spiked butt.
+    Lies tip up along +Z, so it can be pointed at a target and thrown."""
+    sides = _q(hq, 6, 4)
+    mb.tube((0, 0, 0.12), (0, 0, 1.62), 0.024, 0.02, sides=sides, color="abyss")
+    mb.tube((0, 0, 0.11), (0, 0, -0.06), 0.024, 0.003, sides=sides, color="abyss")
+    mb.tube((0, 0, 1.58), (0, 0, 1.7), 0.03, 0.042, sides=sides, color="cloth_black")
+    for z in ((0.35, 0.75, 1.15, 1.45) if hq else (0.6, 1.2)):
+        mb.tube((0, 0, z - 0.015), (0, 0, z + 0.015), 0.03, sides=sides, color="plasma")
+    if hq:
+        for k in range(6):
+            a = k * 2.4
+            z = 0.3 + k * 0.2
+            mb.tube((0.02 * math.cos(a), 0.02 * math.sin(a), z), (0.075 * math.cos(a), 0.075 * math.sin(a), z - 0.08), 0.012, 0.002, sides=3, color="abyss")
+    blade = [(0, 1.66), (0.085, 1.78), (0.06, 2.0), (0, 2.32), (-0.06, 2.0), (-0.085, 1.78)]
+    # Two blades crossed, so the head reads from any angle in flight. The glow is the edge of a plate
+    # left showing round a thicker black one.
+    for turn in ((0.0, math.pi / 2) if hq else (0.0,)):
+        with mb.xf(Matrix.Rotation(turn, 4, "Z")):
+            mb.plate([(x, 0, z) for x, z in blade], 0.02, "plasma")
+            mb.plate([(x * 0.72, 0, 1.66 + (z - 1.66) * 0.9) for x, z in blade], 0.034, "abyss")
+            for sign in (1, -1):
+                mb.plate([(sign * 0.07, 0, 1.75), (sign * 0.16, 0, 1.6), (sign * 0.05, 0, 1.69)], 0.016, "abyss")
+    mb.socket("grip", (0, 0, 0.95))
+    mb.socket("trail_tip", (0, 0, 2.32))
+
+
 def lightning_staff(mb, hq):
     """Ivo's lightning catcher: a makeshift staff of storm-worn wood bound in copper, a copper wire spiralling
     up it, and three brass lightning-rod tines at the top cradling a glass orb of caught, crackling light."""
@@ -976,3 +1004,190 @@ def armada_musket(mb, hq):
                     mb.lathe([(0.021, -0.008), (0.021, 0.008)], 6, "brass", smooth=False)
         mb.socket("grip", (0, 0.1, z - 0.06))
         mb.socket("muzzle", (0, -0.92, z))
+
+
+def gatling_gun(mb, hq):
+    """Rook's gatling gun, without its barrels: an iron receiver with a brass ammo drum on top, a wooden
+    pistol grip, a carry handle and a crank. The spinning barrel cluster (SM_Prop_GatlingBarrels) mounts at the
+    'barrel_hub' socket and points the way the gun does. Oriented for gun.R like the hand mortar."""
+    upright = Matrix(((0, 0, 1, 0), (-1, 0, 0, 0), (0, -1, 0, 0), (0, 0, 0, 1)))
+    with mb.xf(upright):
+        z = 0.2
+        mb.box((0, 0.13, z), (0.17, 0.28, 0.19), "iron")
+        mb.box((0, 0.13, z - 0.1), (0.12, 0.22, 0.03), "iron_light")
+        mb.tube((-0.075, 0.1, z + 0.17), (0.075, 0.1, z + 0.17), 0.1, sides=_q(hq, 10, 6), color="brass")
+        if hq:
+            for x in (-0.078, 0.078):
+                mb.tube((x - 0.004, 0.1, z + 0.17), (x + 0.004, 0.1, z + 0.17), 0.104, sides=10, color="iron")
+        # The shroud the barrels turn in.
+        with mb.xf(Matrix.Translation((0, 0.0, z)) @ _y_axis()):
+            mb.lathe([(0.085, 0.0), (0.095, 0.03), (0.095, 0.06)], _q(hq, 10, 6), "iron_light", smooth=False)
+        mb.path([(0, 0.22, z - 0.08), (0, 0.27, z - 0.17), (0, 0.3, z - 0.27)], [0.032, 0.03, 0.034], _q(hq, 6, 4), "wood_mid")
+        mb.path([(0, 0.24, z + 0.1), (0, 0.18, z + 0.3), (0, -0.02, z + 0.3), (0, -0.06, z + 0.1)], [0.016] * 4, _q(hq, 4, 3), "iron")
+        mb.path([(0.09, 0.2, z), (0.16, 0.2, z), (0.16, 0.27, z - 0.06)], [0.012, 0.012, 0.012], _q(hq, 4, 3), "iron")
+        mb.sphere((0.16, 0.27, z - 0.08), 0.022, _q(hq, 6, 4), 3, "wood_dark", smooth=False)
+        mb.socket("grip", (0, 0.28, z - 0.2))
+        mb.socket("barrel_hub", (0, -0.045, z))
+        mb.socket("muzzle", (0, -0.86, z))
+
+
+def gatling_barrels(mb, hq):
+    """The gatling's barrel cluster, which spins as it fires: barrels in a ring round a spindle, held by two
+    brass clamps. Built up +Z from its hub, so it points the way the gun does once mounted at 'barrel_hub'."""
+    length = 0.8
+    count = _q(hq, 6, 4)
+    mb.tube((0, 0, 0), (0, 0, length - 0.02), 0.022, sides=_q(hq, 6, 4), color="iron_light")
+    for k in range(count):
+        a = 2 * math.pi * k / count
+        x, y = 0.05 * math.cos(a), 0.05 * math.sin(a)
+        mb.tube((x, y, 0.0), (x, y, length), 0.017, sides=_q(hq, 6, 3), color="steel")
+        if hq:
+            mb.tube((x, y, length - 0.005), (x, y, length + 0.004), 0.009, sides=4, color="eye_dark")
+    for z in ((0.32, 0.72) if hq else (0.6,)):
+        mb.tube((0, 0, z - 0.02), (0, 0, z + 0.02), 0.075, sides=_q(hq, 10, 6), color="brass")
+    mb.socket("muzzle", (0, 0, length))
+
+
+def bomb(mb, hq):
+    """Rook's bomb for his Bomb Charge: a round black iron shell with a brass fuse cap and a lit fuse.
+    Held out from the palm on weapon.R, with sparks at the 'fuse' socket."""
+    mb.sphere((0, 0, 0.17), 0.155, _q(hq, 12, 6), _q(hq, 8, 4), "iron", smooth=hq)
+    mb.tube((0, 0, 0.3), (0, 0, 0.36), 0.045, sides=_q(hq, 8, 5), color="brass")
+    if hq:
+        mb.tube((-0.002, 0, 0.17), (0.002, 0, 0.17), 0.158, sides=12, color="iron_light")
+    fuse = [(0, 0, 0.36), (0.02, 0, 0.41), (0.06, 0, 0.44), (0.1, 0, 0.43)]
+    mb.path(fuse, [0.009] * len(fuse), _q(hq, 4, 3), "rope")
+    mb.sphere((0.11, 0, 0.43), 0.018, _q(hq, 6, 4), 3, "ember", smooth=False)
+    mb.socket("grip", (0, 0, 0.0))
+    mb.socket("fuse", (0.11, 0, 0.43))
+
+
+def wind_blade(mb, hq):
+    """One of Lyra's Gale Slash blades: a flat crescent of solid wind, bright at its cutting edge, with thinner
+    crescents trailing behind it. Lies flat, its edge bulging towards the front (-Y), so it can be rolled to any
+    angle in flight."""
+    def crescent(scale, back, thickness, color):
+        n = _q(hq, 10, 5)
+        outer = [(1.0 * scale * math.sin(a), back - 0.35 * scale * math.cos(a)) for a in (math.pi * (k / n - 0.5) for k in range(n + 1))]
+        inner = [(0.86 * scale * math.sin(a), back - 0.12 * scale * math.cos(a) + 0.02) for a in (math.pi * (k / n - 0.5) for k in range(n, -1, -1))]
+        mb.plate([(x, y, 0) for x, y in outer + inner], thickness, color)
+
+    crescent(0.6, 0.0, 0.03, "wind")
+    crescent(0.56, 0.008, 0.045, "cloud")
+    if hq:
+        crescent(0.48, 0.14, 0.02, "wind")
+        crescent(0.36, 0.26, 0.015, "wind")
+    mb.socket("edge", (0, -0.21, 0))
+
+
+def music_note(mb, hq):
+    """A glowing eighth note, flat and two-sided, for Lyra's songs. Stands on its head."""
+    with mb.xf(Matrix.Rotation(-0.35, 4, "Y")):
+        mb.sphere((0, 0, 0.06), (0.075, 0.03, 0.055), _q(hq, 10, 6), _q(hq, 4, 3), "lamp", smooth=False)
+    mb.box((0.062, 0, 0.24), (0.022, 0.022, 0.36), "lamp")
+    flag = [(0.05, 0, 0.42), (0.17, 0, 0.32), (0.15, 0, 0.22), (0.12, 0, 0.3), (0.05, 0, 0.36)]
+    mb.plate(flag, 0.022, "lamp")
+    mb.socket("centre", (0.03, 0, 0.2))
+
+
+def tornado(mb, hq):
+    """Storm Ballad's tornado: a funnel of wind ribbons twisting up from a narrow foot to a wide crown, with a
+    pale core. Spun about its axis in game. About 4 m tall."""
+    height = 4.2
+    turns = 2.5
+    ribbons = _q(hq, 4, 2)
+    steps = _q(hq, 20, 12)
+    for r in range(ribbons):
+        phase = 2 * math.pi * r / ribbons
+        points, radii = [], []
+        for k in range(steps + 1):
+            t = k / steps
+            a = phase + 2 * math.pi * turns * t
+            radius = 0.25 + 1.55 * t ** 1.4
+            points.append((radius * math.cos(a), radius * math.sin(a), height * t))
+            radii.append(0.05 + 0.12 * t)
+        mb.path(points, radii, _q(hq, 4, 3), "wind" if r % 2 == 0 else "cloud")
+    if hq:
+        mb.lathe([(0.12, 0.0), (0.3, height * 0.45), (0.55, height * 0.8), (0.02, height * 0.82)], 8, "cloud_shade", smooth=True, caps=(True, False))
+    mb.socket("crown", (0, 0, height))
+
+
+def sable_bow(mb, hq):
+    """Sable's recurve bow in hand, the same as the one on her back: pale wood limbs with steel brackets,
+    the tips curling away from her, venom on the upper limb, a taut string. Stands upright with its belly
+    towards her (+Y) and its back to the target (-Y), gripped at the middle."""
+    limb = [(0, 0.0, 0.0), (0, -0.05, 0.22), (0, -0.04, 0.48), (0, 0.02, 0.62), (0, -0.03, 0.7)]
+    for sign in (1, -1):
+        points = [(x, y, sign * z) for x, y, z in limb]
+        mb.path(points, [0.03, 0.026, 0.02, 0.014, 0.01], _q(hq, 5, 3), "wood_light")
+        if hq:
+            mb.tube((0, -0.05, sign * 0.2), (0, -0.05, sign * 0.26), 0.032, sides=5, color="steel")
+    mb.tube((0, 0.0, -0.1), (0, 0.0, 0.1), 0.036, sides=_q(hq, 6, 4), color="leather_dark")
+    mb.tube((0, 0.015, 0.66), (0, 0.015, -0.66), 0.005, sides=3, color="canvas")
+    if hq:
+        mb.sphere((0, -0.05, 0.56), (0.012, 0.012, 0.022), 4, 3, "grass", smooth=False)
+    mb.socket("grip", (0, 0, 0))
+    mb.socket("nock", (0, 0.015, 0))
+
+
+def poison_arrow(mb, hq):
+    """One of Sable's poison arrows: a dark shaft, green fletching and a barbed head wet with venom. Points
+    up +Z, tip at the top, so it can be turned to fly point first."""
+    sides = _q(hq, 4, 3)
+    mb.tube((0, 0, 0), (0, 0, 0.62), 0.008, sides=sides, color="cloth_black")
+    for k in range(_q(hq, 3, 2)):
+        a = 2 * math.pi * k / _q(hq, 3, 2)
+        x, y = math.cos(a), math.sin(a)
+        mb.plate([(0.006 * x, 0.006 * y, 0.02), (0.045 * x, 0.045 * y, 0.05), (0.04 * x, 0.04 * y, 0.14), (0.006 * x, 0.006 * y, 0.15)], 0.004, "grass")
+    mb.tube((0, 0, 0.6), (0, 0, 0.72), 0.024, 0.002, sides=sides, color="toxic")
+    if hq:
+        mb.sphere((0, 0, 0.64), 0.02, 4, 3, "toxic_dark", smooth=False)
+    mb.socket("tip", (0, 0, 0.72))
+
+
+def fireball(mb, hq):
+    """Ivo's fireball: a white-hot core in a shell of flame, with tongues of fire streaming back from it. Flies
+    towards +Z, so its trail hangs below its centre in the model."""
+    centre = (0, 0, 0.55)
+    mb.sphere(centre, 0.2, _q(hq, 10, 6), _q(hq, 6, 4), "lamp", smooth=hq)
+    mb.sphere((0, 0, 0.52), (0.27, 0.27, 0.3), _q(hq, 10, 6), _q(hq, 6, 4), "ember", smooth=hq)
+    tongues = _q(hq, 7, 4)
+    for k in range(tongues):
+        a = 2 * math.pi * k / tongues
+        x, y = math.cos(a), math.sin(a)
+        length = 0.35 + 0.15 * ((k * 7) % 3)
+        mb.path([(0.2 * x, 0.2 * y, 0.5), (0.16 * x, 0.16 * y, 0.5 - length * 0.5), (0.05 * x, 0.05 * y, 0.5 - length)],
+                [0.09, 0.06, 0.012], _q(hq, 5, 3), "ember" if k % 2 == 0 else "lamp")
+    mb.socket("centre", centre)
+
+
+def trap_door(mb, hq):
+    """A deck trap door's frame, lying on the deck with the dark hole below it. The lid is its own prop
+    (SM_Prop_TrapDoorLid) so it can swing open on its hinge: mount the lid's 'hinge' on this one's 'hinge'.
+    The hinge runs along the back edge (+Y), so the lid opens towards the back and the front is clear."""
+    half, rim = 0.55, 0.08
+    mb.box((0, 0, 0.004), (2 * half, 2 * half, 0.008), "abyss")
+    for x, y, sx, sy in ((0, half, 2 * half + 2 * rim, rim), (0, -half, 2 * half + 2 * rim, rim), (half, 0, rim, 2 * half), (-half, 0, rim, 2 * half)):
+        mb.box((x, y, 0.02), (sx, sy, 0.04), "wood_dark")
+    if hq:
+        for x in (-half - rim * 0.5, half + rim * 0.5):
+            for y in (-half, half):
+                mb.box((x, y, 0.045), (0.05, 0.05, 0.012), "iron")
+    mb.socket("hinge", (0, half - 0.02, 0.04))
+    mb.socket("centre", (0, 0, 0.0))
+
+
+def trap_door_lid(mb, hq):
+    """The trap door's lid: deck planks on two iron straps, with a ring pull at the front. Its 'hinge' is along
+    its back edge, where it meets the frame's."""
+    half = 0.55
+    planks = _q(hq, 5, 3)
+    width = 2 * half / planks
+    for k in range(planks):
+        x = -half + width * (k + 0.5)
+        mb.box((x, 0, 0.025), (width * 0.94, 2 * half, 0.05), "wood_deck")
+    for y in (-half * 0.6, half * 0.6):
+        mb.box((0, y, 0.054), (2 * half, 0.06, 0.012), "iron")
+    with mb.xf(Matrix.Translation((0, -half * 0.75, 0.062)) @ Matrix.Rotation(math.pi / 2, 4, "X")):
+        mb.lathe([(0.05, -0.01), (0.05, 0.01)], _q(hq, 8, 5), "brass", smooth=False)
+    mb.socket("hinge", (0, half, 0.0))

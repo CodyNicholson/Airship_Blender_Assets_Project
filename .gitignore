@@ -1,1 +1,10 @@
 __pycache__/
+*.pyc
+*.DS_Store
+.claude/settings.local.json
+
+# Reference images and procedurally exported production assets
+/newVane.jpeg
+/assets/models/production/*.glb
+/assets/textures/production/*.png
+

@@ -161,4 +161,8 @@ GLYPH_ICONS = (
     "Skill_LightningBolt", "Skill_Squall", "Skill_Tailwind", "Skill_Backstab", "Skill_SmokeBomb", "Skill_SetCharge",
     "Skill_DarkMending", "Skill_VeilOfLife", "Skill_RaiseTheFallen", "Skill_Scattershot", "Skill_MarkWeakPoint",
     "Skill_BelayingPin", "Skill_QuickDraw", "Skill_PatchUp", "Skill_Rally", "Skill_SmellingSalts", "Skill_StaticSnare",
+    "Skill_ShadowSpear", "Skill_Necromancy", "Skill_CutlassFury", "Skill_AirSupport", "Skill_PiratesWrath",
+    "Skill_GatlingGun", "Skill_BombCharge", "Skill_GaleSlash", "Skill_EnergySong", "Skill_StormBallad",
+    "Skill_PoisonArrows", "Skill_DaggerDance", "Skill_Fireball", "Skill_ElectricCyclone",
+    "Skill_Gunslinger", "Skill_HiddenCannon", "Skill_Mutiny",
 )

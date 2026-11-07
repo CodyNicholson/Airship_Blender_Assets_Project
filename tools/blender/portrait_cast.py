@@ -1835,6 +1835,37 @@ def ivo(p):
     p.ball((0.36, -1.0, -2.0), (0.08, 0.06, 0.04), rgb(186, 142, 62), gloss=0.7, root=p.body_root)
 
 
+def hale(p):
+    """Commodore Hale, who wrote the Armada's gun drills and signed Rook's court-martial. A long, pinched old face
+    held perfectly still, chin up, looking down the nose at you as if you were a misfiled form. Thin lips pressed
+    flat, steel-grey eyes under heavy disapproving brows, grey mutton-chop sideburns and a clipped moustache. A
+    peaked cap with a mirror-polished badge, a gilded-navy greatcoat with gold epaulettes, and the red leather drill
+    book clamped against his chest, its ribbon marking page forty."""
+    skin, shade, blush = rgb(226, 184, 156), rgb(140, 104, 112), rgb(214, 128, 112)
+    grey = rgb(196, 198, 204)
+    face(p, skin, shade, blush, rgb(130, 146, 162), grey, inner=0.24, outer=0.06, thick=0.05, lid=0.5, up=0.06, low=0.03, gaze=-0.04, lip_alpha=0.25, bags=0.8, skin_shade=shade)
+    for z in (0.32, 0.4):
+        p.paint.line([(-0.24, z), (0, z - 0.015), (0.24, z)], 0.004, shade, 0.6)
+    for sign in (-1, 1):
+        p.paint.line([(sign * 0.2, -0.36), (sign * 0.3, -0.62)], [0.002, 0.005, 0.001], shade)
+    finish(p, skin, shade, neck=0.32)
+    # Mutton chops: down each cheek from the temple to the jaw, stopping short of the chin.
+    for sign in (-1, 1):
+        p.sweep([(sign * 0.64, -0.74, 0.12), (sign * 0.66, -0.82, -0.3), (sign * 0.54, -0.92, -0.66), (sign * 0.36, -0.99, -0.74)], [0.07, 0.12, 0.11, 0.035], grey, depth=0.6)
+    # A clipped moustache, trimmed to regulation.
+    for sign in (-1, 1):
+        p.sweep([(sign * 0.03, -1.03, -0.43), (sign * 0.22, -1.02, -0.47), (sign * 0.34, -0.96, -0.5)], [0.04, 0.06, 0.02], grey, depth=0.6)
+    gold = rgb(240, 196, 84)
+    peaked_cap(p, rgb(30, 42, 92), gold, badge=gold)
+    coat(p, 1.4, rgb(32, 44, 96), rgb(232, 232, 236), rgb(236, 236, 240), gap=0.24, neck=0.44)
+    epaulettes(p, 1.4, gold)
+    # The red drill book, held flat against his chest, page forty marked.
+    red, page = rgb(160, 30, 40), rgb(236, 224, 196)
+    p.plate([(-0.98, -0.98, -1.62), (-0.18, -0.98, -1.52), (-0.15, -0.98, -2.6), (-0.95, -0.98, -2.7)], 0.08, red, root=p.body_root, outline=0.008)
+    p.plate([(-0.93, -1.0, -1.65), (-0.23, -1.0, -1.57), (-0.2, -1.0, -1.67), (-0.91, -1.0, -1.75)], 0.02, page, root=p.body_root, outline=0.0)
+    p.sweep([(-0.52, -1.04, -1.58), (-0.49, -1.04, -2.0), (-0.54, -1.04, -2.2)], 0.025, gold, root=p.body_root, outline=0.0)
+
+
 def _spec(build, dark, light, rim, rival=False, motif="rays", turn=0.28, tilt=0.03, pitch=0.0, body_turn=0.1, span=4.2, target=-0.42, shadow=rgb(108, 94, 148), **shape):
     side = -1 if rival else 1
     return dict(build=build, dark=dark, light=light, rim=rim, shadow=shadow, key_side=side, turn=turn * side, tilt=tilt, pitch=pitch,
@@ -1867,6 +1898,8 @@ CAST.update({
                            crown=0.68, temple=0.7, cheek=0.7, jaw=0.58, chin=0.32, chin_z=-1.02, depth=0.84, brow_ridge=0.02, nose_len=0.32, nose_bridge=0.1, nose_tip=0.12, nose_width=0.1, nose_snub=0.02, mouth_w=0.17, mouth_z=-0.56, eye_x=0.31),
     "ArmadaOfficer": _spec(armada_officer, rgb(30, 46, 96), rgb(226, 186, 90), rgb(255, 224, 150), rival=True, motif="rays", turn=0.2, tilt=0.03, pitch=-0.13, span=4.7, target=-0.24,
                            crown=0.74, temple=0.76, cheek=0.76, jaw=0.68, chin=0.36, depth=0.92, nose_len=0.45, nose_bridge=0.24, nose_tip=0.15, nose_width=0.11, nose_hook=0.03, mouth_w=0.2, mouth_z=-0.63, smile=-0.03, eye_x=0.32),
+    "Hale": _spec(hale, rgb(30, 46, 96), rgb(196, 70, 70), rgb(255, 200, 170), rival=True, motif="bars", turn=0.18, tilt=0.02, pitch=-0.14, span=4.8, target=-0.3,
+                  crown=0.72, temple=0.72, cheek=0.7, jaw=0.62, chin=0.38, chin_z=-1.14, depth=0.9, hollow=0.06, cheekbone=0.1, nose_len=0.48, nose_bridge=0.24, nose_tip=0.12, nose_width=0.1, nose_hook=0.04, mouth_w=0.2, mouth_z=-0.66, smile=-0.06, eye_x=0.31),
     "RoyalGuard": _spec(royal_guard, rgb(120, 26, 40), rgb(226, 186, 90), rgb(255, 214, 130), rival=True, motif="rays", turn=0.16, tilt=0.0, pitch=0.0, span=5.8, target=0.0,
                         crown=0.74, temple=0.74, cheek=0.74, jaw=0.68, chin=0.4, depth=0.92, brow_ridge=0.08, socket=0.07, nose_len=0.4, nose_bridge=0.14, nose_tip=0.15, nose_width=0.13, mouth_w=0.24, mouth_z=-0.6, eye_x=0.32),
     "Tobin": _spec(tobin, rgb(32, 78, 120), rgb(208, 196, 150), rgb(240, 226, 160), motif="clouds", turn=0.24, tilt=-0.05, span=4.7, target=-0.26,

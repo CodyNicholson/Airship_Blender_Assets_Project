@@ -112,6 +112,18 @@ STATIC = {
     "SM_Prop_Spyglass": (_PROP, story_props.spyglass),
     "SM_Prop_BigWrench": (_PROP, story_props.big_wrench),
     "SM_Prop_ShadowStaff": (_PROP, story_props.shadow_staff),
+    "SM_Prop_ShadowSpear": (_PROP, story_props.shadow_spear),
+    "SM_Prop_GatlingGun": (_PROP, story_props.gatling_gun),
+    "SM_Prop_GatlingBarrels": (_PROP, story_props.gatling_barrels),
+    "SM_Prop_Bomb": (_PROP, story_props.bomb),
+    "SM_Prop_WindBlade": (_PROP, story_props.wind_blade),
+    "SM_Prop_MusicNote": (_PROP, story_props.music_note),
+    "SM_Prop_Tornado": (_PROP, story_props.tornado),
+    "SM_Prop_SableBow": (_PROP, story_props.sable_bow),
+    "SM_Prop_PoisonArrow": (_PROP, story_props.poison_arrow),
+    "SM_Prop_Fireball": (_PROP, story_props.fireball),
+    "SM_Prop_TrapDoor": (_PROP, story_props.trap_door),
+    "SM_Prop_TrapDoorLid": (_PROP, story_props.trap_door_lid),
     "SM_Prop_LightningStaff": (_PROP, story_props.lightning_staff),
     "SM_Prop_Linstock": (_PROP, story_props.linstock),
     "SM_Prop_BoneSaw": (_PROP, story_props.bone_saw),
@@ -178,9 +190,25 @@ DEFAULT_FACTIONS = {
     "SK_Mirren": "Crimson",
     "SK_Odessa": "Emerald",
     "SK_Tobin": "Azure",
+    "SK_Hale": "Gilded",
     "SK_Sable": "Shadow",
+    "SK_SkeletonPirate": "Sorcerer",
+    "SK_RookBombSuit": "Crimson",
+    "SK_SableHooded": "Shadow",
     "SM_Prop_SableDagger": "Shadow",
     "SM_Prop_ShadowStaff": "Sorcerer",
+    "SM_Prop_ShadowSpear": "Sorcerer",
+    "SM_Prop_GatlingGun": "Crimson",
+    "SM_Prop_GatlingBarrels": "Crimson",
+    "SM_Prop_Bomb": "Crimson",
+    "SM_Prop_WindBlade": "Nomad",
+    "SM_Prop_MusicNote": "Nomad",
+    "SM_Prop_Tornado": "Nomad",
+    "SM_Prop_SableBow": "Shadow",
+    "SM_Prop_PoisonArrow": "Shadow",
+    "SM_Prop_Fireball": "Azure",
+    "SM_Prop_TrapDoor": "Emerald",
+    "SM_Prop_TrapDoorLid": "Emerald",
     "SM_Prop_LightningStaff": "Azure",
     "SM_Prop_Linstock": "Crimson",
     "SM_Prop_BoneSaw": "Emerald",
@@ -227,8 +255,8 @@ DEFAULT_FACTIONS = {
 }
 
 
-HELD_MELEE = ["SM_Prop_Cutlass", "SM_Prop_BoardingAxe", "SM_Prop_HookSabre", "SM_Prop_RoyalSabre", "SM_Prop_AnchorHammer", "SM_Prop_TwinScimitar", "SM_Prop_WardenFlail", "SM_Prop_SableDagger", "SM_Prop_Spyglass", "SM_Prop_BigWrench", "SM_Prop_ArmadaHalberd", "SM_Prop_ShadowStaff", "SM_Prop_DriftwoodLyre", "SM_Prop_LightningStaff", "SM_Prop_Linstock", "SM_Prop_BoneSaw", "SM_Prop_ScrapCutlass", "SM_Prop_CaptainCutlass", "SM_Prop_KingCutlass", "SM_Prop_SwordCane", "SM_Prop_GildedRapier", "SM_Prop_FleetCutlass", "SM_Prop_RegulatorKey", "SM_Prop_WeatherStaff"]
-HELD_GUNS = ["SM_Prop_Flintlock", "SM_Prop_DuelPistol", "SM_Prop_HandMortar", "SM_Prop_ArmadaMusket", "SM_Prop_Blunderbuss"]
+HELD_MELEE = ["SM_Prop_Cutlass", "SM_Prop_BoardingAxe", "SM_Prop_HookSabre", "SM_Prop_RoyalSabre", "SM_Prop_AnchorHammer", "SM_Prop_TwinScimitar", "SM_Prop_WardenFlail", "SM_Prop_SableDagger", "SM_Prop_Spyglass", "SM_Prop_BigWrench", "SM_Prop_ArmadaHalberd", "SM_Prop_ShadowStaff", "SM_Prop_DriftwoodLyre", "SM_Prop_LightningStaff", "SM_Prop_Linstock", "SM_Prop_BoneSaw", "SM_Prop_ScrapCutlass", "SM_Prop_CaptainCutlass", "SM_Prop_KingCutlass", "SM_Prop_SwordCane", "SM_Prop_GildedRapier", "SM_Prop_FleetCutlass", "SM_Prop_RegulatorKey", "SM_Prop_WeatherStaff", "SM_Prop_Bomb"]
+HELD_GUNS = ["SM_Prop_Flintlock", "SM_Prop_DuelPistol", "SM_Prop_HandMortar", "SM_Prop_ArmadaMusket", "SM_Prop_Blunderbuss", "SM_Prop_GatlingGun"]
 
 
 def all_variants():
@@ -284,7 +312,8 @@ def prepare(asset_name):
             characters.add_clips(arm, cinder.CLIPS, cinder.BONE_PARENTS)
         else:
             arm = characters.create_armature(asset_name, joints, offset)
-            characters.add_clips(arm)
+            extra = story_characters.EXTRA_CLIPS.get(STORY_CAST.get(base), {})
+            characters.add_clips(arm, {**characters.CLIPS, **extra})
         obj.parent = arm
         modifier = obj.modifiers.new("Armature", "ARMATURE")
         modifier.object = arm
@@ -340,6 +369,9 @@ def write_manifest():
             # Not the crew's skeleton: its own bones and clips.
             asset["variants"][quality]["clips"] = characters.clip_table(cinder.CLIPS)
             asset["skeleton"] = list(cinder.BONE_PARENTS)
+        if STORY_CAST.get(base) in story_characters.EXTRA_CLIPS:
+            # The crew's clips, plus a few of their own.
+            asset["extra_clips"] = characters.clip_table(story_characters.EXTRA_CLIPS[STORY_CAST[base]])
         asset["sockets"][quality] = {key: _gltf(p) for key, p in sorted(mb.sockets.items())}
     manifest = {
         "units": "metres",

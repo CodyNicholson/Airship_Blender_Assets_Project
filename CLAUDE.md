@@ -1,3 +1,7 @@
+## Git Commit Rules
+- **Never include Claude or any other AI agent, software, or model as an author, committer, or co-author on any git commit.**
+- Do not add `Co-Authored-By:` trailers, AI attribution lines, or model names (e.g., Claude, Anthropic, OpenAI, Gemini, Copilot, Cursor, etc.) in commit messages or git metadata. All commits must be authored solely by the repository owner (`Cody Nicholson <codynicholson96@gmail.com>`).
+
 ## 3D Art & Blender MCP Rules
 - **Never export directly from Blender to `assets/models/production/`.**
 - Whenever creating, importing (via Hyper3D/Rodin/PolyHaven), or modifying a 3D mesh in Blender, you MUST delegate final optimization, UV unwrapping, pivot normalization, and `.glb` export to the `mobile-asset-optimizer` subagent.

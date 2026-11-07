@@ -77,6 +77,13 @@ SKILL_MEDALS = {
     "Skill_Scattershot": SKILL_PHYSICAL, "Skill_MarkWeakPoint": SKILL_PHYSICAL, "Skill_BelayingPin": SKILL_PHYSICAL,
     "Skill_QuickDraw": SKILL_PHYSICAL, "Skill_PatchUp": SKILL_HEAL, "Skill_Rally": SKILL_HEAL,
     "Skill_SmellingSalts": SKILL_HEAL, "Skill_StaticSnare": SKILL_MAGIC,
+    "Skill_ShadowSpear": SKILL_MAGIC, "Skill_Necromancy": SKILL_MAGIC,
+    "Skill_CutlassFury": SKILL_PHYSICAL, "Skill_AirSupport": SKILL_COMPANION, "Skill_PiratesWrath": SKILL_PHYSICAL,
+    "Skill_GatlingGun": SKILL_PHYSICAL, "Skill_BombCharge": SKILL_PHYSICAL,
+    "Skill_GaleSlash": SKILL_MAGIC, "Skill_EnergySong": SKILL_HEAL, "Skill_StormBallad": SKILL_MAGIC,
+    "Skill_PoisonArrows": SKILL_PHYSICAL, "Skill_DaggerDance": SKILL_PHYSICAL,
+    "Skill_Fireball": SKILL_MAGIC, "Skill_ElectricCyclone": SKILL_MAGIC,
+    "Skill_Gunslinger": SKILL_PHYSICAL, "Skill_HiddenCannon": SKILL_PHYSICAL, "Skill_Mutiny": SKILL_PHYSICAL,
 }
 MEDALS.update(SKILL_MEDALS)
 
@@ -342,6 +349,136 @@ def _skill_layers(name, g):
         web = union(g.ring(0, 0, 0.66, 0.04), g.ring(0, 0, 0.36, 0.035), *(g.line(0, 0, x, y, 0.035) for x, y in points))
         nodes = union(*(g.circle(x, y, 0.08) for x, y in points))
         return [(web, CYAN), (nodes, WHITE), (_bolt(g, 0.42), SPARK)]
+    if name == "Skill_ShadowSpear":
+        # Dr. Thorne's black spear in flight, its barbed head edged in violet light.
+        def along(t, side=0.0):
+            """A point t of the way from butt to tip, side across the shaft."""
+            return (-0.82 + 1.64 * t - side * 0.7071, -0.82 + 1.64 * t + side * 0.7071)
+        head = g.poly(along(1.02), along(0.7, 0.26), along(0.6, 0.15), along(0.56, 0.0), along(0.6, -0.15), along(0.7, -0.26))
+        core = g.poly(along(0.92), along(0.7, 0.15), along(0.62, 0.0), along(0.7, -0.15))
+        barbs = union(g.poly(along(0.6, 0.12), along(0.5, 0.26), along(0.56, 0.06)), g.poly(along(0.6, -0.12), along(0.5, -0.26), along(0.56, -0.06)))
+        glow = g.line(*along(0.0), *along(0.6), 0.13)
+        shaft = g.line(*along(0.0), *along(0.6), 0.07)
+        wisps = union(g.line(*along(0.1, 0.18), *along(0.3, 0.12), 0.03), g.line(*along(0.2, -0.2), *along(0.42, -0.13), 0.03))
+        sparks = union(g.star(-0.5, 0.42, 0.16, 0.05, 4), g.star(0.46, -0.48, 0.13, 0.04, 4))
+        return [(glow, VIOLET), (wisps, VIOLET), (sparks, WHITE), (shaft, BORE), (head, VIOLET), (barbs, BORE), (core, BORE)]
+    if name == "Skill_CutlassFury":
+        # Three cuts in a row: three slash trails stacked across a cutlass.
+        trails = union(*(clip(cut(g.circle(0.1, cy - 0.5, 0.9), g.circle(0.24, cy - 0.66, 0.84)), g.box(0.1, cy + 0.15, 0.95, 0.3)) for cy in (0.42, 0.04, -0.34)))
+        return [(trails, PALE), (_sword(g, -0.66, -0.74, 0.66, 0.66), WHITE), (g.star(0.62, 0.62, 0.2, 0.07, 4), GOLD)]
+    if name == "Skill_AirSupport":
+        # A gunship overhead with its broadside going off, and the shot falling.
+        flashes = union(g.star(-0.42, 0.06, 0.2, 0.08, 7), g.star(0.0, 0.02, 0.2, 0.08, 7, 0.2), g.star(0.42, 0.06, 0.2, 0.08, 7, 0.1))
+        trails = union(g.line(-0.42, -0.1, -0.56, -0.62, 0.03), g.line(0.0, -0.12, -0.06, -0.66, 0.03), g.line(0.42, -0.1, 0.48, -0.62, 0.03))
+        balls = union(g.circle(-0.58, -0.7, 0.09), g.circle(-0.06, -0.74, 0.09), g.circle(0.5, -0.7, 0.09))
+        return [(_ship(g, 0.16), STEEL), (g.box(0, 0.78, 0.56, 0.05), IRON_DARK), (trails, PALE), (flashes, ORANGE), (balls, IRON_DARK)]
+    if name == "Skill_PiratesWrath":
+        # Two thrown blades spinning in, then the third swung straight up in a great arc.
+        arc = clip(cut(g.circle(-0.1, -0.2, 0.86), g.circle(-0.22, -0.2, 0.76)), g.box(0.4, 0.1, 0.5, 0.9))
+        motion = union(g.line(-0.98, 0.5, -0.76, 0.56, 0.03), g.line(-0.98, -0.04, -0.76, 0.0, 0.03))
+        return [(arc, PALE), (motion, PALE), (_sword(g, -0.78, 0.5, 0.06, 0.8), STEEL), (_sword(g, -0.78, -0.06, 0.02, 0.2), STEEL),
+                (_sword(g, 0.32, -0.86, 0.54, 0.82), WHITE), (g.star(0.6, 0.8, 0.18, 0.06, 4), GOLD)]
+    if name == "Skill_GatlingGun":
+        # A gatling side on, barrels blazing, a stream of shots spraying out wide.
+        barrels = union(g.box(0.18, 0.12, 0.42, 0.035), g.box(0.18, 0.0, 0.42, 0.035), g.box(0.18, -0.12, 0.42, 0.035))
+        clamps = union(g.box(-0.05, 0.0, 0.035, 0.17), g.box(0.42, 0.0, 0.035, 0.17))
+        body = union(g.box(-0.42, 0.0, 0.2, 0.17, rnd=0.04), g.line(-0.5, -0.12, -0.62, -0.48, 0.07))
+        drum = g.circle(-0.42, 0.3, 0.15)
+        shots = union(*(g.line(0.66 + 0.06 * k, 0.08 * (k - 1.5), 0.92, 0.26 * (k - 1.5), 0.025) for k in range(4)))
+        return [(shots, PALE), (g.star(0.64, 0.0, 0.26, 0.1, 8), ORANGE), (g.star(0.64, 0.0, 0.13, 0.05, 8), FLAME),
+                (drum, BRASS), (body, IRON), (barrels, STEEL), (clamps, BRASS)]
+    if name == "Skill_BombCharge":
+        # A lit bomb over a blast, with the gold visor of the fireproof suit behind it.
+        helmet = union(g.circle(0.34, 0.32, 0.4), g.box(0.34, 0.0, 0.4, 0.22, rnd=0.1))
+        visor = g.box(0.3, 0.32, 0.24, 0.14, rnd=0.04)
+        bomb_body = g.circle(-0.22, -0.2, 0.42)
+        cap = g.box(-0.04, 0.18, 0.1, 0.07, rot=-0.6)
+        fuse = union(g.line(0.0, 0.24, 0.08, 0.42, 0.03), g.line(0.08, 0.42, 0.04, 0.58, 0.03))
+        return [(g.star(-0.2, -0.24, 0.92, 0.5, 10, 0.15), ORANGE), (helmet, STEEL), (visor, GOLD), (bomb_body, IRON_DARK),
+                (g.circle(-0.36, -0.06, 0.08), IRON), (cap, BRASS), (fuse, BROWN), (g.star(0.04, 0.6, 0.16, 0.06, 6), FLAME)]
+    if name == "Skill_GaleSlash":
+        # Three crescent blades of wind, one behind another, cutting in from the left.
+        blades = [clip(cut(g.circle(cx, cy, 0.62), g.circle(cx - 0.2, cy, 0.56)), g.box(cx + 0.4, cy, 0.4, 0.62)) for cx, cy in ((-0.38, 0.0), (-0.02, 0.0), (0.34, 0.0))]
+        trails = union(g.line(-0.92, 0.42, -0.55, 0.42, 0.03), g.line(-0.95, 0.0, -0.6, 0.0, 0.03), g.line(-0.92, -0.42, -0.55, -0.42, 0.03))
+        return [(trails, CYAN), (blades[0], CYAN), (blades[1], CYAN), (blades[2], WHITE)]
+    if name == "Skill_EnergySong":
+        # A lyre singing out notes that rise as a doubled arrow: two turns for the next ally.
+        lyre = union(clip(g.ring(-0.36, -0.12, 0.38, 0.07), g.box(-0.36, 0.06, 0.45, 0.32)), g.box(-0.36, -0.36, 0.3, 0.07), g.box(-0.36, 0.26, 0.38, 0.05))
+        strings = union(g.line(-0.5, -0.32, -0.5, 0.24, 0.015), g.line(-0.36, -0.32, -0.36, 0.24, 0.015), g.line(-0.22, -0.32, -0.22, 0.24, 0.015))
+        note = union(g.circle(0.12, 0.2, 0.1), g.line(0.2, 0.22, 0.2, 0.62, 0.03), g.poly((0.2, 0.62), (0.36, 0.48), (0.2, 0.52)))
+        arrows = union(_chevron(g, 0.52, -0.06, 0.24, t=0.08), _chevron(g, 0.52, -0.36, 0.24, t=0.08))
+        return [(lyre, BRASS), (strings, PALE), (note, GOLD), (arrows, WHITE)]
+    if name == "Skill_StormBallad":
+        # A tornado of wind with music notes caught spinning in it.
+        bands = union(*(g.box(x, y, half, 0.075, rnd=0.07) for x, y, half in ((0.0, 0.6, 0.62), (0.1, 0.36, 0.5), (-0.04, 0.12, 0.4), (0.08, -0.12, 0.3), (-0.02, -0.34, 0.2), (0.06, -0.54, 0.11))))
+        notes = union(g.circle(-0.56, 0.16, 0.08), g.line(-0.5, 0.18, -0.5, 0.46, 0.025), g.circle(0.5, -0.14, 0.08), g.line(0.56, -0.12, 0.56, 0.16, 0.025), g.poly((0.56, 0.16), (0.68, 0.06), (0.56, 0.08)))
+        return [(bands, CYAN), (notes, GOLD)]
+    if name == "Skill_PoisonArrows":
+        # A volley of green-fletched arrows raining down to the right, venom dripping from the heads.
+        shafts, heads, fletches = [], [], []
+        for k, (x, y) in enumerate(((-0.62, 0.62), (-0.3, 0.74), (-0.66, 0.24), (-0.3, 0.36), (0.02, 0.48))):
+            ex, ey = x + 0.62, y - 0.62
+            shafts.append(g.line(x, y, ex, ey, 0.03))
+            heads.append(g.poly((ex + 0.16, ey - 0.16), (ex - 0.1, ey + 0.02), (ex - 0.02, ey - 0.02), (ex + 0.02, ey + 0.1 - 0.12)))
+            heads.append(g.poly((ex + 0.16, ey - 0.16), (ex - 0.02, ey + 0.1), (ex - 0.02, ey - 0.02)))
+            fletches.append(g.poly((x, y), (x - 0.14, y + 0.02), (x - 0.04, y - 0.06)))
+            fletches.append(g.poly((x, y), (x - 0.02, y + 0.14), (x + 0.06, y + 0.04)))
+        drops = union(g.circle(0.5, -0.5, 0.06), g.circle(0.16, -0.62, 0.05))
+        return [(union(*fletches), GREEN), (union(*shafts), PALE), (union(*heads), MINT), (drops, MINT)]
+    if name == "Skill_DaggerDance":
+        # A hooded shadow with burning red eyes, a dagger flashing at each side of it.
+        hood = union(g.poly((0.0, 0.86), (0.42, 0.24), (0.36, -0.36), (-0.36, -0.36), (-0.42, 0.24)), g.circle(0, 0.06, 0.4))
+        face = g.circle(0, 0.02, 0.26)
+        eyes = union(g.box(-0.11, 0.06, 0.07, 0.03, rot=-0.3), g.box(0.11, 0.06, 0.07, 0.03, rot=0.3))
+        return [(_sword(g, -0.86, -0.7, -0.5, 0.2), STEEL), (_sword(g, 0.86, -0.7, 0.5, 0.2), STEEL), (hood, IRON_DARK), (face, INK), (eyes, RED)]
+    if name == "Skill_Fireball":
+        # A ball of fire streaking up and to the right, its flames trailing behind it.
+        tail = union(g.poly((0.3, 0.3), (-0.86, -0.5), (-0.5, -0.86)), g.poly((0.22, 0.38), (-0.7, -0.2), (-0.3, -0.1)), g.poly((0.38, 0.22), (-0.2, -0.7), (-0.1, -0.3)))
+        inner = union(g.poly((0.3, 0.3), (-0.56, -0.36), (-0.36, -0.56)))
+        return [(tail, ORANGE), (inner, FLAME), (g.circle(0.3, 0.3, 0.38), ORANGE), (g.circle(0.34, 0.34, 0.26), FLAME), (g.circle(0.38, 0.38, 0.12), WHITE)]
+    if name == "Skill_ElectricCyclone":
+        # A storm cloud swirling over three bolts.
+        cloud = union(g.circle(-0.42, 0.42, 0.3), g.circle(0.0, 0.56, 0.38), g.circle(0.44, 0.42, 0.28), g.box(0, 0.28, 0.66, 0.16, rnd=0.15))
+        swirl = clip(g.ring(0.0, 0.42, 0.2, 0.05), g.box(0.0, 0.52, 0.3, 0.12))
+        bolts = union(*(g.poly((x + 0.06, 0.16), (x - 0.12, -0.3), (x + 0.0, -0.3), (x - 0.1, -0.86), (x + 0.16, -0.2), (x + 0.04, -0.2), (x + 0.16, 0.16)) for x in (-0.46, 0.0, 0.44)))
+        return [(bolts, SPARK), (cloud, IRON), (swirl, CYAN)]
+    if name == "Skill_Gunslinger":
+        # Two pistols crossed muzzles-out, both firing.
+        def pistol(sign):
+            barrel = g.box(sign * 0.12, 0.3, 0.42, 0.075, rot=sign * 0.5, rnd=0.03)
+            grip = g.box(sign * -0.27, -0.06, 0.1, 0.22, rot=sign * 0.75, rnd=0.05)
+            return barrel, grip
+        rb, rg = pistol(1)
+        lb, lg = pistol(-1)
+        flashes = union(g.star(0.62, 0.62, 0.24, 0.09, 7), g.star(-0.62, 0.62, 0.24, 0.09, 7, 0.2))
+        return [(flashes, ORANGE), (union(rg, lg), BROWN), (union(rb, lb), STEEL), (union(g.circle(0.62, 0.62, 0.08), g.circle(-0.62, 0.62, 0.08)), FLAME)]
+    if name == "Skill_HiddenCannon":
+        # A cannon rising out of an open trap door, firing.
+        hatch = g.box(0, -0.6, 0.7, 0.14, rnd=0.03)
+        hole = g.box(0, -0.6, 0.56, 0.08)
+        lid = g.box(-0.62, -0.2, 0.06, 0.42, rot=0.25, rnd=0.02)
+        barrel = union(g.line(-0.18, -0.38, 0.42, 0.22, 0.13), g.circle(-0.2, -0.4, 0.15))
+        mouth = g.circle(0.44, 0.24, 0.12)
+        return [(g.star(0.6, 0.4, 0.34, 0.14, 8), ORANGE), (g.star(0.6, 0.4, 0.17, 0.07, 8), FLAME), (hatch, BROWN), (hole, INK), (lid, BROWN),
+                (barrel, IRON), (mouth, IRON_DARK)]
+    if name == "Skill_Mutiny":
+        # Two cutlasses clashing over a trap door: the crew turned on itself.
+        hatch = union(g.box(0, -0.66, 0.6, 0.12, rnd=0.03))
+        return [(hatch, BROWN), (g.box(0, -0.66, 0.48, 0.07), INK), (_sword(g, -0.72, -0.4, 0.5, 0.74), WHITE), (_sword(g, 0.72, -0.4, -0.5, 0.74), STEEL),
+                (g.star(0, 0.34, 0.24, 0.08, 8), GOLD), (g.box(0.66, 0.5, 0.05, 0.16, rnd=0.02), RED), (g.circle(0.66, 0.24, 0.05), RED)]
+    if name == "Skill_Necromancy":
+        # Three dead pirates rising out of a violet mist, eyes lit green, the middle one in a tricorn.
+        mist = union(g.circle(-0.56, -0.72, 0.22), g.circle(-0.2, -0.78, 0.26), g.circle(0.2, -0.78, 0.26), g.circle(0.56, -0.72, 0.22))
+        layers = []
+        for cx, cy, s in ((-0.55, 0.02, 0.42), (0.55, 0.02, 0.42)):
+            layers += [(_skull(g, cx, cy, s), PALE), (union(g.circle(cx - 0.2 * s, cy + 0.04 * s, 0.07 * s), g.circle(cx + 0.2 * s, cy + 0.04 * s, 0.07 * s)), MINT)]
+        cx, cy, s = 0.0, -0.12, 0.62
+        # Front on, a tricorn is a low crown between two brim points cocked up at the sides.
+        hat = g.poly((-0.72, 0.58), (-0.36, 0.2), (0.0, 0.13), (0.36, 0.2), (0.72, 0.58), (0.42, 0.42), (0.22, 0.58), (0.0, 0.64), (-0.22, 0.58), (-0.42, 0.42))
+        trim = union(g.line(-0.68, 0.54, -0.36, 0.2, 0.03), g.line(-0.36, 0.2, 0.0, 0.14, 0.03), g.line(0.0, 0.14, 0.36, 0.2, 0.03), g.line(0.36, 0.2, 0.68, 0.54, 0.03))
+        layers += [(_skull(g, cx, cy, s), WHITE), (union(g.circle(cx - 0.2 * s, cy + 0.04 * s, 0.07 * s), g.circle(cx + 0.2 * s, cy + 0.04 * s, 0.07 * s)), MINT),
+                   (hat, IRON_DARK), (trim, GOLD), (mist, VIOLET)]
+        return layers
     return None
 
 
