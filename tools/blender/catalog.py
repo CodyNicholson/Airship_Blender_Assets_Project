@@ -10,6 +10,7 @@ import bpy
 
 import characters
 import cinder
+import fleet_ships
 import fx_catalog
 import kit
 import palette
@@ -66,6 +67,8 @@ STATIC = {
     "SM_Ship_SmugglerRunner": (_SHIP, story_ships.smuggler_runner),
     "SM_Ship_AssaultGlider": (_SHIP, story_ships.assault_glider),
     "SM_Ship_Lifeboat": (_SHIP, story_ships.lifeboat),
+    # Expanded 30-ship airship fleet (elemental, sci-fi, modern battleship, fantastical, outlaw).
+    **{name: (_SHIP, fn) for name, fn in fleet_ships.FLEET_SHIPS.items()},
     # Alpha-free effects for devices that can't afford transparent overdraw.
     "SM_VFX_Flame": (_PROP, story_vfx.flame),
     "SM_VFX_Fireball": (_PROP, story_vfx.fireball),
@@ -252,6 +255,7 @@ DEFAULT_FACTIONS = {
     "SK_Vex": "Syndicate",
     "SK_Vesper": "Syndicate",
     "SK_Malakor": "Warden",
+    **fleet_ships.FLEET_FACTIONS,
 }
 
 
