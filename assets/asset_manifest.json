@@ -106,6 +106,8 @@
       "SM_Prop_RoyalSabre",
       "SM_Prop_AnchorHammer",
       "SM_Prop_TwinScimitar",
+      "SM_Prop_CorsairLance",
+      "SM_Prop_Chainsaw",
       "SM_Prop_WardenFlail",
       "SM_Prop_SableDagger",
       "SM_Prop_Spyglass",
@@ -133,6 +135,8 @@
       "SM_Prop_RoyalSabre",
       "SM_Prop_AnchorHammer",
       "SM_Prop_TwinScimitar",
+      "SM_Prop_CorsairLance",
+      "SM_Prop_Chainsaw",
       "SM_Prop_WardenFlail",
       "SM_Prop_SableDagger",
       "SM_Prop_Spyglass",
@@ -2757,6 +2761,19 @@
         }
       }
     },
+    "Skill_Concoction": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_Concoction_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_Concoction_LQ.png",
+          "size": 128
+        }
+      }
+    },
     "Skill_CrushingBlow": {
       "source_model": null,
       "variants": {
@@ -2952,6 +2969,19 @@
         }
       }
     },
+    "Skill_Massacure": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_Massacure_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_Massacure_LQ.png",
+          "size": 128
+        }
+      }
+    },
     "Skill_Mutiny": {
       "source_model": null,
       "variants": {
@@ -3013,6 +3043,19 @@
         },
         "LQ": {
           "file": "T_Icon_Skill_PoisonArrows_LQ.png",
+          "size": 128
+        }
+      }
+    },
+    "Skill_PoisonSmog": {
+      "source_model": null,
+      "variants": {
+        "HQ": {
+          "file": "T_Icon_Skill_PoisonSmog_HQ.png",
+          "size": 256
+        },
+        "LQ": {
+          "file": "T_Icon_Skill_PoisonSmog_LQ.png",
           "size": 128
         }
       }
@@ -15937,6 +15980,123 @@
       },
       "default_faction": "Syndicate"
     },
+    "SM_Prop_CorsairLance": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 152
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 76
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "grip": [
+            -0.01,
+            0.58,
+            -0.0
+          ],
+          "trail_tip": [
+            -0.01,
+            2.75,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "grip": [
+            -0.0172,
+            0.58,
+            -0.0086
+          ],
+          "trail_tip": [
+            -0.0172,
+            2.75,
+            -0.0086
+          ]
+        }
+      },
+      "default_faction": "Syndicate"
+    },
+    "SM_Prop_Chainsaw": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 268
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 116
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "grip": [
+            0.0159,
+            0.09,
+            -0.0
+          ],
+          "trail_tip": [
+            0.0159,
+            0.95,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "grip": [
+            0.0008,
+            0.09,
+            -0.0
+          ],
+          "trail_tip": [
+            0.0008,
+            0.95,
+            -0.0
+          ]
+        }
+      },
+      "default_faction": "Emerald"
+    },
+    "SM_Prop_PoisonFlask": {
+      "variants": {
+        "HQ": {
+          "tier": "prop",
+          "tris": 308
+        },
+        "LQ": {
+          "tier": "prop_low",
+          "tris": 126
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "centre": [
+            0.0,
+            0.126,
+            -0.0
+          ],
+          "grip": [
+            0.0,
+            0.206,
+            -0.0
+          ]
+        },
+        "LQ": {
+          "centre": [
+            -0.0063,
+            0.0601,
+            -0.0
+          ],
+          "grip": [
+            -0.0063,
+            0.1401,
+            -0.0
+          ]
+        }
+      },
+      "default_faction": "Emerald"
+    },
     "SM_Prop_WardenFlail": {
       "variants": {
         "HQ": {
@@ -20589,6 +20749,121 @@
         }
       },
       "default_faction": "Syndicate"
+    },
+    "SK_Roxi": {
+      "variants": {
+        "HQ": {
+          "tier": "hero",
+          "tris": 1774
+        },
+        "LQ": {
+          "tier": "hero_low",
+          "tris": 526
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "chest_centre": [
+            0.0,
+            1.2,
+            0.009
+          ],
+          "head_top": [
+            0.0,
+            1.85,
+            0.009
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.56,
+            0.009
+          ]
+        },
+        "LQ": {
+          "chest_centre": [
+            0.0,
+            1.2,
+            0.0082
+          ],
+          "head_top": [
+            0.0,
+            1.85,
+            0.0082
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.56,
+            0.0082
+          ]
+        }
+      },
+      "default_faction": "Syndicate",
+      "extra_clips": {
+        "LanceCrouch": {
+          "loop": true,
+          "frames": 24,
+          "seconds": 1.0
+        },
+        "LanceThrust": {
+          "loop": false,
+          "frames": 18,
+          "seconds": 0.75
+        },
+        "LanceImpale": {
+          "loop": false,
+          "frames": 26,
+          "seconds": 1.083
+        }
+      }
+    },
+    "SK_Gimble": {
+      "variants": {
+        "HQ": {
+          "tier": "hero",
+          "tris": 1906
+        },
+        "LQ": {
+          "tier": "hero_low",
+          "tris": 620
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "chest_centre": [
+            0.0,
+            0.936,
+            -0.0242
+          ],
+          "head_top": [
+            0.0,
+            1.443,
+            -0.0242
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.2168,
+            -0.0242
+          ]
+        },
+        "LQ": {
+          "chest_centre": [
+            0.0,
+            0.936,
+            -0.0222
+          ],
+          "head_top": [
+            0.0,
+            1.443,
+            -0.0222
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.2168,
+            -0.0222
+          ]
+        }
+      },
+      "default_faction": "Scrap"
     },
     "SK_Malakor": {
       "variants": {

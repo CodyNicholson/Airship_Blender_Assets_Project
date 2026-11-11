@@ -1191,3 +1191,93 @@ def trap_door_lid(mb, hq):
     with mb.xf(Matrix.Translation((0, -half * 0.75, 0.062)) @ Matrix.Rotation(math.pi / 2, 4, "X")):
         mb.lathe([(0.05, -0.01), (0.05, 0.01)], _q(hq, 8, 5), "brass", smooth=False)
     mb.socket("hinge", (0, half, 0.0))
+
+
+def corsair_lance(mb, hq):
+    """Roxi's weapon: a Syndicate corsair lance. Steeled shaft, brass vamplate guard, sharp spearhead with plasma fuller, and a cyan/magenta pennant."""
+    h = 2.05
+    mb.tube((0, 0, -0.2), (0, 0, h), 0.02, 0.016, sides=_q(hq, 6, 4), color="wood_dark")
+    mb.tube((0, 0, -0.2), (0, 0, -0.32), 0.02, 0.005, sides=_q(hq, 6, 4), color="brass")
+    mb.tube((0, 0, 0.1), (0, 0, 0.42), 0.025, 0.025, sides=_q(hq, 6, 4), color="leather_dark")
+    mb.tube((0, 0, 0.42), (0, 0, 0.52), 0.028, 0.09, sides=_q(hq, 8, 5), color="brass")
+    mb.plate([(-0.02, 0, h - 0.05), (0.02, 0, h - 0.05), (0.055, 0, h + 0.18), (0, 0, h + 0.38), (-0.055, 0, h + 0.18)], 0.012, "silver")
+    if hq:
+        mb.plate([(0.0, -0.005, h), (0.02, -0.005, h + 0.16), (0.0, -0.005, h + 0.32), (-0.02, -0.005, h + 0.16)], 0.004, "plasma")
+        mb.lathe([(0.026, h - 0.08), (0.026, h - 0.02)], 6, "brass", smooth=False)
+        mb.plate([(0.0, -0.01, h - 0.06), (0.16, -0.01, h - 0.18), (0.0, -0.01, h - 0.38)], 0.006, "faction_a")
+        mb.plate([(0.0, 0.01, h - 0.08), (-0.14, 0.01, h - 0.22), (0.0, 0.01, h - 0.44)], 0.006, "faction_b")
+    else:
+        mb.plate([(0.0, 0, h - 0.06), (0.12, 0, h - 0.22), (0.0, 0, h - 0.36)], 0.01, "faction_a")
+    mb.socket("grip", (0, 0, 0.26))
+    mb.socket("trail_tip", (0, 0, h + 0.38))
+
+
+def chainsaw(mb, hq):
+    """Sawbones Wren's brutal pirate chainsaw. A smoke-blackened engine block, pull-cord starter,
+    top and rear grips, and an elongated guide bar with toothed cutting chain spotted with dried gore."""
+    sides = _q(hq, 6, 4)
+    # Rear grip (handle held by hand): extends along Z from -0.15 to 0.02
+    mb.tube((0, 0, -0.15), (0, 0, 0.02), 0.02, 0.02, sides=sides, color="leather_dark")
+    # Trigger guard under grip
+    mb.plate([(-0.025, 0, -0.12), (-0.05, 0, -0.06), (-0.025, 0, 0.0)], 0.008, "brass")
+
+    # Engine body housing: box from z = 0.0 to 0.28
+    mb.box((-0.02, 0, 0.14), (0.16, 0.15, 0.24), "iron")
+    mb.box((-0.02, 0, 0.22), (0.13, 0.12, 0.1), "rust")
+    if hq:
+        # Starter pull-cord housing on side
+        mb.lathe([(0.035, 0.08), (0.04, 0.12), (0.01, 0.12)], sides=8, color="brass", smooth=False)
+        # Exhaust muffler port on top/side
+        mb.tube((-0.08, 0.04, 0.18), (-0.12, 0.06, 0.22), 0.015, 0.015, sides=6, color="iron_light")
+        # Fuel cap
+        mb.sphere((-0.02, -0.06, 0.06), 0.018, 6, 4, "brass")
+
+    # Top wraparound handle
+    mb.path([(0.07, -0.07, 0.1), (0.09, 0, 0.18), (0.07, 0.07, 0.1)], [0.012, 0.012, 0.012], 4, "steel")
+
+    # Front handguard plate
+    mb.plate([(-0.05, 0, 0.27), (0.08, 0, 0.27), (0.06, 0, 0.31), (-0.03, 0, 0.31)], 0.01, "iron")
+
+    # Long guide bar extending forward along Z: z = 0.26 to 0.78
+    # Outer edge faces -X (matching cutlass standard: -X is down/cutting edge, +Z is forward)
+    spine = [(0.02, 0.28), (0.02, 0.5), (0.02, 0.72), (0.0, 0.78)]
+    edge = [(-0.06, 0.28), (-0.06, 0.5), (-0.06, 0.72), (0.0, 0.78)]
+    outline = [(x, 0.0, z) for x, z in spine] + [(x, 0.0, z) for x, z in edge[-2::-1]]
+    mb.plate(outline, 0.016, "steel")
+
+    # Chain teeth around the blade perimeter
+    teeth_outline = [(-0.068, 0.0, 0.27), (0.028, 0.0, 0.27), (0.028, 0.0, 0.73), (0.0, 0.0, 0.795), (-0.068, 0.0, 0.73)]
+    mb.plate(teeth_outline, 0.008, "silver")
+
+    if hq:
+        # Gore/blood flecks along teeth
+        mb.box((-0.065, 0, 0.45), (0.015, 0.012, 0.08), "velvet")
+        mb.box((-0.065, 0, 0.65), (0.015, 0.012, 0.06), "velvet")
+        mb.box((0.0, 0, 0.78), (0.02, 0.012, 0.03), "velvet")
+
+    mb.socket("grip", (0, 0, -0.06))
+    mb.socket("trail_tip", (0, 0, 0.8))
+
+
+def poison_flask(mb, hq):
+    """Wren's volatile poison flask: a spherical apothecary glass filled with churning green venom,
+    reinforced with brass cage straps and sealed with a cork stopper."""
+    sides = _q(hq, 8, 5)
+    # Flask main spherical bulb
+    mb.sphere((0, 0, 0.06), 0.065, sides, _q(hq, 6, 4), "glass")
+    # Glowing green toxic liquid inside
+    mb.sphere((0, 0, 0.058), 0.055, sides, _q(hq, 5, 3), "toxic")
+    # Brass cage straps around bulb
+    mb.lathe([(0.066, 0.055), (0.066, 0.065)], sides, "brass", smooth=False)
+    if hq:
+        with mb.xf(Matrix.Rotation(math.pi / 2, 4, "Y")):
+            mb.lathe([(0.066, -0.005), (0.066, 0.005)], sides, "brass", smooth=False)
+    # Flask neck
+    mb.tube((0, 0, 0.11), (0, 0, 0.18), 0.026, 0.024, sides=sides, color="glass")
+    mb.tube((0, 0, 0.15), (0, 0, 0.18), 0.028, 0.032, sides=sides, color="brass")
+    # Cork stopper
+    mb.tube((0, 0, 0.175), (0, 0, 0.215), 0.023, 0.027, sides=sides, color="leather")
+    mb.socket("grip", (0, 0, 0.14))
+    mb.socket("centre", (0, 0, 0.06))
+
+

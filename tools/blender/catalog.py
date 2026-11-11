@@ -109,6 +109,9 @@ STATIC = {
     "SM_Prop_DuelPistol": (_PROP, story_props.duel_pistol),
     "SM_Prop_AnchorHammer": (_PROP, story_props.anchor_hammer),
     "SM_Prop_TwinScimitar": (_PROP, story_props.twin_scimitar),
+    "SM_Prop_CorsairLance": (_PROP, story_props.corsair_lance),
+    "SM_Prop_Chainsaw": (_PROP, story_props.chainsaw),
+    "SM_Prop_PoisonFlask": (_PROP, story_props.poison_flask),
     "SM_Prop_WardenFlail": (_PROP, story_props.warden_flail),
     "SM_Prop_HandMortar": (_PROP, story_props.hand_mortar),
     "SM_Prop_SableDagger": (_PROP, story_props.sable_dagger),
@@ -254,12 +257,17 @@ DEFAULT_FACTIONS = {
     "SK_Krag": "Scrap",
     "SK_Vex": "Syndicate",
     "SK_Vesper": "Syndicate",
+    "SK_Roxi": "Syndicate",
+    "SK_Gimble": "Scrap",
+    "SM_Prop_CorsairLance": "Syndicate",
+    "SM_Prop_Chainsaw": "Emerald",
+    "SM_Prop_PoisonFlask": "Emerald",
     "SK_Malakor": "Warden",
     **fleet_ships.FLEET_FACTIONS,
 }
 
 
-HELD_MELEE = ["SM_Prop_Cutlass", "SM_Prop_BoardingAxe", "SM_Prop_HookSabre", "SM_Prop_RoyalSabre", "SM_Prop_AnchorHammer", "SM_Prop_TwinScimitar", "SM_Prop_WardenFlail", "SM_Prop_SableDagger", "SM_Prop_Spyglass", "SM_Prop_BigWrench", "SM_Prop_ArmadaHalberd", "SM_Prop_ShadowStaff", "SM_Prop_DriftwoodLyre", "SM_Prop_LightningStaff", "SM_Prop_Linstock", "SM_Prop_BoneSaw", "SM_Prop_ScrapCutlass", "SM_Prop_CaptainCutlass", "SM_Prop_KingCutlass", "SM_Prop_SwordCane", "SM_Prop_GildedRapier", "SM_Prop_FleetCutlass", "SM_Prop_RegulatorKey", "SM_Prop_WeatherStaff", "SM_Prop_Bomb"]
+HELD_MELEE = ["SM_Prop_Cutlass", "SM_Prop_BoardingAxe", "SM_Prop_HookSabre", "SM_Prop_RoyalSabre", "SM_Prop_AnchorHammer", "SM_Prop_TwinScimitar", "SM_Prop_CorsairLance", "SM_Prop_Chainsaw", "SM_Prop_WardenFlail", "SM_Prop_SableDagger", "SM_Prop_Spyglass", "SM_Prop_BigWrench", "SM_Prop_ArmadaHalberd", "SM_Prop_ShadowStaff", "SM_Prop_DriftwoodLyre", "SM_Prop_LightningStaff", "SM_Prop_Linstock", "SM_Prop_BoneSaw", "SM_Prop_ScrapCutlass", "SM_Prop_CaptainCutlass", "SM_Prop_KingCutlass", "SM_Prop_SwordCane", "SM_Prop_GildedRapier", "SM_Prop_FleetCutlass", "SM_Prop_RegulatorKey", "SM_Prop_WeatherStaff", "SM_Prop_Bomb"]
 HELD_GUNS = ["SM_Prop_Flintlock", "SM_Prop_DuelPistol", "SM_Prop_HandMortar", "SM_Prop_ArmadaMusket", "SM_Prop_Blunderbuss", "SM_Prop_GatlingGun"]
 
 

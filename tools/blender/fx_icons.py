@@ -84,6 +84,7 @@ SKILL_MEDALS = {
     "Skill_PoisonArrows": SKILL_PHYSICAL, "Skill_DaggerDance": SKILL_PHYSICAL,
     "Skill_Fireball": SKILL_MAGIC, "Skill_ElectricCyclone": SKILL_MAGIC,
     "Skill_Gunslinger": SKILL_PHYSICAL, "Skill_HiddenCannon": SKILL_PHYSICAL, "Skill_Mutiny": SKILL_PHYSICAL,
+    "Skill_Concoction": SKILL_HEAL, "Skill_PoisonSmog": SKILL_MAGIC, "Skill_Massacure": SKILL_PHYSICAL,
 }
 MEDALS.update(SKILL_MEDALS)
 
@@ -479,6 +480,29 @@ def _skill_layers(name, g):
         layers += [(_skull(g, cx, cy, s), WHITE), (union(g.circle(cx - 0.2 * s, cy + 0.04 * s, 0.07 * s), g.circle(cx + 0.2 * s, cy + 0.04 * s, 0.07 * s)), MINT),
                    (hat, IRON_DARK), (trim, GOLD), (mist, VIOLET)]
         return layers
+    if name == "Skill_Concoction":
+        bottle = union(g.circle(0, -0.15, 0.45), g.box(0, 0.35, 0.2, 0.45, rnd=0.04), g.box(0, 0.58, 0.28, 0.1, rnd=0.03))
+        liquid = g.circle(0, -0.18, 0.36)
+        bubbles = union(g.circle(-0.15, -0.15, 0.08), g.circle(0.12, -0.05, 0.06), g.circle(-0.02, 0.1, 0.05))
+        cross = union(g.box(0, -0.18, 0.12, 0.32, rnd=0.02), g.box(0, -0.18, 0.32, 0.12, rnd=0.02))
+        sparkles = union(g.star(-0.52, 0.42, 0.16, 0.06, 4), g.star(0.52, 0.38, 0.18, 0.07, 4))
+        return [(sparkles, GOLD), (bottle, STEEL), (liquid, MINT), (cross, WHITE), (bubbles, PALE)]
+    if name == "Skill_PoisonSmog":
+        gas = union(g.circle(-0.45, 0.35, 0.36), g.circle(0.0, 0.52, 0.42), g.circle(0.46, 0.32, 0.34),
+                    g.circle(-0.25, -0.05, 0.28), g.circle(0.28, -0.02, 0.3))
+        skull = _skull(g, 0, 0.35, 0.4)
+        shards = union(g.poly((-0.35, -0.65), (-0.1, -0.4), (-0.05, -0.7)),
+                       g.poly((0.1, -0.68), (0.35, -0.42), (0.42, -0.72)),
+                       g.poly((-0.15, -0.8), (0.15, -0.8), (0.0, -0.55)))
+        drops = union(g.circle(-0.2, -0.45, 0.06), g.circle(0.2, -0.42, 0.05))
+        return [(gas, GREEN), (skull, MINT), (shards, STEEL), (drops, MINT)]
+    if name == "Skill_Massacure":
+        bar = g.box(0.12, 0.12, 0.68, 0.22, rot=0.785, rnd=0.08)
+        engine = g.box(-0.35, -0.35, 0.42, 0.34, rot=0.785, rnd=0.06)
+        teeth = union(g.line(-0.15, -0.15, 0.45, 0.45, 0.28), g.line(-0.15, -0.15, 0.45, 0.45, 0.24))
+        sparks = union(g.star(0.48, 0.56, 0.22, 0.08, 6), g.star(0.62, 0.38, 0.18, 0.06, 5), g.star(0.26, 0.65, 0.15, 0.05, 4))
+        blood = union(g.poly((0.35, 0.35), (0.58, 0.48), (0.48, 0.58)), g.circle(0.42, 0.32, 0.08))
+        return [(sparks, ORANGE), (engine, IRON), (bar, STEEL), (teeth, WHITE), (blood, RED)]
     return None
 
 

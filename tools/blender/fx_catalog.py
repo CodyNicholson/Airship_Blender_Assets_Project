@@ -195,4 +195,5 @@ GLYPH_ICONS = (
     "Skill_GatlingGun", "Skill_BombCharge", "Skill_GaleSlash", "Skill_EnergySong", "Skill_StormBallad",
     "Skill_PoisonArrows", "Skill_DaggerDance", "Skill_Fireball", "Skill_ElectricCyclone",
     "Skill_Gunslinger", "Skill_HiddenCannon", "Skill_Mutiny",
+    "Skill_Concoction", "Skill_PoisonSmog", "Skill_Massacure",
 )

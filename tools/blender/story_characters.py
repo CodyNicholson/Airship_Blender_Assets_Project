@@ -130,6 +130,19 @@ def hair_side_shave(ctx, mirrored=False):
         ctx.mb.path([_at(ctx, sign * 0.1, 0.0, 0.2), _at(ctx, sign * 0.23, 0.02, 0.1), _at(ctx, sign * 0.27, -0.02, -0.13), _at(ctx, sign * 0.24, -0.04, -0.32)], [0.06 * ctx.s, 0.08 * ctx.s, 0.06 * ctx.s, 0.012 * ctx.s], 6 if ctx.hq else 3, ctx.hero.hair)
 
 
+def hair_multicolor_corsair(ctx):
+    """Roxi: multi-colored corsair hair with side undercut, swept crest, and teal/magenta streaks echoing Vex and Vesper."""
+    hair_cap(ctx)
+    with ctx.mb.bound_to("head"):
+        ctx.mb.path([_at(ctx, 0.08, 0.02, 0.2), _at(ctx, 0.18, 0.04, 0.1), _at(ctx, 0.22, -0.02, -0.1), _at(ctx, 0.18, -0.04, -0.26)], [0.06 * ctx.s, 0.07 * ctx.s, 0.05 * ctx.s, 0.012 * ctx.s], 6 if ctx.hq else 3, "faction_b")
+        ctx.mb.path([_at(ctx, -0.02, 0.05, 0.2), _at(ctx, 0.12, 0.08, 0.12), _at(ctx, 0.16, 0.02, -0.08)], [0.045 * ctx.s, 0.05 * ctx.s, 0.015 * ctx.s], 5 if ctx.hq else 3, "faction_a")
+        if ctx.hq:
+            ctx.mb.plate([_at(ctx, -0.08, -0.16, 0.14), _at(ctx, 0.04, -0.16, 0.15), _at(ctx, -0.02, -0.19, 0.04)], 0.025 * ctx.s, "faction_b")
+            ctx.mb.plate([_at(ctx, 0.02, -0.16, 0.15), _at(ctx, 0.12, -0.15, 0.12), _at(ctx, 0.08, -0.18, 0.02)], 0.022 * ctx.s, "faction_a")
+            ctx.mb.path([_at(ctx, 0.19, -0.06, 0.02), _at(ctx, 0.22, -0.08, -0.15), _at(ctx, 0.2, -0.09, -0.32)], [0.025 * ctx.s, 0.02 * ctx.s, 0.01 * ctx.s], 4, "hair_black")
+
+
+
 def hair_gray_sides(ctx):
     """Thorne: wispy mad-scientist tufts around a bald crown."""
     with ctx.mb.bound_to("head"):
@@ -3384,7 +3397,7 @@ def drill_commodore(ctx):
 
 
 FEATURES = {f.__name__: f for f in (
-    drill_commodore, old_helmsman, core_keeper, gale_gunner, free_fleet_flyer, sky_duelist, syndicate_lord, scrap_captain, vane_deckhand, vane_captain, vane_king, ship_surgeon, master_gunner, stormcaller_trainee, big_guns, bosun_build, morrow_finery, nomad_layers, nomad_hair, nomad_scarf, assassin_gear, sorcerer_amulet, sorcerer_hood, sorcerer_robe, sorcerer_sleeves, hair_cap, hair_wild, hair_long, hair_braid, hair_ponytail, hair_slick, hair_side_shave, hair_gray_sides,
+    drill_commodore, old_helmsman, core_keeper, gale_gunner, free_fleet_flyer, sky_duelist, syndicate_lord, scrap_captain, vane_deckhand, vane_captain, vane_king, ship_surgeon, master_gunner, stormcaller_trainee, big_guns, bosun_build, morrow_finery, nomad_layers, nomad_hair, nomad_scarf, assassin_gear, sorcerer_amulet, sorcerer_hood, sorcerer_robe, sorcerer_sleeves, hair_cap, hair_wild, hair_long, hair_braid, hair_ponytail, hair_slick, hair_side_shave, hair_multicolor_corsair, hair_gray_sides,
     beard_full, goatee, moustache, eyepatch, scar, spectacles, goggles_up, face_mask, hood, bandana, tricorn,
     bicorne, shako, morion, warden_helm, hat_officer, long_coat, short_jacket, cuirass, pauldrons, epaulettes,
     cape, sash, cross_belt, bandolier, apron, tool_belt, tabard, keyring, medals, gold_buttons, high_collar,
@@ -3496,6 +3509,14 @@ CAST = {
     ]),
     "Vesper": Hero(skin="skin_light", hair="hair_black", top="faction_b", legs="cloth_black", sleeve="faction_b", glove="faction_c", width=0.9, girth=0.86, brow=1, features=[
         ("hair_side_shave", True), ("short_jacket", "faction_c", "faction_b"), ("cape", "faction_a", 0.5), ("sash", "faction_a"),
+    ]),
+    "Roxi": Hero(skin="skin_light", hair="hair_black", iris="amber", top="faction_c", legs="cloth_black", boots="leather_dark", belt="leather_dark", sleeve="faction_c", glove="leather_dark", width=0.92, girth=0.88, brow=1, features=[
+        ("hair_multicolor_corsair",), ("cuirass", "silver", "brass"), ("pauldrons", "brass"), ("sash", "faction_a"),
+    ]),
+    # Gimble: the small pirate invader who leads the third assault glider boarding wave in Act III.
+    # Diminutive, wiry, fierce, wearing a cocked tricorn, eyepatch, scar, cross-belt and boarding daggers.
+    "Gimble": Hero(mouth=False, skin="skin_mid", hair="hair_red", brow_color="hair_brown", iris="amber", top="leather_dark", legs="cloth_black", boots="leather_dark", belt="leather_dark", sleeve="leather_dark", forearm="skin_mid", glove="leather_dark", scale=0.78, width=0.88, girth=0.85, arm_bulk=0.92, leg_bulk=0.90, brow=2, features=[
+        ("hair_wild",), ("cocked_tricorn",), ("eyepatch",), ("scar",), ("cross_belt", "leather_dark"), ("dagger_sheaths",), ("sash", "gem_red"),
     ]),
     "Malakor": Hero(skin="skin_mid", hair="hair_black", top="iron", legs="iron", boots="iron", sleeve="iron_light", forearm="iron", glove="iron", scale=1.26, width=1.34, girth=1.4, features=[
         ("warden_helm",), ("cuirass", "iron", "faction_b"), ("pauldrons", "iron_light", True), ("tabard", "faction_a", "faction_b"), ("keyring",), ("cape", "faction_c", 0.32),
@@ -3746,3 +3767,46 @@ MORROW_CLIPS = {
     }),
 }
 EXTRA_CLIPS["Morrow"] = MORROW_CLIPS
+
+
+# ---- Roxi's own moves -----------------------------------------------------------------------------
+_ROXI_CROUCH = dict(
+    thigh__L=(-44, -4, 0), shin__L=(60, 0, 0), foot__L=(-16, 0, 0),
+    thigh__R=(26, 4, 0), shin__R=(48, 0, 0), foot__R=(-10, 0, 0),
+    hips_loc=(0, 0, -0.22),
+    chest=(16, 0, 14), spine=(8, 0, 6), head=(-12, 0, -12),
+    upper_arm__R=(-76, 10, 0), lower_arm__R=(-20, 0, 0),
+    upper_arm__L=(-72, -18, 0), lower_arm__L=(-55, 0, 0),
+)
+
+_ROXI_THRUST = dict(
+    thigh__L=(-32, -3, 0), shin__L=(28, 0, 0), thigh__R=(24, 3, 0), shin__R=(14, 0, 0),
+    hips_loc=(0, -0.12, -0.06),
+    chest=(22, 0, 18), spine=(8, 0, 8), head=(-12, 0, -14),
+    upper_arm__R=(-96, 4, 0), lower_arm__R=(-4, 0, 0),
+    upper_arm__L=(-50, -16, 0), lower_arm__L=(-40, 0, 0),
+)
+
+ROXI_CLIPS = {
+    "LanceCrouch": (True, {
+        0: _p(**_ROXI_CROUCH),
+        12: _p(**{**_ROXI_CROUCH, "chest": (14, 0, 14), "hips_loc": (0, 0, -0.21)}),
+        24: _p(**_ROXI_CROUCH),
+    }),
+    "LanceThrust": (False, {
+        0: _p(),
+        4: _p(upper_arm__R=(-50, 12, 0), lower_arm__R=(-65, 0, 0), upper_arm__L=(-40, -14, 0), lower_arm__L=(-50, 0, 0), chest=(-8, 0, -10), spine=(-4, 0, -4)),
+        8: _p(**_ROXI_THRUST),
+        12: _p(**{**_ROXI_THRUST, "upper_arm__R": (-88, 6, 0), "lower_arm__R": (-14, 0, 0)}),
+        18: _p(),
+    }),
+    "LanceImpale": (False, {
+        0: _p(),
+        6: _p(upper_arm__R=(-40, 14, 0), lower_arm__R=(-70, 0, 0), upper_arm__L=(-45, -16, 0), lower_arm__L=(-55, 0, 0), chest=(-12, 0, -14), hips_loc=(0, 0.08, -0.08), thigh__L=(-14, -2, 0), thigh__R=(18, 2, 0)),
+        12: _p(upper_arm__R=(-110, 2, 0), lower_arm__R=(-2, 0, 0), upper_arm__L=(-65, -20, 0), lower_arm__L=(-35, 0, 0), chest=(28, 0, 16), spine=(10, 0, 8), head=(-16, 0, -12), hips_loc=(0, -0.22, 0.12), thigh__L=(-55, -4, 0), shin__L=(48, 0, 0), thigh__R=(32, 4, 0), shin__R=(24, 0, 0)),
+        18: _p(**_ROXI_THRUST),
+        26: _p(),
+    }),
+}
+EXTRA_CLIPS["Roxi"] = ROXI_CLIPS
+

@@ -12,6 +12,7 @@
    GUIDs, so those always travel together.
 Then it lists what changed in the Unity project.
 """
+import json
 import re
 import shutil
 import subprocess
@@ -90,42 +91,58 @@ def main():
         copy(src, dst)
     print(f"[sync] copied {len(files)} files into {unity.name}")
 
-    # Bake in a clone. cp -c makes copy-on-write clones on APFS, so Library costs no disk.
-    clone = Path(tempfile.mkdtemp(prefix="unity_sync_"))
-    for part in ("Assets", "Packages", "ProjectSettings", "Library"):
-        subprocess.run(["cp", "-c", "-R", str(unity / part), str(clone / part)], check=True)
-    log = clone / "import.log"
-    subprocess.run([str(unity_binary(unity)), "-batchmode", "-quit", "-projectPath", str(clone),
+    # Write sync request so ArtKitImport only bakes the target assets and skips unnecessary work
+    sync_req = game / "Art/Kit/.sync_request.json"
+    sync_req.write_text(json.dumps({"assets": assets, "textures": textures}))
+
+    lock_file = unity / "Temp/UnityLockfile"
+    target_project = unity
+    clone = None
+    if lock_file.exists():
+        # Editor is open. Bake in a clone so the open editor is never touched.
+        clone = Path(tempfile.mkdtemp(prefix="unity_sync_"))
+        for part in ("Assets", "Packages", "ProjectSettings", "Library"):
+            subprocess.run(["cp", "-c", "-R", str(unity / part), str(clone / part)], check=True)
+        target_project = clone
+
+    log = target_project / "import.log"
+    subprocess.run([str(unity_binary(unity)), "-batchmode", "-quit", "-projectPath", str(target_project),
                     "-executeMethod", "Airships.EditorTools.ArtKitImport.ImportAll", "-logFile", str(log)], check=False)
     baked = re.findall(r"\[Art\] Baked .*", log.read_text(errors="ignore"))
     if not baked:
         fail(f"the import didn't finish; see {log} (kept)")
     print(f"[sync] {baked[-1]}")
 
-    clone_game = clone / "Assets/Game"
-    back = []
-    for asset in assets:
-        for quality in ("HQ", "LQ"):
-            back += [f"Art/Kit/Models/{asset}_{quality}.glb.meta", f"Resources/Art/{asset}_{quality}.prefab", f"Resources/Art/{asset}_{quality}.prefab.meta"]
-    for texture in textures:
-        for quality in ("HQ", "LQ"):
-            back.append(f"{texture_dir(texture)}/{texture}_{quality}.png.meta")
-    back.append("Resources/Art/art_data.json")
-    for rel in back:
-        src, dst = clone_game / rel, game / rel
-        if not src.exists():
-            fail(f"the bake didn't produce {rel}")
-        if dst.exists() and dst.read_bytes() == src.read_bytes():
-            continue
-        if rel.endswith(".glb.meta") and dst.exists():
-            print(f"[sync] note: the open editor had already made {dst.name}; replacing it with the baked one so the prefab's GUID matches")
-        copy(src, dst)
-        print(f"[sync] updated {rel}")
+    if clone:
+        clone_game = clone / "Assets/Game"
+        back = []
+        for asset in assets:
+            for quality in ("HQ", "LQ"):
+                back += [f"Art/Kit/Models/{asset}_{quality}.glb.meta", f"Resources/Art/{asset}_{quality}.prefab", f"Resources/Art/{asset}_{quality}.prefab.meta"]
+        for texture in textures:
+            for quality in ("HQ", "LQ"):
+                back.append(f"{texture_dir(texture)}/{texture}_{quality}.png.meta")
+        back.append("Resources/Art/art_data.json")
+        for rel in back:
+            src, dst = clone_game / rel, game / rel
+            if not src.exists():
+                fail(f"the bake didn't produce {rel}")
+            if dst.exists() and dst.read_bytes() == src.read_bytes():
+                continue
+            if rel.endswith(".glb.meta") and dst.exists():
+                print(f"[sync] note: the open editor had already made {dst.name}; replacing it with the baked one so the prefab's GUID matches")
+            copy(src, dst)
+            print(f"[sync] updated {rel}")
 
-    if keep:
-        print(f"[sync] clone kept at {clone}")
+        if keep:
+            print(f"[sync] clone kept at {clone}")
+        else:
+            shutil.rmtree(clone)
     else:
-        shutil.rmtree(clone)
+        # Direct bake on closed project: clean up any leftover sync request
+        if sync_req.exists():
+            sync_req.unlink()
+
     status = subprocess.run(["git", "status", "--short", "--", "Assets/Game"], cwd=unity, capture_output=True, text=True).stdout
     print("[sync] Unity changes:\n" + (status or "  none"))
 
