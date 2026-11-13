@@ -1194,7 +1194,7 @@ def trap_door_lid(mb, hq):
 
 
 def corsair_lance(mb, hq):
-    """Roxi's weapon: a Syndicate corsair lance. Steeled shaft, brass vamplate guard, sharp spearhead with plasma fuller, and a cyan/magenta pennant."""
+    """Roxanne's weapon: a Syndicate corsair lance. Steeled shaft, brass vamplate guard, sharp spearhead with plasma fuller, and a cyan/magenta pennant."""
     h = 2.05
     mb.tube((0, 0, -0.2), (0, 0, h), 0.02, 0.016, sides=_q(hq, 6, 4), color="wood_dark")
     mb.tube((0, 0, -0.2), (0, 0, -0.32), 0.02, 0.005, sides=_q(hq, 6, 4), color="brass")

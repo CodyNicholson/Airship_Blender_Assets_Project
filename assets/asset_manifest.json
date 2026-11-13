@@ -949,6 +949,26 @@
       ],
       "used_for": "Scrap-Winds stacks on SM_Env_ScrapIsle, and the edge of SM_Env_ToxicCloud"
     },
+    "ToxicSmog": {
+      "flipbook": "ToxicSmog",
+      "sockets": [
+        "smog_*",
+        "centre"
+      ],
+      "size_m": 9.0,
+      "lifetime_s": 2.0,
+      "rate": 1,
+      "max_particles": {
+        "HQ": 6,
+        "LQ": 2
+      },
+      "velocity_mps": [
+        0.4,
+        1.2,
+        0
+      ],
+      "used_for": "Scrap-Winds stacks and toxic smog, alias for SmogVent"
+    },
     "LightningStrike": {
       "flipbook": "LightningFlash",
       "sockets": [
@@ -19753,11 +19773,11 @@
       "variants": {
         "HQ": {
           "tier": "hero",
-          "tris": 2570
+          "tris": 2776
         },
         "LQ": {
           "tier": "hero_low",
-          "tris": 1002
+          "tris": 1068
         }
       },
       "sockets": {
@@ -19765,34 +19785,34 @@
           "chest_centre": [
             0.0,
             1.2,
-            0.0913
+            0.007
           ],
           "head_top": [
             0.0,
             1.85,
-            0.0913
+            0.007
           ],
           "portrait_look_at": [
             0.0,
             1.56,
-            0.0913
+            0.007
           ]
         },
         "LQ": {
           "chest_centre": [
             0.0,
             1.2,
-            0.0988
+            0.0223
           ],
           "head_top": [
             0.0,
             1.85,
-            0.0988
+            0.0223
           ],
           "portrait_look_at": [
             0.0,
             1.56,
-            0.0988
+            0.0223
           ]
         }
       },
@@ -20750,7 +20770,7 @@
       },
       "default_faction": "Syndicate"
     },
-    "SK_Roxi": {
+    "SK_Roxanne": {
       "variants": {
         "HQ": {
           "tier": "hero",
@@ -20798,6 +20818,72 @@
         }
       },
       "default_faction": "Syndicate",
+      "extra_clips": {
+        "LanceCrouch": {
+          "loop": true,
+          "frames": 24,
+          "seconds": 1.0
+        },
+        "LanceThrust": {
+          "loop": false,
+          "frames": 18,
+          "seconds": 0.75
+        },
+        "LanceImpale": {
+          "loop": false,
+          "frames": 26,
+          "seconds": 1.083
+        }
+      }
+    },
+    "SK_May": {
+      "variants": {
+        "HQ": {
+          "tier": "hero",
+          "tris": 2326
+        },
+        "LQ": {
+          "tier": "hero_low",
+          "tris": 680
+        }
+      },
+      "sockets": {
+        "HQ": {
+          "chest_centre": [
+            0.0,
+            1.2,
+            0.0508
+          ],
+          "head_top": [
+            0.0,
+            1.85,
+            0.0508
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.56,
+            0.0508
+          ]
+        },
+        "LQ": {
+          "chest_centre": [
+            0.0,
+            1.2,
+            0.0629
+          ],
+          "head_top": [
+            0.0,
+            1.85,
+            0.0629
+          ],
+          "portrait_look_at": [
+            0.0,
+            1.56,
+            0.0629
+          ]
+        }
+      },
+      "default_faction": "Gilded",
       "extra_clips": {
         "LanceCrouch": {
           "loop": true,
